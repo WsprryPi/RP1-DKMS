@@ -1,0 +1,15 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "schemaVersion": 1,
+  "manifestId": "current-development-example-not-for-release",
+  "generatedAt": "2026-08-14T00:00:00Z",
+  "module": {
+    "name": "rp1_gpclk_dkms",
+    "release": "0.99.0",
+    "sourceCommit": "0000000000000000000000000000000000000000",
+    "sourceArchiveSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "uapiHeaderSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "defaultState": "Unavailable",
+  "entries": []
+}

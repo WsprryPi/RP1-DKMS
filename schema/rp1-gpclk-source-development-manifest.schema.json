@@ -1,0 +1,97 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wsprrypi.github.io/RP1-DKMS/schema/rp1-gpclk-source-development-manifest.schema.json",
+  "title": "RP1 GPCLK exact-source development manifest v1",
+  "type": "object",
+  "allOf": [
+    {
+      "if": {"properties": {"installationMode": {"const": "route-neutral"}}, "required": ["installationMode"]},
+      "then": {
+        "required": ["route", "targetKernel", "installedModule", "parameters", "routeNeutralSafety", "uapiIdentity"],
+        "properties": {
+          "route": {"const": null},
+          "parameters": {
+            "type": "object",
+            "required": ["output_inhibit"],
+            "properties": {"output_inhibit": {"const": 1}}
+          }
+        }
+      }
+    }
+  ],
+  "required": ["schema", "classification", "qualification", "sourceCommit", "sourceState", "renderedVersion", "versionIdentity", "dkmsName", "moduleName", "rawInventory", "renderedInventory", "transformations", "releaseQualified"],
+  "properties": {
+    "schema": {"const": "rp1-gpclk-source-development-manifest"},
+    "classification": {"const": "source-development"},
+    "qualification": {"const": false},
+    "releaseQualified": {"const": false},
+    "sourceCommit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "sourceState": {"enum": ["clean", "dirty-explicitly-allowed"]},
+    "renderedVersion": {"type": "string", "pattern": "^[0-9A-Za-z][0-9A-Za-z._+-]*$"},
+    "versionIdentity": {
+      "type": "object",
+      "required": ["path", "sha256", "moduleVersion"],
+      "properties": {
+        "path": {"const": "include/rp1_gpclk/version.h"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "moduleVersion": {"type": "string", "pattern": "^[0-9A-Za-z][0-9A-Za-z._+-]*$"}
+      },
+      "additionalProperties": false
+    },
+    "dkmsName": {"const": "rp1-gpclk-dkms"},
+    "moduleName": {"const": "rp1_gpclk_dkms"},
+    "route": {"enum": ["gpio4", "gpio20", null]},
+    "installationMode": {"enum": ["route-neutral", "route-specific"]},
+    "targetKernel": {"type": "string", "minLength": 1},
+    "parameters": {
+      "type": "object",
+      "required": ["output_inhibit"],
+      "properties": {"output_inhibit": {"enum": [0, 1]}}
+    },
+    "uapiIdentity": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"const": "include/uapi/linux/rp1_gpclk.h"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "installedModule": {
+      "type": "object",
+      "required": ["moduleName", "moduleVersion", "kernel", "installedFileSha256", "decompressedElfSha256"],
+      "properties": {
+        "moduleName": {"const": "rp1_gpclk_dkms"},
+        "moduleVersion": {"type": "string"},
+        "kernel": {"type": "string", "minLength": 1},
+        "installedFileSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "decompressedElfSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "routeNeutralSafety": {
+      "type": "object",
+      "required": ["before", "after"],
+      "properties": {
+        "before": {"type": "object"},
+        "after": {"type": "object"}
+      }
+    },
+    "rawInventory": {"$ref": "#/$defs/inventory"},
+    "renderedInventory": {"$ref": "#/$defs/inventory"},
+    "transformations": {"type": "array", "items": {"type": "object", "required": ["path", "beforeSha256", "afterSha256", "operation"]}}
+  },
+  "$defs": {
+    "inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "size", "sha256"],
+        "properties": {
+          "path": {"type": "string"},
+          "size": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

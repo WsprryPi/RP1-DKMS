@@ -1,0 +1,261 @@
+#!/usr/bin/python3 -I
+# SPDX-License-Identifier: MIT
+"""Independently parse and rebuild a candidate; no install, root or network."""
+import sys
+sys.dont_write_bytecode = True
+if __name__ == '__main__' and not sys.flags.isolated:
+    import os
+    os.execv('/usr/bin/python3', ['/usr/bin/python3', '-I', __file__, *sys.argv[1:]])
+import argparse
+import os
+from pathlib import Path
+import tempfile
+import subprocess
+# Check cleanliness before importing any checkout-local module.
+_root = Path(__file__).resolve().parents[1]
+_git_env = {'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'LC_ALL': 'C',
+            'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM': '1', 'GIT_OPTIONAL_LOCKS': '0'}
+_git_args = ['git', '--no-replace-objects', '-c', 'core.fsmonitor=false',
+             '-c', 'safe.directory='+str(_root), '-C', str(_root)]
+_state = subprocess.run([*_git_args, 'status', '--porcelain=v1',
+                         '--untracked-files=all'], capture_output=True, check=True, env=_git_env)
+if _state.stdout:
+    raise SystemExit('dirty or untracked validator source rejected')
+# Reject hidden modified helpers before importing them and ignore all checkout caches.
+for _name in ('release_contract.py', 'release_manifest.py'):
+    _path = _root/'scripts'/_name
+    _blob = subprocess.run([*_git_args, 'show', 'HEAD:scripts/'+_name],
+                           capture_output=True, check=True, env=_git_env).stdout
+    if _path.is_symlink() or _path.read_bytes() != _blob:
+        raise SystemExit('release helper differs from clean commit')
+_cache = tempfile.TemporaryDirectory(prefix='rp1-isolated-python-', dir='/tmp')
+sys.pycache_prefix = _cache.name
+sys.path.insert(0, str(_root/'scripts'))
+import jsonschema
+from release_contract import (ASSETS, BEHAVIOR, COMPATIBILITY, DEB, DEBIAN, MANIFEST,
+    METADATA, MODULES, PACKAGE, RESULT, SOURCE, VERSION, build_environment, canonical,
+    checksum_bytes, command, epoch, git, inventory, package_members, read_json,
+    require, sha, source_archive, source_files, tar_members, tools, write_source)
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def exact(value, keys, label):
+    require(isinstance(value, dict) and set(value) == set(keys), label+' exact-key mismatch')
+
+
+def _validate_snapshot(candidate, commit, release=False):
+    classification = 'release' if release else 'candidate'
+    require(candidate.is_absolute() and candidate == candidate.resolve() and candidate.is_dir(),
+            'absolute nonsymlink candidate directory required')
+    require({p.name for p in candidate.iterdir()} == ASSETS, 'missing or unexpected candidate assets')
+    for name in ASSETS:
+        p = candidate/name
+        require(not p.is_symlink() and p.is_file() and p.stat().st_size <= 64*1024*1024,
+                'unsafe candidate asset: '+name)
+    files = source_files(ROOT, commit)
+    for name in ('scripts/validate-release-candidate', 'scripts/release_contract.py'):
+        require((ROOT/name).read_bytes() == files[name][1], 'validator implementation differs from selected source')
+    import re
+    require(re.findall(br'^#define RP1_GPCLK_MODULE_VERSION "([^"]+)"$',
+        files['include/rp1_gpclk/version.h'][1], re.M) == [VERSION.encode()], 'source module version mismatch')
+    require(b'#define RP1_GPCLK_COMPATIBILITY_VERSION "0.99.0"' in files['include/rp1_gpclk/compatibility.h'][1],
+            'source compatibility version mismatch')
+    require(read_json(files['uapi-identity.json'][1])['sha256'] ==
+            sha(files['include/uapi/linux/rp1_gpclk.h'][1]), 'source UAPI identity mismatch')
+    tree = git(ROOT, 'rev-parse', commit+'^{tree}').decode().strip()
+    timestamp = epoch(ROOT, commit)
+    require((candidate/'SHA256SUMS').read_bytes() == checksum_bytes(candidate), 'checksum mismatch or duplicate checksum asset')
+    source = (candidate/SOURCE).read_bytes()
+    require(source == source_archive(files, timestamp), 'source archive/commit/tree or deterministic metadata mismatch')
+    tar_members(source, timestamp)
+    manifest = read_json((candidate/MANIFEST).read_bytes())
+    schema = read_json(files['schema/rp1-gpclk-dkms-installation-manifest-v1.schema.json'][1])
+    jsonschema.Draft202012Validator(schema).validate(manifest)
+    require(manifest['sourceCommit'] == commit, 'manifest commit mismatch')
+    require(manifest['installationBehavior'] == BEHAVIOR, 'non-passive installation contract')
+    members, controls = package_members(candidate/DEB)
+    inv, control_inv = inventory(members), inventory(controls)
+    require(inv == manifest['packageInventory'] and sha(canonical(inv)) == manifest['packageInventorySha256'],
+            'package member inventory mismatch')
+    require(sha((candidate/DEB).read_bytes()) == manifest['package']['sha256'], 'package digest mismatch')
+    fields = [command(['dpkg-deb', '-f', str(candidate/DEB), key]).decode().strip()
+              for key in ('Package', 'Version', 'Architecture')]
+    require(fields == [PACKAGE, DEBIAN, 'all'], 'package filename/control mismatch')
+    member_map = {m['path']: m for m in members}
+    control_map = {m['path']: m for m in controls}
+    require(set(control_map) == {'control', 'md5sums', 'preinst', 'postinst', 'prerm'},
+            'unexpected maintainer script, trigger or control member')
+    for name in ('preinst', 'postinst', 'prerm'):
+        payload = control_map[name]['bytes']
+        if name == 'preinst':
+            embedded = (b"python3 -I - unpack <<'RP1_INCOMING_PREFLIGHT'\n"+
+                        files['scripts/package_preflight.py'][1]+b'RP1_INCOMING_PREFLIGHT\n')
+            require(payload.count(embedded) == 1, 'incoming read-only guard differs from source')
+            payload = payload.replace(embedded, b'')
+        for word in (b'modprobe', b'insmod', b'rmmod', b'dtoverlay', b'systemctl',
+                     b'deb-systemd', b'/boot/', b'/dev/rp1', b'gpioset'):
+            require(word not in payload, 'forbidden maintainer-script action: '+name)
+        require(b'#DEBHELPER#' not in payload, 'unresolved maintainer-script placeholder')
+    # Independently bind static installed source and UAPIs back to Git objects.
+    prefix = f'usr/src/{PACKAGE}-{VERSION}/'
+    for path, member in member_map.items():
+        require(not path.startswith(('boot/', 'etc/', 'lib/modules/', 'var/', 'dev/')),
+                'unexpected active/system payload')
+        if path.startswith(prefix) and member['type'] == 'file' and not path.endswith('/dkms.conf'):
+            relative = path[len(prefix):]
+            require(relative in files and member['bytes'] == files[relative][1], 'installed source substitution: '+path)
+    for name in ('rp1_gpclk.h', 'rp1_route_admin.h'):
+        path = prefix+'include/uapi/linux/'+name
+        require(path in member_map and member_map[path]['bytes'] == files['include/uapi/linux/'+name][1],
+                'UAPI digest mismatch')
+    require(manifest['uapi']['sha256'] == member_map[manifest['uapi']['path']]['sha256'], 'manifest UAPI mismatch')
+    dkms = member_map[prefix+'dkms.conf']['bytes'].decode()
+    for token in ('PACKAGE_VERSION="0.99.0"', 'BUILT_MODULE_NAME[0]="rp1_gpclk_dkms"',
+                  'BUILT_MODULE_NAME[1]="rp1_route_controller"', 'RP1_RUNTIME_CONTROLLER=1'):
+        require(token in dkms, 'DKMS/module/controller identity mismatch')
+    require('#MODULE_VERSION#' not in dkms, 'unresolved DKMS placeholder')
+    metadata = read_json((candidate/METADATA).read_bytes())
+    exact(metadata, ('schema schemaVersion SPDX-License-Identifier classification published productVersion '
+        'debianVersion intendedTag releaseTag releaseUrl githubAssetDigest sourceCommit sourceTree sourceArchive '
+        'package installationManifestSha256 packageOwnership controlInventory dkms modules uapi routes runtime '
+        'signing build qualification consumerContract').split(), 'provenance')
+    require(type(metadata['schemaVersion']) is int and
+            all(type(metadata['packageOwnership'].get(k)) is int for k in ('uid', 'gid')) and
+            all(m.get('packagedElf') is False for m in metadata['modules']) and
+            metadata['signing'].get('privateKeyIncluded') is False and
+            all(v is False for v in metadata['qualification'].values()), 'invalid provenance JSON field types')
+    require(metadata['schema'] == f'rp1-gpclk-{classification}-provenance-v1' and metadata['schemaVersion'] == 1 and
+            metadata['SPDX-License-Identifier'] == 'MIT' and metadata['classification'] == classification and
+            metadata['published'] is False and metadata['sourceCommit'] == commit and
+            metadata['sourceTree'] == tree and metadata['productVersion'] == VERSION and
+            metadata['debianVersion'] == DEBIAN and metadata['intendedTag'] == 'v'+VERSION and
+            metadata['releaseTag'] == ('v'+VERSION if release else None) and
+            metadata['releaseUrl'] == ('https://github.com/WsprryPi/RP1-DKMS/releases/tag/v'+VERSION if release else None) and
+            metadata['githubAssetDigest'] is None,
+            'candidate/development/publication provenance mismatch')
+    require(metadata['sourceArchive'] == {'filename': SOURCE, 'sha256': sha(source)}, 'source archive provenance mismatch')
+    require(metadata['package'] == {'filename': DEB, 'sha256': sha((candidate/DEB).read_bytes()),
+        'controlSha256': sha(command(['dpkg-deb', '-f', str(candidate/DEB)])),
+        'name': PACKAGE, 'version': DEBIAN, 'architecture': 'all'}, 'package provenance mismatch')
+    require(metadata['installationManifestSha256'] == sha((candidate/MANIFEST).read_bytes()), 'manifest provenance mismatch')
+    require(metadata['packageOwnership'] == {'uid': 0, 'gid': 0} and metadata['controlInventory'] == control_inv,
+            'ownership/control inventory mismatch')
+    require(metadata['dkms'] == {'name': PACKAGE, 'version': VERSION, 'profile': 'runtime-controller',
+        'configurationPath': prefix+'dkms.conf', 'configurationSha256': sha(dkms.encode())}, 'DKMS provenance mismatch')
+    expected_modules = [{'name': n, 'version': VERSION, 'origin': 'target-generated-by-dkms',
+        'packagedElf': False, 'installedFileSha256': None, 'decompressedElfSha256': None,
+        'compression': None, 'vermagic': None, 'buildNoteSha256': None} for n in MODULES]
+    require(metadata['modules'] == expected_modules, 'target-generated module provenance mismatch')
+    require(metadata['uapi'] == {name: {'sourcePath': 'include/uapi/linux/'+name,
+        'installedPath': prefix+'include/uapi/linux/'+name, 'sha256': sha(files['include/uapi/linux/'+name][1])}
+        for name in ('rp1_gpclk.h', 'rp1_route_admin.h')}, 'UAPI provenance mismatch')
+    routes = {}
+    for route, number in (('gpio4', 1), ('gpio20', 2)):
+        source_path = 'overlays/rp1-gpclk-'+route+'.dts'
+        package_path = f'usr/lib/{PACKAGE}/overlays/rp1-gpclk-{route}.dtbo'
+        routes[route] = {'routeId': number, 'compatibilityId': f'v{VERSION}-rp1-{route}',
+            'sourcePath': source_path, 'sourceSha256': sha(files[source_path][1]),
+            'packagePath': package_path, 'dtboSha256': member_map[package_path]['sha256']}
+    require(metadata['routes'] == routes and routes['gpio4']['dtboSha256'] != routes['gpio20']['dtboSha256'],
+            'overlay/compatibility substitution')
+    require(metadata['runtime'] == {'binding': 'rp1-gpclk-runtime-binding-v3',
+        'readiness': 'rp1-gpclk-runtime-readiness-v1', 'update': 'rp1-gpclk-runtime-update-v1',
+        'tools': {n: sha(data) for n, (_, data) in files.items() if n.startswith('scripts/runtime_') and n.endswith('.py')},
+        'schemas': {n: sha(data) for n, (_, data) in files.items() if n.startswith('schema/') and n.endswith('.json')}},
+        'runtime controller/interface identity mismatch')
+    require(metadata['signing'] == {'package': 'unsigned', 'source': 'unsigned', 'privateKeyIncluded': False,
+        'targetModules': 'administrator-existing-identity-required-when-signing',
+        'trustEnrollment': 'separate-administrator-operation'}, 'unsupported signing claim')
+    require(metadata['qualification'] == {k: False for k in ('hardware', 'rf', 'product', 'wsprrypiAcceptance', 'lifecycle')},
+            'false qualification claim')
+    require(metadata['consumerContract'] == read_json(files['release/wsprrypi-consumer-contract.json'][1]),
+            'consumer contract mismatch')
+    require(set(manifest) == set(metadata['consumerContract']['manifestKeys']), 'consumer manifest key mismatch')
+    require(metadata['build'] == {'sourceDateEpoch': timestamp, 'locale': 'C', 'timezone': 'UTC', 'umask': '0022',
+        'compression': 'gzip-mtime-zero-source;dpkg-gzip-level9-single-thread', 'tools': tools()}, 'build environment/provenance mismatch')
+    compat = read_json((candidate/COMPATIBILITY).read_bytes())
+    jsonschema.Draft202012Validator(read_json(files['schema/rp1-gpclk-compatibility-manifest-v1.schema.json'][1])).validate(compat)
+    from datetime import datetime, timezone
+    require(compat == {'SPDX-License-Identifier': 'MIT', 'schemaVersion': 1,
+        'manifestId': f'v{VERSION}-'+('' if release else 'candidate-')+commit,
+        'generatedAt': datetime.fromtimestamp(timestamp, timezone.utc).isoformat().replace('+00:00', 'Z'),
+        'module': {'name': MODULES[0], 'release': VERSION, 'sourceCommit': commit,
+            'sourceArchiveSha256': sha(source), 'uapiHeaderSha256': manifest['uapi']['sha256']},
+        'defaultState': 'Unavailable', 'entries': []}, 'stale/unsupported compatibility metadata')
+    result = read_json((candidate/RESULT).read_bytes())
+    require(result.get('published') is False and result.get('qualification') is False and
+            type(result['reproducibility'].get('independentCleanBuilds')) is int and
+            result['reproducibility'].get('byteIdentical') is True, 'invalid validation JSON field types')
+    require(result == {'SPDX-License-Identifier': 'MIT', 'schema': 'rp1-gpclk-candidate-validation-v1',
+        'sourceCommit': commit, 'sourceTree': tree, 'classification': classification,
+        'reproducibility': {'independentCleanBuilds': 2, 'byteIdentical': True},
+        'sourceSha256': sha(source), 'packageSha256': sha((candidate/DEB).read_bytes()),
+        'published': False, 'qualification': False}, 'unverified reproducibility or classification declaration')
+    # Independent replay from authenticated Git blobs; no builder imports or state.
+    with tempfile.TemporaryDirectory(prefix='rp1-independent-verify-', dir='/tmp') as temporary:
+        source_dir = Path(temporary)/'reconstructed'
+        write_source(files, source_dir)
+        command(['dpkg-buildpackage', '--no-sign', '-b'], cwd=source_dir, env=build_environment(timestamp))
+        packages = list(Path(temporary).glob('*.deb'))
+        require([p.name for p in packages] == [DEB] and packages[0].read_bytes() == (candidate/DEB).read_bytes(),
+                'package not reproducible from exact source/environment')
+    return {'status': 'PASS', 'classification': classification, 'published': False,
+            'sourceCommit': commit, 'sourceTree': tree, 'independentlyRebuilt': True}
+
+
+def snapshot_assets(candidate):
+    import stat
+    require(candidate.is_absolute() and candidate == candidate.resolve(),
+            'absolute nonsymlink candidate directory required')
+    descriptor = os.open(candidate, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        require(set(os.listdir(descriptor)) == ASSETS, 'missing or unexpected candidate assets')
+        result = {}
+        for name in sorted(ASSETS):
+            fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=descriptor)
+            try:
+                info = os.fstat(fd)
+                require(stat.S_ISREG(info.st_mode) and info.st_size <= 64*1024*1024,
+                        'unsafe candidate asset: '+name)
+                with os.fdopen(fd, 'rb', closefd=False) as stream:
+                    result[name] = stream.read(64*1024*1024+1)
+                require(len(result[name]) <= 64*1024*1024, 'candidate asset exceeds bound')
+            finally:
+                os.close(fd)
+        require(sum(map(len, result.values())) <= 128*1024*1024, 'candidate exceeds total bound')
+        return result
+    finally:
+        os.close(descriptor)
+
+
+def validate(candidate, commit, release=False):
+    # Work only on one bounded, nonsymlink input snapshot. Recheck original bytes
+    # after the independent build so changing inputs never receive a PASS.
+    captured = snapshot_assets(candidate)
+    with tempfile.TemporaryDirectory(prefix='rp1-candidate-snapshot-', dir='/tmp') as temporary:
+        staging = Path(temporary)
+        for name, data in captured.items():
+            (staging/name).write_bytes(data)
+        result = _validate_snapshot(staging, commit, release=release)
+    require(snapshot_assets(candidate) == captured, 'candidate changed during validation')
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--candidate', type=Path, required=True)
+    parser.add_argument('--source-commit', required=True)
+    parser.add_argument('--release', action='store_true', help='require the ordinary release profile; does not verify publication')
+    args = parser.parse_args()
+    os.umask(0o022)
+    require(sys.platform == 'linux', 'Linux Debian packaging environment required')
+    print(canonical(validate(args.candidate, args.source_commit, release=args.release)).decode())
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as error:
+        print(canonical({'status': 'FAIL', 'error': str(error)[:8192]}).decode())
+        raise SystemExit(1)

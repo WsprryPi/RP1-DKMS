@@ -1,0 +1,54 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wsprrypi.github.io/schemas/rp1-gpclk-runtime-readiness-v1.schema.json",
+  "title": "RP1 GPCLK runtime provider readiness",
+  "type": "object",
+  "required": ["schemaVersion", "contract"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "contract": {"const": "rp1-gpclk-runtime-readiness-v1"},
+    "profile": {"const": "runtime"},
+    "result": {"enum": ["absent", "deployment_required", "activation_required", "neutral_ready", "exact_ready", "recovery_required", "conflict"]},
+    "state": {"enum": ["absent", "deployment_required", "activation_required", "neutral_ready", "exact_ready", "recovery_required", "conflict"]},
+    "compatible": {"type": "boolean"},
+    "eligible": {"type": "boolean"},
+    "administrationCompatible": {"type": "boolean"},
+    "administrationEligible": {"type": "boolean"},
+    "routeSelected": {"type": "boolean"},
+    "executionReady": {"type": "boolean"},
+    "identities": {"type": "object"},
+    "artifacts": {"type": "object"},
+    "deployment": {"type": "object"},
+    "routes": {"type": "object", "required": ["requested", "configured", "persisted", "active"]},
+    "endpoints": {"type": "object", "required": ["consumer", "controller"]},
+    "managerSocket": {"type": "object"},
+    "services": {"type": "object"},
+    "modules": {"type": "object", "required": ["rp1_route_controller", "rp1_gpclk_dkms"]},
+    "journals": {"type": "object"},
+    "manager": {"type": "object"},
+    "activation": {"type": "object"},
+    "reboot": {"type": "object", "required": ["occurred", "required"]},
+    "safety": {"type": "object"},
+    "conflicts": {"type": "array", "items": {"type": "string"}},
+    "remediation": {"type": "array", "items": {"type": "string"}}
+  },
+  "oneOf": [
+    {
+      "required": ["profile", "result", "state", "compatible", "eligible", "administrationCompatible", "administrationEligible", "routeSelected", "executionReady", "identities", "artifacts", "deployment", "routes", "endpoints", "managerSocket", "services", "modules", "journals", "manager", "activation", "reboot", "safety", "conflicts", "remediation"]
+    },
+    {
+      "required": ["operation", "planSha256", "response"],
+      "properties": {"operation": {"enum": ["route-ensure", "activation-ensure", "activation-recover"]}}
+    },
+    {
+      "required": ["operation", "planSha256", "plan"],
+      "properties": {"operation": {"const": "activation-recover-plan"}}
+    },
+    {
+      "required": ["result", "state", "compatible", "eligible", "error"],
+      "properties": {"result": {"const": "conflict"}, "state": {"const": "conflict"}}
+    }
+  ],
+  "additionalProperties": true
+}

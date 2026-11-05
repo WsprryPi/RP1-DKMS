@@ -1,0 +1,30 @@
+Source: rp1-gpclk-dkms
+Section: kernel
+Priority: optional
+Maintainer: Lee Bussy <lee@bussy.org>
+Build-Depends:
+ zstd,
+ debhelper-compat (= 13),
+ dh-dkms,
+ device-tree-compiler,
+ python3,
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Homepage: https://github.com/WsprryPi/RP1-DKMS
+
+Package: rp1-gpclk-dkms
+Architecture: all
+Pre-Depends: python3
+Depends:
+ dkms (>= 3.2.2),
+ dkms (<< 3.3),
+ adduser,
+ device-tree-compiler,
+ python3,
+ openssl,
+ zstd,
+ ${misc:Depends},
+Description: DKMS source for the Raspberry Pi RP1 GPCLK module
+ Stock-kernel out-of-tree module providing bounded RP1 GPCLK0 control for
+ WsprryPi. The package installs DKMS source and inactive GPIO4 and GPIO20
+ device-tree overlays. It does not enable an overlay or load the module.

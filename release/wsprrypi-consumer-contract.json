@@ -1,0 +1,49 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "repository": "WsprryPi/WsprryPi",
+  "installerPath": "scripts/rp1_gpclk_dkms_install.py",
+  "requiredAssets": [
+    "SHA256SUMS",
+    "rp1-gpclk-dkms-installation-manifest-v1.json",
+    "rp1-gpclk-dkms_0.99.0-1_all.deb"
+  ],
+  "manifestKeys": [
+    "administrationProtocol",
+    "debianVersion",
+    "dkmsModule",
+    "installationBehavior",
+    "kernelModule",
+    "package",
+    "packageInventory",
+    "packageInventorySha256",
+    "productVersion",
+    "releaseChannel",
+    "releaseTag",
+    "repository",
+    "schema",
+    "schemaVersion",
+    "sourceCommit",
+    "uapi"
+  ],
+  "inventoryKeys": [
+    "mode",
+    "path",
+    "sha256",
+    "type"
+  ],
+  "stableChannel": "release",
+  "tagForm": "vMAJOR.MINOR.PATCH",
+  "selectionRequires": [
+    "published",
+    "non-draft",
+    "non-prerelease"
+  ],
+  "runtimeBinding": "rp1-gpclk-runtime-binding-v3",
+  "runtimeUpdate": "rp1-gpclk-runtime-update-v1",
+  "qualificationClaim": false,
+  "deferredAcceptance": [
+    "WsprryPi consumer acceptance, installation, migration, runtime, removal, rollback, and recovery for the independently identified provider"
+  ],
+  "providerRepository": "WsprryPi/RP1-DKMS",
+  "runtimeReadiness": "rp1-gpclk-runtime-readiness-v1"
+}

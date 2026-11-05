@@ -1,0 +1,72 @@
+# SPDX-License-Identifier: MIT
+
+# Local agent and editor state
+.agents/
+.codex/
+.idea/
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+._*
+.AppleDouble/
+
+# Kernel and Kbuild outputs
+*.a
+*.cmd
+*.d
+*.ko
+*.mod
+*.mod.c
+*.o
+*.order
+*.so
+*.symvers
+.*.cmd
+.cache.mk
+.tmp_versions/
+Module.markers
+Module.symvers
+modules.order
+
+# Device-tree build outputs
+*.dtb
+*.dtbo
+
+# Coverage, analysis, and test outputs
+__pycache__/
+*.py[cod]
+*.gcda
+*.gcno
+*.lcov
+coverage/
+test-results/
+
+# Packaging and local staging
+build/
+dist/
+out/
+stage/
+*.deb
+*.rpm
+*.tar
+*.tar.gz
+*.zip
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+
+# Generated campaign and target evidence (not regression fixtures)
+/docs/evidence/
+/runs/
+/local/evidence/
+
+# Documentation environments and rendered output
+/docs/.venv/
+/docs/_build/

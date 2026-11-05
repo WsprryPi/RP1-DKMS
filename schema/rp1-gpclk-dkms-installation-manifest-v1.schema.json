@@ -1,0 +1,173 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "SPDX-License-Identifier: MIT",
+  "title": "RP1 GPCLK installation manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "administrationProtocol",
+    "debianVersion",
+    "dkmsModule",
+    "installationBehavior",
+    "kernelModule",
+    "package",
+    "packageInventory",
+    "packageInventorySha256",
+    "productVersion",
+    "releaseChannel",
+    "releaseTag",
+    "repository",
+    "schema",
+    "schemaVersion",
+    "sourceCommit",
+    "uapi"
+  ],
+  "properties": {
+    "schema": {
+      "const": "rp1-gpclk-dkms-installation-manifest-v1"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "repository": {
+      "const": "WsprryPi/RP1-DKMS"
+    },
+    "productVersion": {
+      "const": "0.99.0"
+    },
+    "debianVersion": {
+      "const": "0.99.0-1"
+    },
+    "dkmsModule": {
+      "const": "rp1-gpclk-dkms"
+    },
+    "kernelModule": {
+      "const": "rp1_gpclk_dkms"
+    },
+    "administrationProtocol": {
+      "const": "rp1-gpclk-route-manager"
+    },
+    "releaseChannel": {
+      "const": "release"
+    },
+    "releaseTag": {
+      "const": "v0.99.0"
+    },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "packageInventorySha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "uapi": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "const": "usr/src/rp1-gpclk-dkms-0.99.0/include/uapi/linux/rp1_gpclk.h"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "filename",
+        "sha256"
+      ],
+      "properties": {
+        "name": {
+          "const": "rp1-gpclk-dkms"
+        },
+        "filename": {
+          "const": "rp1-gpclk-dkms_0.99.0-1_all.deb"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "installationBehavior": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "routeNeutral",
+        "outputDisabled",
+        "loadsModule",
+        "appliesOverlay",
+        "editsBootConfiguration",
+        "operatesServices"
+      ],
+      "properties": {
+        "routeNeutral": {
+          "const": true
+        },
+        "outputDisabled": {
+          "const": true
+        },
+        "loadsModule": {
+          "const": false
+        },
+        "appliesOverlay": {
+          "const": false
+        },
+        "editsBootConfiguration": {
+          "const": false
+        },
+        "operatesServices": {
+          "const": false
+        }
+      }
+    },
+    "packageInventory": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "mode",
+          "path",
+          "sha256",
+          "type"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 240,
+            "pattern": "^[A-Za-z0-9_.+@/-]+$"
+          },
+          "type": {
+            "enum": [
+              "file",
+              "directory"
+            ]
+          },
+          "mode": {
+            "enum": [
+              "0644",
+              "0755"
+            ]
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  }
+}

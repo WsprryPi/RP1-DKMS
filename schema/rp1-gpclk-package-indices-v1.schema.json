@@ -1,0 +1,145 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RP1 package module-index result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "status",
+    "executionAuthorized"
+  ],
+  "properties": {
+    "contract": {
+      "const": "rp1-gpclk-package-indices-v1"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "failed"
+      ]
+    },
+    "executionAuthorized": {
+      "const": false
+    },
+    "operation": {
+      "enum": [
+        "configure",
+        "remove"
+      ]
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/command"
+      }
+    },
+    "stage": {
+      "enum": [
+        "depmod",
+        "inventory",
+        "signature"
+      ]
+    },
+    "command": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exitStatus": {
+      "type": "integer"
+    },
+    "diagnostic": {
+      "type": "string",
+      "maxLength": 8192
+    },
+    "signatures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "module",
+          "certificateSha256",
+          "signatureVerified",
+          "certificateValidityVerified",
+          "kernelTrustVerified"
+        ],
+        "properties": {
+          "module": {
+            "type": "string"
+          },
+          "certificateSha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "signatureVerified": {
+            "const": true
+          },
+          "certificateValidityVerified": {
+            "const": true
+          },
+          "kernelTrustVerified": {
+            "const": false
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "command",
+        "exitStatus",
+        "diagnostic"
+      ],
+      "properties": {
+        "stage": {
+          "const": "depmod"
+        },
+        "command": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exitStatus": {
+          "type": "integer"
+        },
+        "diagnostic": {
+          "type": "string",
+          "maxLength": 8192
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "complete"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "operation",
+          "results",
+          "signatures"
+        ]
+      },
+      "else": {
+        "required": [
+          "stage",
+          "exitStatus",
+          "diagnostic"
+        ]
+      }
+    }
+  ]
+}

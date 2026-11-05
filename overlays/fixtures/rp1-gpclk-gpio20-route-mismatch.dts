@@ -1,0 +1,43 @@
+// SPDX-License-Identifier: GPL-2.0-only OR MIT
+/dts-v1/;
+/plugin/;
+
+#include <dt-bindings/clock/rp1.h>
+#include <dt-bindings/mfd/rp1.h>
+
+&rp1_gpio {
+	rp1_gpclk_gpio20_mismatch_safe: rp1-gpclk-gpio20-mismatch-safe {
+		function = "gpio";
+		pins = "gpio20";
+		input-enable;
+		bias-disable;
+	};
+
+	rp1_gpclk_gpio20_mismatch_active: rp1-gpclk-gpio20-mismatch-active {
+		function = "gpclk0";
+		pins = "gpio20";
+		bias-disable;
+		drive-strength = <2>;
+	};
+};
+
+&rp1 {
+	rp1-gpclk-gpio20-route-mismatch {
+		compatible = "wsprrypi,rp1-gpclk-dkms-v1";
+		reg = <0xc0 0x40174024 0x0 0x8>,
+		      <0xc0 0x40158000 0x0 0x8>;
+		reg-names = "tick-dma0", "dma-tick0";
+		/* Deliberately inconsistent: GPIO20 pinctrl with GPIO4 route ID. */
+		wsprrypi,route = <1>;
+		wsprrypi,pin = <20>;
+		clocks = <&rp1_clocks RP1_CLK_GP0>, <&rp1_clocks RP1_PLL_SYS>;
+		clock-names = "gpclk", "parent";
+		pinctrl-names = "default", "active", "safe";
+		pinctrl-0 = <&rp1_gpclk_gpio20_mismatch_safe>;
+		pinctrl-1 = <&rp1_gpclk_gpio20_mismatch_active>;
+		pinctrl-2 = <&rp1_gpclk_gpio20_mismatch_safe>;
+		dmas = <&rp1_dma RP1_DMA_DMA_TICK_TICK0>;
+		dma-names = "tx";
+		status = "okay";
+	};
+};

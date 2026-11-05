@@ -1,0 +1,41 @@
+#!/usr/bin/make -f
+# SPDX-License-Identifier: MIT
+
+PACKAGE := rp1-gpclk-dkms
+MODULE_VERSION := 0.99.0
+SOURCE_DEST := debian/$(PACKAGE)/usr/src/$(PACKAGE)-$(MODULE_VERSION)
+
+%:
+	dh $@ --with dkms
+
+override_dh_auto_build:
+	mkdir -p debian/build
+	python3 -c 'import pathlib; from scripts.overlay_builder import build_dtbo; root=pathlib.Path("."); [build_dtbo(root / "overlays" / (name + ".dts"), root / "debian" / "build" / (name + ".dtbo"), "dtc") for name in ("rp1-gpclk-gpio4", "rp1-gpclk-gpio20")]'
+
+override_dh_auto_test:
+	python3 tests/check_debian_packaging.py
+
+override_dh_auto_install:
+	python3 scripts/package_stage.py debian/$(PACKAGE)
+	cp $(SOURCE_DEST)/dkms.conf debian/build/dkms.conf
+
+# Units are copied as inactive data by package_stage.py. Do not ask debhelper
+# to generate any systemd lifecycle integration (including removal/purge).
+override_dh_installsystemd:
+	:
+
+override_dh_compress:
+	dh_compress -Xroute-manager.md
+
+override_dh_dkms:
+	dh_dkms -V $(MODULE_VERSION)
+
+override_dh_installdeb:
+	dh_installdeb
+	python3 scripts/package_stage.py --preinst debian/$(PACKAGE)
+
+override_dh_auto_clean:
+	rm -rf debian/build
+
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip -z9 --threads-max=1

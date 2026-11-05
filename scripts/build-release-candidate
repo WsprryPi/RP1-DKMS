@@ -1,0 +1,122 @@
+#!/usr/bin/python3 -I
+# SPDX-License-Identifier: MIT
+"""Build an unpublished candidate twice from an exact clean commit (Linux)."""
+import sys
+sys.dont_write_bytecode = True
+if __name__ == '__main__' and not sys.flags.isolated:
+    import os
+    os.execv('/usr/bin/python3', ['/usr/bin/python3', '-I', __file__, *sys.argv[1:]])
+import argparse
+import os
+from pathlib import Path
+import tempfile
+import subprocess
+# Check cleanliness before importing any checkout-local module.
+_root = Path(__file__).resolve().parents[1]
+_git_env = {'PATH': '/usr/bin:/bin:/usr/sbin:/sbin', 'LC_ALL': 'C',
+            'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM': '1', 'GIT_OPTIONAL_LOCKS': '0'}
+_git_args = ['git', '--no-replace-objects', '-c', 'core.fsmonitor=false',
+             '-c', 'safe.directory='+str(_root), '-C', str(_root)]
+_state = subprocess.run([*_git_args, 'status', '--porcelain=v1',
+                         '--untracked-files=all'], capture_output=True, check=True, env=_git_env)
+if _state.stdout:
+    raise SystemExit('dirty or untracked source rejected')
+# Reject hidden modified helpers before importing them and ignore all checkout caches.
+for _name in ('release_contract.py', 'release_manifest.py'):
+    _path = _root/'scripts'/_name
+    _blob = subprocess.run([*_git_args, 'show', 'HEAD:scripts/'+_name],
+                           capture_output=True, check=True, env=_git_env).stdout
+    if _path.is_symlink() or _path.read_bytes() != _blob:
+        raise SystemExit('release helper differs from clean commit')
+_cache = tempfile.TemporaryDirectory(prefix='rp1-isolated-python-', dir='/tmp')
+sys.pycache_prefix = _cache.name
+sys.path.insert(0, str(_root/'scripts'))
+from release_contract import (ASSETS, DEB, SOURCE, VERSION, build_environment, checksum_bytes, command, epoch, git,
+    require, source_archive, source_files, write_source)
+from release_manifest import documents, encode_documents, validate_source
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def build_once(files, commit, tree, timestamp, output, release=False):
+    with tempfile.TemporaryDirectory(prefix='rp1-candidate-render-', dir='/tmp') as temporary:
+        source = Path(temporary)/'source'
+        write_source(files, source)
+        command(['dpkg-buildpackage', '--no-sign', '-b'], cwd=source,
+                env=build_environment(timestamp))
+        packages = sorted(Path(temporary).glob('*.deb'))
+        require([p.name for p in packages] == [DEB], 'exactly one canonical Debian package required')
+        output.mkdir()
+        (output/DEB).write_bytes(packages[0].read_bytes())
+        (output/SOURCE).write_bytes(source_archive(files, timestamp))
+        docs = documents(files, commit, tree, timestamp, output, release=release)
+        encode_documents(output, docs)
+        (output/'SHA256SUMS').write_bytes(checksum_bytes(output))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--version', required=True, choices=[VERSION])
+    parser.add_argument('--source-commit', required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--release', action='store_true', help='prepare ordinary release-profile metadata; does not publish')
+    args = parser.parse_args()
+    require(sys.platform == 'linux', 'Linux Debian packaging environment required')
+    require(args.output.is_absolute(), 'absolute output directory required')
+    output = args.output.resolve()
+    require(args.output == output, 'symlink or noncanonical output path')
+    require(not output.exists() and not output.is_symlink(), 'output directory already exists')
+    require(output.parent.is_dir(), 'output parent directory must exist')
+    require(not output.is_relative_to(ROOT), 'candidate output must be outside source checkout')
+    other_checkout = subprocess.run(['git', '-C', str(output.parent), 'rev-parse', '--show-toplevel'],
+                                    env=_git_env, capture_output=True)
+    require(other_checkout.returncode != 0, 'candidate output must be outside every Git checkout')
+    require(not git(ROOT, 'status', '--porcelain=v1', '--untracked-files=all'), 'dirty or untracked source rejected')
+    require(git(ROOT, 'rev-parse', 'HEAD').decode().strip() == args.source_commit,
+            'full exact current source commit required')
+    files = source_files(ROOT, args.source_commit)
+    for name, (mode, data) in files.items():
+        path = ROOT/name
+        require(not path.is_symlink() and path.is_file() and path.read_bytes() == data and
+                bool(path.stat().st_mode & 0o111) == (mode == 0o755),
+                'tracked input differs from commit (including hidden index flags): '+name)
+    validate_source(files)
+    tree = git(ROOT, 'rev-parse', args.source_commit+'^{tree}').decode().strip()
+    timestamp = epoch(ROOT, args.source_commit)
+    os.umask(0o022)
+    # Reserve output atomically before work; failure leaves no misleading candidate.
+    output.mkdir()
+    try:
+        with tempfile.TemporaryDirectory(prefix='.rp1-candidate-', dir=output.parent) as temporary:
+            first, second = Path(temporary)/'first', Path(temporary)/'second'
+            build_once(files, args.source_commit, tree, timestamp, first, release=args.release)
+            build_once(files, args.source_commit, tree, timestamp, second, release=args.release)
+            require(all((first/name).read_bytes() == (second/name).read_bytes() for name in ASSETS),
+                    'independent clean builds differ')
+            # Invoke the independent validator before making the candidate available.
+            command([sys.executable, '-I', str(ROOT/'scripts/validate-release-candidate'),
+                     '--candidate', str(first), '--source-commit', args.source_commit,
+                     *(['--release'] if args.release else [])])
+            require(not git(ROOT, 'status', '--porcelain=v1', '--untracked-files=all') and
+                    git(ROOT, 'rev-parse', 'HEAD').decode().strip() == args.source_commit,
+                    'source changed during build')
+            for name in sorted(ASSETS):
+                (output/name).write_bytes((first/name).read_bytes())
+                (output/name).chmod(0o644)
+    except BaseException:
+        # Only the new empty reservation or files created by this invocation.
+        import shutil
+        shutil.rmtree(output)
+        raise
+    from release_contract import canonical
+    print(canonical({'status': 'PASS', 'classification': 'release' if args.release else 'candidate',
+                     'published': False}).decode())
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except Exception as error:
+        import json
+        print(json.dumps({'status': 'FAIL', 'error': str(error)[:8192]}))
+        raise SystemExit(1)

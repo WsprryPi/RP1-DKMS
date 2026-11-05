@@ -1,0 +1,19 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+set -eu
+set -- "${1:-}" "${2:-}"
+
+if [ "$1" = configure ]; then
+    python3 -I /usr/libexec/rp1-gpclk-dkms/package_preflight.py configure
+fi
+# Build every eligible installed kernel, rather than current/newest only.
+export autoinstall_all_kernels=yes
+#DEBHELPER#
+
+if [ "$1" = configure ]; then
+    python3 -I /usr/libexec/rp1-gpclk-dkms/package_indices.py
+    if ! getent group rp1-gpclk-route >/dev/null; then
+        addgroup --system rp1-gpclk-route
+    fi
+fi
+exit 0

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: MIT
+5c46e42abccc850c209b67fb89faf0483da6db36337578e3b9c60823acce7e10  linux-base-6.18.50+rpt-rpi-2712_6.18.50-1+rpt1_arm64.deb
+f6b0870fde0785a392ca131f758280b07670837b31acf475e49f27c896583f85  linux-base-6.18.50+rpt-rpi-v8_6.18.50-1+rpt1_arm64.deb
+5c7567f4308827ffdeac8b930b8efae0eed808d508030d25a4c34e5de69e44dd  linux-base-rpi-2712_6.18.50-1+rpt1_arm64.deb
+bca7b21fdee0425cb4f71882e42cb7c754a406e47b40141750e3ef9f2a3ffae6  linux-base-rpi-v8_6.18.50-1+rpt1_arm64.deb
+551be6bbd198c9fd7a4ae2fb9b1ecb4a613d47bc42769155dc8eac3f956afcf8  linux-headers-6.18.50+rpt-common-rpi_6.18.50-1+rpt1_all.deb
+18ab5142b413befac0e742050d8db1af3e3cf61dd3d7f0da9a5d19414433d559  linux-headers-6.18.50+rpt-rpi-2712_6.18.50-1+rpt1_arm64.deb
+73f6bdca094e4780c38bcff022ac2fab0a754217df697c258273cd9d8019fa8d  linux-headers-6.18.50+rpt-rpi-v8_6.18.50-1+rpt1_arm64.deb
+4f7304c17df75f89d7ef4da311693140f62842ccbea9732aca5dca55124fc9bd  linux-headers-rpi-2712_6.18.50-1+rpt1_arm64.deb
+a3d33d5782d43be18fd1ba17219aba39a2a2031d0e777fc4744418eab35c734b  linux-headers-rpi-v8_6.18.50-1+rpt1_arm64.deb
+0318700efa4746d3086e54cf5705933835a94b0a4c545182c09e4c569a753a0a  linux-kbuild-6.18.50+rpt_6.18.50-1+rpt1_arm64.deb

@@ -1,0 +1,49 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://github.com/WsprryPi/RP1-DKMS/schema/rp1-gpclk-compatibility-manifest-v1.schema.json",
+  "$comment":"SPDX-License-Identifier: MIT",
+  "title":"RP1 GPCLK compatibility manifest v1",
+  "type":"object","additionalProperties":false,
+  "required":["SPDX-License-Identifier","schemaVersion","manifestId","generatedAt","module","defaultState","entries"],
+  "properties":{
+    "SPDX-License-Identifier":{"const":"MIT"},"schemaVersion":{"const":1},
+    "manifestId":{"$ref":"#/$defs/nonempty"},"generatedAt":{"type":"string","format":"date-time"},
+    "module":{"$ref":"#/$defs/releaseModule"},"defaultState":{"const":"Unavailable"},
+    "entries":{"type":"array","minItems":0,"items":{"$ref":"#/$defs/entry"}}
+  },
+  "$defs":{
+    "nonempty":{"type":"string","minLength":1,"maxLength":512},
+    "sha1":{"type":"string","pattern":"^[0-9a-f]{40}$"},"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+    "route":{"enum":["GPIO4","GPIO20"]},
+    "state":{"enum":["Qualified","Experimental","Compatible-unqualified","Unavailable","Rejected"]},
+    "releaseModule":{"type":"object","additionalProperties":false,
+      "required":["name","release","sourceCommit","sourceArchiveSha256","uapiHeaderSha256"],
+      "properties":{"name":{"const":"rp1_gpclk_dkms"},"release":{"$ref":"#/$defs/nonempty"},"sourceCommit":{"$ref":"#/$defs/sha1"},"sourceArchiveSha256":{"$ref":"#/$defs/sha256"},"uapiHeaderSha256":{"$ref":"#/$defs/sha256"}}},
+    "kernelConfig":{"type":"object","additionalProperties":false,"required":["sha256","selected"],
+      "properties":{"sha256":{"$ref":"#/$defs/sha256"},"selected":{"type":"object","minProperties":1,"additionalProperties":{"enum":["y","m","n"]}}}},
+    "signature":{"type":"object","additionalProperties":false,"required":["policy","status","identity","keyFingerprint"],
+      "properties":{"policy":{"$ref":"#/$defs/nonempty"},"status":{"enum":["signed","unsigned"]},"identity":{"$ref":"#/$defs/nonempty"},"keyFingerprint":{"$ref":"#/$defs/nonempty"}}},
+    "buildIdentity":{"type":"object","additionalProperties":false,
+      "required":["architecture","runtimeArchitecture","kernelRelease","headers","compiler","kernelConfig","moduleVersion","moduleUnsignedSha256","moduleInstalledSha256","moduleInstalledTransform","moduleVermagic","signature"],
+      "properties":{"architecture":{"const":"arm64"},"runtimeArchitecture":{"const":"aarch64"},"kernelRelease":{"$ref":"#/$defs/nonempty"},"headers":{"$ref":"#/$defs/nonempty"},"compiler":{"$ref":"#/$defs/nonempty"},"kernelConfig":{"$ref":"#/$defs/kernelConfig"},"moduleVersion":{"$ref":"#/$defs/nonempty"},"moduleUnsignedSha256":{"$ref":"#/$defs/sha256"},"moduleInstalledSha256":{"$ref":"#/$defs/sha256"},"moduleInstalledTransform":{"$ref":"#/$defs/nonempty"},"moduleVermagic":{"$ref":"#/$defs/nonempty"},"signature":{"$ref":"#/$defs/signature"}}},
+    "runtimeIdentity":{"type":"object","additionalProperties":false,
+      "required":["piModel","piRevision","firmwareIdentity","baseDtSha256","providerCompatible","clockId","dmaController","dmaRequest"],
+      "properties":{"piModel":{"$ref":"#/$defs/nonempty"},"piRevision":{"$ref":"#/$defs/nonempty"},"firmwareIdentity":{"$ref":"#/$defs/nonempty"},"baseDtSha256":{"$ref":"#/$defs/sha256"},"providerCompatible":{"const":"raspberrypi,rp1-clocks"},"clockId":{"const":33},"dmaController":{"$ref":"#/$defs/nonempty"},"dmaRequest":{"$ref":"#/$defs/nonempty"}}},
+    "overlay":{"type":"object","additionalProperties":false,"required":["sourceSha256","dtboSha256"],"properties":{"sourceSha256":{"$ref":"#/$defs/sha256"},"dtboSha256":{"$ref":"#/$defs/sha256"}}},
+    "evidence":{"type":"object","additionalProperties":false,"required":["id","sha256","routes","classes"],
+      "properties":{"id":{"$ref":"#/$defs/nonempty"},"sha256":{"$ref":"#/$defs/sha256"},"routes":{"type":"array","minItems":1,"uniqueItems":true,"items":{"$ref":"#/$defs/route"}},"classes":{"type":"array","minItems":1,"uniqueItems":true,"items":{"enum":["build","clock-disabled","timing","cleanup","recovery","rf"]}}}},
+    "entry":{"type":"object","additionalProperties":false,
+      "required":["id","state","operationalReady","reason","route","supportedDriveMa","uapiHeaderSha256","build","runtime","overlay","evidence"],
+      "properties":{"id":{"$ref":"#/$defs/nonempty"},"state":{"$ref":"#/$defs/state"},"operationalReady":{"type":"boolean"},"reason":{"$ref":"#/$defs/nonempty"},"route":{"$ref":"#/$defs/route"},"supportedDriveMa":{"type":"integer","minimum":2,"maximum":16},"uapiHeaderSha256":{"$ref":"#/$defs/sha256"},"build":{"$ref":"#/$defs/buildIdentity"},"runtime":{"$ref":"#/$defs/runtimeIdentity"},"overlay":{"$ref":"#/$defs/overlay"},"evidence":{"type":"array","minItems":1,"items":{"$ref":"#/$defs/evidence"}}},
+      "allOf":[
+        {"if":{"properties":{"state":{"const":"Qualified"}},"required":["state"]},"then":{"properties":{"operationalReady":{"const":true},"evidence":{"allOf":[{"$ref":"#/$defs/hasBuild"},{"$ref":"#/$defs/hasClock"},{"$ref":"#/$defs/hasTiming"},{"$ref":"#/$defs/hasCleanup"},{"$ref":"#/$defs/hasRecovery"},{"$ref":"#/$defs/hasRf"}]}}}},
+        {"if":{"properties":{"state":{"enum":["Unavailable","Rejected"]}},"required":["state"]},"then":{"properties":{"operationalReady":{"const":false}}}}
+      ]},
+    "hasBuild":{"contains":{"properties":{"classes":{"contains":{"const":"build"}}},"required":["classes"]}},
+    "hasClock":{"contains":{"properties":{"classes":{"contains":{"const":"clock-disabled"}}},"required":["classes"]}},
+    "hasTiming":{"contains":{"properties":{"classes":{"contains":{"const":"timing"}}},"required":["classes"]}},
+    "hasCleanup":{"contains":{"properties":{"classes":{"contains":{"const":"cleanup"}}},"required":["classes"]}},
+    "hasRecovery":{"contains":{"properties":{"classes":{"contains":{"const":"recovery"}}},"required":["classes"]}},
+    "hasRf":{"contains":{"properties":{"classes":{"contains":{"const":"rf"}}},"required":["classes"]}}
+  }
+}

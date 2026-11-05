@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: MIT
+Sphinx==9.1.0
+myst-parser==5.1.0
+sphinx-rtd-theme==3.1.0
+requests>=2.33.0
+Pygments>=2.20.0

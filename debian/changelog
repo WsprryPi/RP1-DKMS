@@ -1,0 +1,6 @@
+rp1-gpclk-dkms (0.99.0-1) UNRELEASED; urgency=medium
+
+  * Maintain RP1-DKMS development source, route-neutral packaging, and
+    independently versioned runtime interfaces.
+
+ -- Lee Bussy <lee@bussy.org>  Thu, 05 Nov 2026 00:00:00 +0000

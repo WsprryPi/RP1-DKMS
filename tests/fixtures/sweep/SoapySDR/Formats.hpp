@@ -1,0 +1,7 @@
+// SPDX-License-Identifier: MIT
+#ifndef RP1_GPCLK_TEST_SOAPY_FORMATS_HPP
+#define RP1_GPCLK_TEST_SOAPY_FORMATS_HPP
+
+#define SOAPY_SDR_CF32 "CF32"
+
+#endif

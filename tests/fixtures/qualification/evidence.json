@@ -1,0 +1,38 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "routes": [
+    {
+      "route": "gpio4",
+      "routeId": "v1.0.0-rp1-gpio4",
+      "state": "Qualified",
+      "scope": {
+        "kind": "finite-conducted-tone",
+        "frequencyHz": 14097100
+      },
+      "overlaySha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "runtimeOverlaySha256": "7777777777777777777777777777777777777777777777777777777777777777",
+      "caseSelectionSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "evidenceId": "synthetic-gpio4"
+    },
+    {
+      "route": "gpio20",
+      "routeId": "v1.0.0-rp1-gpio20",
+      "state": "Qualified",
+      "scope": {
+        "kind": "finite-conducted-tone",
+        "frequencyHz": 14097100
+      },
+      "overlaySha256": "5555555555555555555555555555555555555555555555555555555555555555",
+      "runtimeOverlaySha256": "8888888888888888888888888888888888888888888888888888888888888888",
+      "caseSelectionSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+      "evidenceId": "synthetic-gpio20"
+    }
+  ],
+  "observations": "Synthetic fixture only; no physical observations.",
+  "limitations": [
+    "No hardware, timing, spectral, or RF qualification."
+  ],
+  "applicationQualification": {
+    "claim": false
+  }
+}

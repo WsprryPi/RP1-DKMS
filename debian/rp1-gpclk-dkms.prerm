@@ -1,0 +1,17 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+set -eu
+
+# Runtime recovery, module unloading and route removal precede package removal.
+case "${1:-}" in
+remove|upgrade|deconfigure)
+    python3 -I /usr/libexec/rp1-gpclk-dkms/package_preflight.py remove
+    ;;
+esac
+#DEBHELPER#
+case "${1:-}" in
+remove|upgrade|deconfigure)
+    python3 -I /usr/libexec/rp1-gpclk-dkms/package_indices.py remove
+    ;;
+esac
+exit 0

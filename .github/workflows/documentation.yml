@@ -1,0 +1,45 @@
+# SPDX-License-Identifier: MIT
+name: Operator documentation
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  documentation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+      - name: Install documentation dependencies
+        run: |
+          python3 -m venv /tmp/rp1-docs-venv
+          /tmp/rp1-docs-venv/bin/python -m pip install --timeout 30 --retries 2 -r docs/requirements.txt
+      - name: Scaffold regressions and strict documentation exports
+        run: make docs-check DOCS_PYTHON=/tmp/rp1-docs-venv/bin/python DOCS_BUILDDIR=/tmp/rp1-docs-build
+  windows-documentation:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+      - name: Install documentation dependencies
+        run: python -m pip install --timeout 30 --retries 2 -r docs/requirements.txt
+      - name: Scaffold regressions
+        run: python tests/nonempty_unittest.py
+      - name: Windows entry point and failure propagation
+        shell: cmd
+        env:
+          BUILDDIR: ${{ runner.temp }}\rp1-docs-build
+          SPHINXOPTS: -n -W --keep-going
+        run: |
+          call engineering\documentation\make.bat
+          if errorlevel 1 exit /b 1
+          call engineering\documentation\make.bat html
+          if errorlevel 1 exit /b 1
+          call engineering\documentation\make.bat invalid-builder
+          if not errorlevel 1 exit /b 1
+          exit /b 0

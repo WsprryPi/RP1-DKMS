@@ -1,0 +1,22 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+set -eu
+
+# dpkg permits explicit downgrades; require a separately reviewed exact rollback.
+case "${1:-}" in
+install|upgrade)
+    if [ -n "${2:-}" ] && dpkg --compare-versions "$2" lt 0.99.0-1; then
+        echo 'rp1-gpclk-dkms: direct upgrade refused; run predecessor owning cleanup/removal before installation' >&2
+        exit 1
+    fi
+    if [ -n "${2:-}" ] && dpkg --compare-versions "$2" gt 0.99.0-1; then
+        echo 'rp1-gpclk-dkms: downgrade refused; preserve exact rollback inputs and remove through the owning lifecycle' >&2
+        exit 1
+    fi
+    ;;
+esac
+
+# RP1_INCOMING_PREFLIGHT
+
+#DEBHELPER#
+exit 0

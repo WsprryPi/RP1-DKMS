@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: MIT
+[Unit]
+Description=RP1 GPCLK bounded route-manager request
+Requires=rp1-gpclk-route-manager.socket
+After=rp1-gpclk-route-manager.socket
+
+[Service]
+Type=exec
+User=root
+Group=root
+ExecStart=/usr/sbin/rp1-gpclk-route-manager
+StandardInput=socket
+StandardOutput=socket
+StandardError=journal
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/boot/firmware /var/lib/rp1-gpclk-dkms

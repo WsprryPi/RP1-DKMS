@@ -1,0 +1,1290 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "schema": "rp1-gpclk-package-lifecycle-matrix-v1",
+  "predecessorRecord": "release/lifecycle-predecessor-v1.json",
+  "states": {
+    "absent": {
+      "packageManager": "",
+      "dkms": "absent",
+      "modulesByKernel": "absent",
+      "sourceTree": "absent",
+      "overlays": "package overlays absent; foreign overlays preserved",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "none",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "installed": {
+      "packageManager": "ii  0.99.0-1",
+      "dkms": "one 0.99.0 registration; installed for every eligible header tree",
+      "modulesByKernel": "one consumer and one controller per eligible kernel; exact compressed/ELF identities",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "GPIO4/GPIO20 files inactive under /usr/lib; foreign overlays preserved",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "none",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "partial": {
+      "packageManager": "iF  0.99.0-1",
+      "dkms": "attributable completed prefix of add/build/install; no foreign registration removed",
+      "modulesByKernel": "bounded completed native prefix; inspect exact per-kernel inventory before retry",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "refused": {
+      "packageManager": "sameAsBefore (read-only preflight)",
+      "dkms": "unchanged",
+      "modulesByKernel": "unchanged",
+      "sourceTree": "unchanged",
+      "overlays": "unchanged",
+      "routeRuntime": "retained without interpretation",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "owning cleanup; no force or deletion of foreign state",
+      "machineResult": "rp1-gpclk-package-preflight-v1",
+      "executionAuthorization": false
+    },
+    "legacy": {
+      "packageManager": "ii  0.9.0-1",
+      "dkms": "one 0.9.0 registration",
+      "modulesByKernel": "ordinary consumer only for each eligible kernel",
+      "sourceTree": "exact selected predecessor source",
+      "overlays": "historical inactive /boot copies plus inactive /usr/lib files",
+      "routeRuntime": "absent",
+      "services": "historical debhelper metadata; target effects not qualified",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "owning legacy cleanup/removal before successor install",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "one-kernel": {
+      "packageManager": "ii  0.99.0-1",
+      "dkms": "one registration; retained kernel installed, removed kernel absent",
+      "modulesByKernel": "consumer/controller retained only for named installed kernel",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive /usr/lib files",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "dkms autoinstall after headers for an added kernel",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "unpack-aborted": {
+      "packageManager": "in",
+      "dkms": "absent",
+      "modulesByKernel": "absent",
+      "sourceTree": "absent",
+      "overlays": "package overlays absent; foreign overlays preserved",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "retry the verified exact archive after repairing the fault",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "legacy-partial": {
+      "packageManager": "iF  0.9.0-1",
+      "dkms": "attributable predecessor build prefix",
+      "modulesByKernel": "bounded predecessor prefix; no successor modules",
+      "sourceTree": "exact selected predecessor source",
+      "overlays": "inactive /usr/lib payload; predecessor boot copies await successful configure",
+      "routeRuntime": "absent",
+      "services": "historical debhelper metadata; target effects not qualified",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then configure the exact retained predecessor",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "dependency-unconfigured": {
+      "packageManager": "iU  0.99.0-1",
+      "dkms": "absent",
+      "modulesByKernel": "absent",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "restore exact dependency archive then dpkg --configure rp1-gpclk-dkms",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "failed-add": {
+      "packageManager": "iF  0.99.0-1",
+      "dkms": "absent",
+      "modulesByKernel": "absent",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "failed-build": {
+      "packageManager": "iF  0.99.0-1",
+      "dkms": "one 0.99.0 registration: added",
+      "modulesByKernel": "absent",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "failed-install": {
+      "packageManager": "iF  0.99.0-1",
+      "dkms": "one 0.99.0 registration: first kernel built",
+      "modulesByKernel": "absent",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "failed-index": {
+      "packageManager": "iF  0.99.0-1",
+      "dkms": "both representative kernels installed",
+      "modulesByKernel": "both modules per representative kernel; indices not accepted",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "failed-remove": {
+      "packageManager": "ri  0.99.0-1",
+      "dkms": "both representative kernels installed",
+      "modulesByKernel": "both modules per representative kernel",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then repeat dpkg --remove rp1-gpclk-dkms; no force",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "failed-purge": {
+      "packageManager": "pi  0.99.0-1",
+      "dkms": "both representative kernels installed",
+      "modulesByKernel": "both modules per representative kernel",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then repeat dpkg --purge rp1-gpclk-dkms; no force",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "failed-remove-index": {
+      "packageManager": "ri  0.99.0-1",
+      "dkms": "absent",
+      "modulesByKernel": "absent",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then repeat dpkg --remove rp1-gpclk-dkms; no force",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "refused-concurrent": {
+      "packageManager": "sameAsBefore (second request cannot acquire dpkg lock)",
+      "dkms": "unchanged",
+      "modulesByKernel": "unchanged",
+      "sourceTree": "unchanged",
+      "overlays": "unchanged",
+      "routeRuntime": "retained without interpretation",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "wait for the owning dpkg transaction to finish, inspect its result, then retry if needed",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "refused-downgrade": {
+      "packageManager": "sameAsBefore (read-only preflight)",
+      "dkms": "unchanged",
+      "modulesByKernel": "unchanged",
+      "sourceTree": "unchanged",
+      "overlays": "unchanged",
+      "routeRuntime": "retained without interpretation",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "owning cleanup; no force or deletion of foreign state",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "legacy-remove-failed": {
+      "packageManager": "pi  0.9.0-1",
+      "dkms": "one 0.9.0 registration",
+      "modulesByKernel": "ordinary consumer only for each eligible kernel",
+      "sourceTree": "exact selected predecessor source",
+      "overlays": "historical inactive /boot copies plus inactive /usr/lib files",
+      "routeRuntime": "absent",
+      "services": "historical debhelper metadata; target effects not qualified",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "repair prerequisite then repeat owning predecessor purge before successor installation",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    },
+    "preinstall-refused": {
+      "packageManager": "wanted selection may remain; no installed payload",
+      "dkms": "absent",
+      "modulesByKernel": "absent",
+      "sourceTree": "absent",
+      "overlays": "unchanged",
+      "routeRuntime": "retained without interpretation",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "owning cleanup; no force or deletion of foreign state",
+      "machineResult": "rp1-gpclk-package-preflight-v1",
+      "executionAuthorization": false
+    },
+    "failed-inventory": {
+      "packageManager": "iF  0.99.0-1",
+      "dkms": "both representative kernels installed",
+      "modulesByKernel": "both modules per representative kernel; indices not accepted",
+      "sourceTree": "exact package-owned 0.99.0 closure",
+      "overlays": "inactive package data",
+      "routeRuntime": "absent",
+      "services": "unchanged; no lifecycle calls",
+      "bootConfiguration": "unchanged",
+      "ownershipRecords": "foreign and administrator records preserved",
+      "rollbackAvailability": "exact retained predecessor only",
+      "operatorAction": "remove only injected inventory fault then dpkg --configure rp1-gpclk-dkms; no foreign deletion",
+      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "executionAuthorization": false
+    }
+  },
+  "cases": [
+    {
+      "id": "1",
+      "startingState": "clean",
+      "operation": "clean-install",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "2",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "repeat-install",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "3",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "same-version-apt-reinstall",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "4",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "same-version-dkms-replacement",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "5",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "reinstall-missing-module",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "6",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "reinstall-after-removal",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "7",
+      "startingState": "foreign-same-name-dkms",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "8",
+      "startingState": "different-version-dkms",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "9",
+      "startingState": "exact-source-development",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "10",
+      "startingState": "wsprrypi-owned-record",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "11",
+      "startingState": "foreign-or-ambiguous-record",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "12",
+      "startingState": "active-route-or-runtime-residue",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "13",
+      "startingState": "drifted-package-file",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "14",
+      "startingState": "duplicate-compressed-module",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "15",
+      "startingState": "missing-headers",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "16",
+      "startingState": "unknown-signing-or-hooks",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "17",
+      "startingState": "authoritative-inactive-0.9.0",
+      "operation": "direct-upgrade",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "read-only-preflight-before-dpkg",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "18",
+      "startingState": "authoritative-inactive-0.9.0",
+      "operation": "owning-remove-then-successor-install",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "19",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "direct-downgrade",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused-downgrade",
+      "evidenceClass": "exact-predecessor-preinst-before-dpkg",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "20",
+      "startingState": "one-kernel-built",
+      "operation": "remove-and-purge",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "21",
+      "startingState": "multiple-kernels-built",
+      "operation": "remove-and-purge",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "22",
+      "startingState": "native-supported-compressed-modules",
+      "operation": "remove-and-purge",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "23",
+      "startingState": "locally-signed-modules",
+      "operation": "remove-and-purge",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "24",
+      "startingState": "inactive-gpio4-gpio20-assets",
+      "operation": "remove-and-purge",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "25",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "remove",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "26",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "purge",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "27",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "nonrunning-kernel-install",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "one-kernel",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "28",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "add-kernel",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "29",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "dkms-autoinstall",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "30",
+      "startingState": "exact-inactive-0.99.0",
+      "operation": "exact-dkms-noop",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "31",
+      "startingState": "multiple-kernels-built",
+      "operation": "kernel-removal",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "one-kernel",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "32",
+      "startingState": "interrupted-dependency-preflight",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "dependency-unconfigured",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "33",
+      "startingState": "partly-configured-or-interrupted-dependency-preflight",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "34",
+      "startingState": "interrupted-pre-install",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "preinstall-refused",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "35",
+      "startingState": "partly-configured-or-interrupted-pre-install",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "36",
+      "startingState": "interrupted-unpack-overlay-payload",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "unpack-aborted",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "37",
+      "startingState": "partly-configured-or-interrupted-unpack-overlay-payload",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "38",
+      "startingState": "interrupted-configure",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "partial",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "39",
+      "startingState": "partly-configured-or-interrupted-configure",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "40",
+      "startingState": "interrupted-dkms-add",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-add",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "41",
+      "startingState": "partly-configured-or-interrupted-dkms-add",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "42",
+      "startingState": "interrupted-compiler",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-build",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "43",
+      "startingState": "partly-configured-or-interrupted-compiler",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "44",
+      "startingState": "interrupted-dkms-build",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-build",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "45",
+      "startingState": "partly-configured-or-interrupted-dkms-build",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "46",
+      "startingState": "interrupted-dkms-install",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-install",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "47",
+      "startingState": "partly-configured-or-interrupted-dkms-install",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "48",
+      "startingState": "interrupted-depmod",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-index",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "49",
+      "startingState": "partly-configured-or-interrupted-depmod",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "50",
+      "startingState": "interrupted-inventory-validation",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-inventory",
+      "evidenceClass": "real-dpkg-with-controlled-inventory-validation-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "51",
+      "startingState": "partly-configured-or-interrupted-inventory-validation",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "52",
+      "startingState": "interrupted-remove",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-remove",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "53",
+      "startingState": "partly-configured-or-interrupted-remove",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "54",
+      "startingState": "interrupted-purge",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-purge",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "55",
+      "startingState": "partly-configured-or-interrupted-purge",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "56",
+      "startingState": "interrupted-rollback",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "legacy-partial",
+      "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "57",
+      "startingState": "partly-configured-or-interrupted-rollback",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "legacy",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "58",
+      "startingState": "failed-successor",
+      "operation": "remove-then-reinstall-exact-predecessor",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "legacy",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "59",
+      "startingState": "same-version-replacement-holds-dpkg-lock",
+      "operation": "concurrent-same-version-request",
+      "disposition": "refused",
+      "exitStatus": 2,
+      "expectedState": "refused-concurrent",
+      "evidenceClass": "real-dpkg-lock-contention",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/check_debian_packaging.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "60",
+      "startingState": "missing-package-payload",
+      "operation": "exact-reinstall",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "61",
+      "startingState": "foreign-dkms-cache-entry",
+      "operation": "preflight-before-install-or-replace",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "refused",
+      "evidenceClass": "offline-guard-and-real-dpkg-refusal",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "62",
+      "startingState": "native-signing-failure",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-index",
+      "evidenceClass": "real-dpkg-dkms-with-invalid-public-certificate",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "63",
+      "startingState": "repaired-signing-identity",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "64",
+      "startingState": "interrupted-remove-depmod",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "failed-remove-index",
+      "evidenceClass": "real-dpkg-with-controlled-depmod-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "65",
+      "startingState": "partly-configured-or-interrupted-remove-depmod",
+      "operation": "repair-and-retry",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "absent",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "66",
+      "startingState": "interrupted-predecessor-removal",
+      "operation": "fault-and-diagnose",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "legacy-remove-failed",
+      "evidenceClass": "real-dpkg-with-controlled-dkms-remove-fault",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "67",
+      "startingState": "repaired-predecessor-removal",
+      "operation": "retry-then-successor-install",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms",
+      "checks": [
+        "tests/check_package_lifecycle.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "68",
+      "startingState": "installed",
+      "operation": "retire-runtime-keep-passive-package-baseline",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms-with-filesystem-only-runtime-retirement",
+      "checks": [
+        "tests/check_runtime_manager.py",
+        "tests/check_runtime_provider.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    },
+    {
+      "id": "69",
+      "startingState": "installed",
+      "operation": "refuse-changed-or-foreign-passive-package-baseline",
+      "disposition": "refused",
+      "exitStatus": 1,
+      "expectedState": "installed",
+      "evidenceClass": "real-dpkg-dkms-with-controlled-passive-payload-drift",
+      "checks": [
+        "tests/check_runtime_manager.py",
+        "tests/package_lifecycle_linux.py"
+      ]
+    }
+  ],
+  "limitations": [
+    "Legacy 0.9.0 cleanup has historical boot/systemd effects; new package operations are passive.",
+    "Read-only transition checks must precede dpkg/apt: the outgoing prerm runs before the incoming preinst.",
+    "Command failures and header signing/compression variants are controlled fixtures; package operations and DKMS commands are real.",
+    "No target loading, trust-enforcement, service-manager, endpoint, GPIO, application or RF qualification.",
+    "Native gzip lifecycle is refused when libkmod reports -ZLIB; bzip2 is decoded for identity only and refused for native lifecycle."
+  ],
+  "packageStatusEncoding": "Exact dpkg-query ${db:Status-Abbrev} ${Version}, stripped at both ends; empty means absent.",
+  "guardRefusalInvariant": "All owned/foreign filesystem and DKMS data match the before snapshot; a raw dpkg request may change wanted selection, which every result records."
+}

@@ -1,0 +1,8 @@
+{"SPDX-License-Identifier":"MIT","schemaVersion":1,"readOnly":true,
+ "categories":["healthy-and-qualified","healthy-but-experimental","build-compatible-but-live-disabled","unavailable","rejected","indeterminate-because-inspection-lacked-privileges"],
+ "limits":{"commandSeconds":5,"commandStreamBytes":8192,"fileBytes":4096,"kernelLogBytes":16384,"residuePaths":128},
+ "kernelLogScope":"current boot and messages matching rp1_gpclk or rp1-gpclk only",
+ "requiredSections":["summary","package","kernels","build","module","endpoint","uapi","passiveSnapshot","release","compatibility","authority","cleanupFaultLatch","routeOverlay","hardwareIdentity","kernelDiagnostics","residue"],
+ "prohibitedActions":["package-install","dkms-mutation","module-load","module-unload","bind","unbind","overlay-apply","overlay-remove","boot-write","gpio-write","clock-write","dma-submit","repair","reboot","transmission","rf"],
+ "secretExclusions":["private keys","passphrases","tokens","unrelated logs","unrestricted system data"],
+ "cleanReportLimitation":"A clean report does not prove absence of competing or direct-MMIO software."}

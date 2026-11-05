@@ -1,0 +1,21 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+
+set -e
+
+if [ "$1" = remove ] || [ "$1" = upgrade ] || [ "$1" = deconfigure ]; then
+    source_dir=/usr/lib/rp1-gpclk-dkms/overlays
+    target_dir=/boot/firmware/overlays
+
+    for name in rp1-gpclk-gpio4.dtbo rp1-gpclk-gpio20.dtbo; do
+        source_file="$source_dir/$name"
+        target_file="$target_dir/$name"
+        if [ -f "$source_file" ] && [ -f "$target_file" ] && cmp -s "$source_file" "$target_file"; then
+            rm -f "$target_file"
+        fi
+    done
+fi
+
+#DEBHELPER#
+
+exit 0

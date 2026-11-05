@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+[Unit]
+Description=RP1 GPCLK bounded route-manager request socket
+
+[Socket]
+ListenStream=/run/rp1-gpclk-dkms/route-manager.sock
+SocketMode=0660
+SocketUser=root
+SocketGroup=rp1-gpclk-route
+Accept=yes
+RemoveOnStop=yes
+
+[Install]
+WantedBy=sockets.target

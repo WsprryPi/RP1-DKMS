@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "SPDX-License-Identifier": "MIT",
+  "description": "Deterministic interpreter fixture shape; not a product qualification schema.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "SPDX-License-Identifier",
+    "schema",
+    "schemaVersion",
+    "metadataTag",
+    "revision",
+    "metadataSource",
+    "software",
+    "evidence",
+    "runtimeFiles"
+  ],
+  "properties": {
+    "SPDX-License-Identifier": {
+      "const": "MIT"
+    },
+    "schema": {
+      "const": "rp1-qualification-v1"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "metadataTag": {
+      "type": "string"
+    },
+    "revision": {
+      "const": 1
+    },
+    "metadataSource": {
+      "type": "object"
+    },
+    "software": {
+      "const": {
+        "SPDX-License-Identifier": "MIT",
+        "repository": "example/synthetic-qualification",
+        "sourceCommit": "1111111111111111111111111111111111111111",
+        "productVersion": "1.0.0",
+        "debianVersion": "1.0.0-1",
+        "compatibilityIdentities": {
+          "gpio4": "v1.0.0-rp1-gpio4",
+          "gpio20": "v1.0.0-rp1-gpio20"
+        },
+        "uapiSha256": {
+          "consumer": "2222222222222222222222222222222222222222222222222222222222222222",
+          "controller": "3333333333333333333333333333333333333333333333333333333333333333"
+        },
+        "overlaySha256": {
+          "gpio4": "4444444444444444444444444444444444444444444444444444444444444444",
+          "gpio20": "5555555555555555555555555555555555555555555555555555555555555555"
+        },
+        "assets": {
+          "rp1-gpclk-dkms_1.0.0-1_all.deb": "6666666666666666666666666666666666666666666666666666666666666666"
+        },
+        "releaseTag": "v1.0.0"
+      }
+    },
+    "evidence": {
+      "const": {
+        "SPDX-License-Identifier": "MIT",
+        "routes": [
+          {
+            "route": "gpio4",
+            "routeId": "v1.0.0-rp1-gpio4",
+            "state": "Qualified",
+            "scope": {
+              "kind": "finite-conducted-tone",
+              "frequencyHz": 14097100
+            },
+            "overlaySha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "runtimeOverlaySha256": "7777777777777777777777777777777777777777777777777777777777777777",
+            "caseSelectionSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+            "evidenceId": "synthetic-gpio4"
+          },
+          {
+            "route": "gpio20",
+            "routeId": "v1.0.0-rp1-gpio20",
+            "state": "Qualified",
+            "scope": {
+              "kind": "finite-conducted-tone",
+              "frequencyHz": 14097100
+            },
+            "overlaySha256": "5555555555555555555555555555555555555555555555555555555555555555",
+            "runtimeOverlaySha256": "8888888888888888888888888888888888888888888888888888888888888888",
+            "caseSelectionSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+            "evidenceId": "synthetic-gpio20"
+          }
+        ],
+        "observations": "Synthetic fixture only; no physical observations.",
+        "limitations": [
+          "No hardware, timing, spectral, or RF qualification."
+        ],
+        "applicationQualification": {
+          "claim": false
+        }
+      }
+    },
+    "runtimeFiles": {
+      "type": "object",
+      "minProperties": 2
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/WsprryPi/RP1-DKMS/schema/rp1-gpclk-route-manager.schema.json",
+  "title": "RP1 GPCLK route manager request or response",
+  "oneOf": [
+    {"$ref": "#/$defs/queryRequest"}, {"$ref": "#/$defs/preflightRequest"},
+    {"$ref": "#/$defs/applyRequest"}, {"$ref": "#/$defs/rollbackRequest"},
+    {"$ref": "#/$defs/reconcileRequest"}, {"$ref": "#/$defs/response"}
+  ],
+  "$defs": {
+    "route": {"enum": ["gpio4", "gpio20"]},
+    "requestId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{7,63}$"},
+    "actor": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:@/-]{1,127}$"},
+    "queryRequest": {
+      "type": "object", "properties": {"operation": {"const": "query"}},
+      "required": ["operation"], "additionalProperties": false
+    },
+    "preflightRequest": {
+      "type": "object", "properties": {"operation": {"const": "preflight"}, "route": {"$ref": "#/$defs/route"}},
+      "required": ["operation", "route"], "additionalProperties": false
+    },
+    "applyRequest": {
+      "type": "object", "properties": {"operation": {"const": "apply-and-reboot"}, "route": {"$ref": "#/$defs/route"}, "execute": {"const": true}, "requestId": {"$ref": "#/$defs/requestId"}, "actor": {"$ref": "#/$defs/actor"}},
+      "required": ["operation", "route", "execute", "requestId", "actor"], "additionalProperties": false
+    },
+    "rollbackRequest": {
+      "type": "object", "properties": {"operation": {"const": "rollback"}, "execute": {"const": true}, "requestId": {"$ref": "#/$defs/requestId"}, "actor": {"$ref": "#/$defs/actor"}},
+      "required": ["operation", "execute", "requestId", "actor"], "additionalProperties": false
+    },
+    "reconcileRequest": {
+      "type": "object", "properties": {"operation": {"const": "reconcile"}, "execute": {"const": true}, "requestId": {"$ref": "#/$defs/requestId"}, "actor": {"$ref": "#/$defs/actor"}},
+      "required": ["operation", "execute", "requestId", "actor"], "additionalProperties": false
+    },
+    "response": {
+      "type": "object", "properties": {"contract": {"const": "rp1-gpclk-route-manager"}, "operation": {"type": ["string", "null"]}, "status": {"type": "string"}, "state": {"type": "object"}, "error": {"type": "object"}},
+      "required": ["contract", "operation", "status"],
+      "oneOf": [{"required": ["state"]}, {"required": ["error"]}], "additionalProperties": false
+    }
+  }
+}

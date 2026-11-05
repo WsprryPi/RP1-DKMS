@@ -1,0 +1,113 @@
+#!/usr/bin/python3 -I
+# SPDX-License-Identifier: MIT
+"""Build a synthetic legacy-effects package from current source for isolated tests.
+
+This is not the original predecessor package and establishes no historical qualification.
+"""
+import argparse
+import json
+from pathlib import Path
+import shutil
+import subprocess
+import sys
+import tempfile
+sys.dont_write_bytecode = True
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT/'scripts'))
+from release_contract import (build_environment, command, epoch, git, inventory,
+                              package_members, require, sha, source_files, tools, write_source)
+
+TRANSFORM = '\noverride_dh_builddeb:\n\tdh_builddeb -- -Zgzip -z9 --threads-max=1\n'
+
+
+def select(commit, record):
+    require(len(commit) == 40 and all(c in '0123456789abcdef' for c in commit),
+            'exact current source commit required for predecessor fixture')
+    require(record['classification'] == 'synthetic-lifecycle-fixture' and
+            record['previouslyPublished'] is False, 'invalid predecessor fixture identity')
+
+
+def render(files, record):
+    """Render legacy package effects with current module source, never old Git objects."""
+    files = dict(files)
+    changes = []
+    for name, digest in record['fixtureSha256'].items():
+        path = 'tests/fixtures/lifecycle-legacy/'+name
+        require(path in files, 'missing predecessor fixture input: '+name)
+        data = files[path][1]
+        require(sha(data) == digest, 'predecessor fixture differs: '+name)
+        files['debian/'+name] = (0o755 if name == 'rules' else 0o644), data
+        changes.append({'path': 'debian/'+name, 'operation': 'maintained-legacy-fixture', 'sha256': digest})
+    version = files['include/rp1_gpclk/version.h'][1]
+    import re
+    version, count = re.subn(rb'(#define RP1_GPCLK_MODULE_VERSION ")[^"]+("[\r\n])',
+                            rb'\g<1>0.9.0\g<2>', version)
+    require(count == 1, 'predecessor fixture version substitution failed')
+    files['include/rp1_gpclk/version.h'] = 0o644, version
+    files['debian/changelog'] = 0o644, b'rp1-gpclk-dkms (0.9.0-1) UNRELEASED; urgency=medium\n\n  * Synthetic legacy lifecycle regression fixture; never publish.\n\n -- Fixture <fixture@example.invalid>  Thu, 01 Jan 1970 00:00:00 +0000\n'
+    mode, rules = files['debian/rules']
+    files['debian/rules'] = mode, rules+TRANSFORM.encode()
+    return files, changes
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--source-commit', required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args()
+    record = json.loads((ROOT/'release/lifecycle-predecessor-v1.json').read_text())
+    select(args.source_commit, record)
+    require(sys.platform == 'linux', 'Linux Debian packaging tools required')
+    output = args.output
+    require(output.is_absolute() and output == output.resolve() and not output.exists() and
+            not output.is_relative_to(ROOT), 'new absolute output outside source required')
+    require(output.parent.is_dir(), 'output parent directory must exist')
+    checkout = subprocess.run(['git', '-C', str(output.parent), 'rev-parse', '--show-toplevel'],
+                              capture_output=True, env={'PATH': '/usr/bin:/bin',
+                              'GIT_CONFIG_GLOBAL': '/dev/null', 'GIT_CONFIG_NOSYSTEM': '1'})
+    require(checkout.returncode != 0, 'predecessor output must be outside every Git checkout')
+    require(git(ROOT, 'rev-parse', 'HEAD').decode().strip() == args.source_commit,
+            'predecessor fixture requires current source identity')
+    original = source_files(ROOT, args.source_commit)
+    record = json.loads(original['release/lifecycle-predecessor-v1.json'][1])
+    select(args.source_commit, record)
+    files, changes = render(original, record)
+    package = 'rp1-gpclk-dkms_0.9.0-1_all.deb'
+    outputs = []
+    for repeat in range(2):
+        with tempfile.TemporaryDirectory(prefix='rp1-predecessor-', dir='/tmp') as temporary:
+            root = Path(temporary)
+            source = root/'source'
+            write_source(files, source)
+            command(['dpkg-buildpackage', '--no-sign', '-b'], cwd=source,
+                    env=build_environment(epoch(ROOT, args.source_commit)))
+            require([p.name for p in root.glob('*.deb')] == [package], 'predecessor package set differs')
+            outputs.append((root/package).read_bytes())
+    require(outputs[0] == outputs[1], 'predecessor is not reproducible')
+    with tempfile.TemporaryDirectory(prefix='rp1-predecessor-inventory-', dir='/tmp') as temporary:
+        path = Path(temporary)/package
+        path.write_bytes(outputs[0])
+        members, controls = package_members(path)
+    record.update(package=package, packageSha256=sha(outputs[0]),
+                  packageInventory=inventory(members), controlInventory=inventory(controls),
+                  transformations=changes, reproducible=True,
+                  sourceCommit=args.source_commit, runtimeInputsUnchanged=False, packageScriptsPassive=False,
+                  build={'sourceDateEpoch': epoch(ROOT, args.source_commit), 'tools': tools()})
+    output.mkdir()
+    try:
+        (output/package).write_bytes(outputs[0])
+        (output/'predecessor.json').write_text(json.dumps(record, sort_keys=True, indent=2)+'\n')
+    except BaseException:
+        shutil.rmtree(output)
+        raise
+    print(json.dumps({'status': 'PASS', 'sourceCommit': args.source_commit,
+                      'packageSha256': sha(outputs[0]), 'published': False,
+                      'packageScriptsPassive': False}))
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (OSError, ValueError) as error:
+        print(json.dumps({'status': 'FAIL', 'error': str(error)[-8192:]}))
+        raise SystemExit(1)

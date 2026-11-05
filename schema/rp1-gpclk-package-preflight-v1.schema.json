@@ -1,0 +1,61 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RP1 package preflight result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract",
+    "operation",
+    "status",
+    "executionAuthorized"
+  ],
+  "properties": {
+    "contract": {
+      "const": "rp1-gpclk-package-preflight-v1"
+    },
+    "operation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "enum": [
+        "permitted",
+        "refused"
+      ]
+    },
+    "executionAuthorized": {
+      "const": false
+    },
+    "routeSelected": {
+      "const": false
+    },
+    "error": {
+      "type": "string",
+      "maxLength": 4096
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "permitted"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "routeSelected"
+        ]
+      },
+      "else": {
+        "required": [
+          "error"
+        ]
+      }
+    }
+  ]
+}

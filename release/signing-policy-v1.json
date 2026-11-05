@@ -1,0 +1,19 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "schemaVersion": 1,
+  "ownership": {
+    "privateKey": {"owner": "administrator", "uid": 0, "gid": 0, "mode": "0600", "packageRemoval": "retain"},
+    "certificate": {"owner": "administrator", "uid": 0, "gid": 0, "maximumMode": "0644", "packageRemoval": "retain"},
+    "trustEntry": {"owner": "administrator", "packageRemoval": "retain", "removalRequires": "cross-module-dependency-audit"}
+  },
+  "releasePrivateKeyPolicy": "prohibited",
+  "buildIntegration": {
+    "mechanism": "dkms-native-per-build-signing",
+    "requiredConfiguration": ["mok_signing_key", "mok_certificate", "sign_file"],
+    "missingConfiguredIdentity": "fail-closed-no-automatic-replacement",
+    "manualSignFile": "explicit-recovery-only"
+  },
+  "diagnosticFields": ["targetKernel", "enforcement", "moduleSha256", "moduleVersion", "vermagic", "signatureStatus", "signer", "signatureKeyId", "signatureAlgorithm", "signatureHashAlgorithm", "certificateFingerprint", "certificateNotBefore", "certificateNotAfter", "certificateTrust", "privateKeyState"],
+  "rotationOrder": ["select-successor", "validate-successor", "enroll-successor-public-certificate", "verify-successor-trust", "configure-dkms-successor", "rebuild-sign-verify-retained-kernels", "audit-prior-key-dependencies", "retire-prior-identity-if-unused"],
+  "uninstall": {"removePackagePolicy": true, "removeOperatorKeys": false, "removeCertificates": false, "removeTrustEntries": false, "reportRetainedIdentities": true}
+}
