@@ -34,7 +34,7 @@ retains the OF match table for explicit binding. The default build retains its
 autoload alias. The consumer version follows the same development identity contract;
 changed bytes do not inherit qualification. The interlock constrains overlay
 ownership and consumer lifetime, not output policy. Ordinary direct builds do not link
-the controller or change their administration interface. The canonical 0.99.0 package selects this interlocked profile for both modules.
+the controller or change their administration interface. The canonical 0.0.1 package selects this interlocked profile for both modules.
 Direct source builds retain the explicit opt-in flag and ordinary one-module default. Exact-source orchestration may explicitly select
 the `runtime-controller` DKMS profile; that one DKMS instance builds, installs,
 tracks, and rolls back both modules. The runtime bundle binds those installed

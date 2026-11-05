@@ -7,7 +7,7 @@ from pathlib import Path, PurePosixPath
 from typing import Callable
 
 CONTRACT="rp1-gpclk-route-manager"; PACKAGE="rp1-gpclk-dkms"
-VERSION="0.99.0"; DEBIAN_VERSION="0.99.0-1"; MODULE="rp1_gpclk_dkms"
+VERSION="0.0.1"; DEBIAN_VERSION="0.0.1-1"; MODULE="rp1_gpclk_dkms"
 CONFIG="/boot/firmware/config.txt"; BOOT_ID="/proc/sys/kernel/random/boot_id"
 JOURNAL_DIR="/var/lib/rp1-gpclk-dkms/route-transactions"
 UAPI=f"/usr/src/{PACKAGE}-{VERSION}/include/uapi/linux/rp1_gpclk.h"

@@ -34,7 +34,7 @@ def put(root, name, data=b'fixture'):
 
 
 def owned_source(root):
-    source = root/'usr/src/rp1-gpclk-dkms-0.99.0'
+    source = root/'usr/src/rp1-gpclk-dkms-0.0.1'
     path = put(root, str(source.relative_to(root))+'/dkms.conf')
     database = root/'var/lib/dpkg/info'
     database.mkdir(parents=True, exist_ok=True)
@@ -62,7 +62,7 @@ class Tests(unittest.TestCase):
     def test_foreign_unbuilt_registration_and_different_version(self):
         root = self.root
         base = root/'var/lib/dkms/rp1-gpclk-dkms'
-        for version in ('0.99.0', '0.9.0', '9.9.9'):
+        for version in ('0.0.1', '0.9.0', '9.9.9'):
             path = base/version
             path.mkdir(parents=True)
             for operation in ('unpack', 'configure', 'remove'):
@@ -77,11 +77,11 @@ class Tests(unittest.TestCase):
         base = root/'var/lib/dkms/rp1-gpclk-dkms'
         base.mkdir(parents=True)
         metadata = base/'kernel-6.18.50+rpt-rpi-2712-aarch64'
-        metadata.symlink_to('0.99.0/6.18.50+rpt-rpi-2712/aarch64')
+        metadata.symlink_to('0.0.1/6.18.50+rpt-rpi-2712/aarch64')
         with self.assertRaisesRegex(ValueError, 'orphan'):
             guard.check(root, 'remove')
         metadata.unlink()
-        version = base/'0.99.0'
+        version = base/'0.0.1'
         version.mkdir()
         (version/'source').symlink_to(source)
         foreign = put(root, str(version.relative_to(root))+'/foreign.txt', b'preserve')
@@ -162,14 +162,14 @@ class Tests(unittest.TestCase):
     def test_compressed_signed_identity_and_duplicate_refusal(self):
         root = self.root
         source = owned_source(root)
-        base = root/'var/lib/dkms/rp1-gpclk-dkms/0.99.0'
+        base = root/'var/lib/dkms/rp1-gpclk-dkms/0.0.1'
         base.mkdir(parents=True)
         (base/'source').symlink_to(source)
         kernel = '6.18.50+rpt-rpi-2712'
-        (base.parent/('kernel-'+kernel+'-aarch64')).symlink_to('0.99.0/'+kernel+'/aarch64')
+        (base.parent/('kernel-'+kernel+'-aarch64')).symlink_to('0.0.1/'+kernel+'/aarch64')
         put(root, 'lib/modules/'+kernel+'/build/.config', b'# unsigned header fixture\n')
         # Compact bytes test identity mechanics, not ELF/signature validity.
-        elf = b'\x7fELF\x02\x01\0version=0.99.0\0signed-fixture-trailer'
+        elf = b'\x7fELF\x02\x01\0version=0.0.1\0signed-fixture-trailer'
         cache = put(root, str(base.relative_to(root))+'/'+kernel+'/aarch64/module/rp1_gpclk_dkms.ko', elf)
         stem = 'lib/modules/'+kernel+'/updates/dkms/rp1_gpclk_dkms.ko'
         for suffix, encode in (('', lambda x:x), ('.gz', gzip.compress), ('.xz', lzma.compress)):
@@ -215,7 +215,7 @@ class Tests(unittest.TestCase):
             'tests/fixtures/lifecycle-legacy/'+name: (0o644, (ROOT/'tests/fixtures/lifecycle-legacy'/name).read_bytes())
             for name in record['fixtureSha256']})
         rendered, changes = builder['render'](files, record)
-        self.assertIn(b'"0.9.0"', rendered['include/rp1_gpclk/version.h'][1])
+        self.assertIn(b'"0.0.0"', rendered['include/rp1_gpclk/version.h'][1])
         self.assertIn(b'Synthetic legacy lifecycle', rendered['debian/changelog'][1])
         self.assertIn(b'override_dh_builddeb:', rendered['debian/rules'][1])
         self.assertEqual(len(changes), len(record['fixtureSha256']))
@@ -629,19 +629,19 @@ class MetadataTests(unittest.TestCase):
 
     def test_independent_native_record_and_refusals(self):
         from types import SimpleNamespace
-        record = ('filename: /fixture.ko\0version=0.99.0\0vermagic=kernel SMP\0'
+        record = ('filename: /fixture.ko\0version=0.0.1\0vermagic=kernel SMP\0'
                   'alias=first\0alias=second\0depends=controller\0'
                   'signature: AA:BB:\n CC:DD\0')
         def parse(text=record, code=0):
             return module_metadata.metadata(SimpleNamespace(returncode=code, stdout=text))
         value = parse()
-        self.assertEqual(value, {'version': '0.99.0', 'vermagic': 'kernel SMP', 'aliases': 'first\nsecond',
+        self.assertEqual(value, {'version': '0.0.1', 'vermagic': 'kernel SMP', 'aliases': 'first\nsecond',
             'depends': 'controller', 'signer': '', 'signatureKey': '', 'signatureAlgorithm': '',
             'signatureHash': '', 'controllerInterlock': ''})
         signed = record+'signer: Test signer\0sig_key: AB:CD\0sig_id: PKCS#7\0sig_hashalgo: sha256\0'
         self.assertEqual(parse(signed)['signer'], 'Test signer')
         for text, code in ((record, 1), (record[:-1], 0), ('bad\0', 0),
-                (record.replace('version=0.99.0\0',''), 0),
+                (record.replace('version=0.0.1\0',''), 0),
                 (record+'version=9.9.9\0', 0), (record+'depends=other\0', 0),
                 (record+'signer=bad\nvalue\0', 0), (record+'x='+'x'*65536+'\0', 0)):
             with self.subTest(code=code, text=text[:60]), self.assertRaises(ValueError): parse(text, code)
@@ -652,8 +652,8 @@ class CoverageTests(unittest.TestCase):
         import copy
         absent = {'packageManager': '', 'modules': [], 'dkms': '', 'sourceTrees': [],
                   'bootSha256': 'a'*64, 'endpointsAbsent': True, 'modulesUnloaded': True}
-        installed = dict(absent, packageManager='ii  0.99.0-1',
-                         modules=[{'version': '0.99.0'}]*4, dkms='x: installed\ny: installed', sourceTrees=['source'])
+        installed = dict(absent, packageManager='ii  0.0.1-1',
+                         modules=[{'version': '0.0.1'}]*4, dkms='x: installed\ny: installed', sourceTrees=['source'])
         steps = [
             {'stage': 'interrupted-preinstall', 'command': ['dpkg', '-i', 'candidate'],
              'exitStatus': 1, 'before': absent, 'after': absent},

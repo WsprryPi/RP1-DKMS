@@ -16,7 +16,7 @@ Keep dependency identities and compiler/header configuration with temporary
 build results. No physical target or host module installation is part of a build.
 
 ```sh
-./scripts/build-release-candidate --version 0.99.0 --source-commit "$(git rev-parse HEAD)" --output /absolute/new-candidate
+./scripts/build-release-candidate --version 0.0.1 --source-commit "$(git rev-parse HEAD)" --output /absolute/new-candidate
 ./scripts/validate-release-candidate --candidate /absolute/new-candidate --source-commit "$(git rev-parse HEAD)"
 ```
 

@@ -38,6 +38,6 @@ const char *rp1_gpclk_compatibility_id(__u32 route)
 	case RP1_GPCLK_ROUTE_GPIO20:
 		return RP1_GPCLK_GPIO20_COMPATIBILITY_ID;
 	default:
-		return "v0.99.0-invalid-route";
+		return "v0.0.1-invalid-route";
 	}
 }

@@ -93,9 +93,9 @@ class Tests(unittest.TestCase):
         value = fixture()
         observed = report(value)
         binding = observed['identities']['installedBinding']['value']
-        binding['productVersion'] = '0.99.0'
+        binding['productVersion'] = '0.0.1'
         binding['compatibilityIdentities'] = {
-            route: 'v0.99.0-rp1-' + route for route in ('gpio4', 'gpio20')}
+            route: 'v0.0.1-rp1-' + route for route in ('gpio4', 'gpio20')}
         # Even identical source/UAPI observations cannot transfer versioned evidence.
         result = self.interpret(value, observed, 'gpio4')
         self.assertEqual(result['status'], 'unattributed')

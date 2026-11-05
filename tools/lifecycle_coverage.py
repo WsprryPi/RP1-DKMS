@@ -13,7 +13,7 @@ ROWS = '''
 4 clean-cycle repeat-install
 5 clean-cycle missing-module-reinstall
 6 clean-cycle reinstall-after-removal
-7 foreign-state foreign-dkms-0.99.0
+7 foreign-state foreign-dkms-0.0.1
 8 foreign-state foreign-dkms-9.9.9
 9 foreign-state refuse-DEVELOPMENT_MANIFEST
 10 foreign-state refuse-rp1-gpclk-dkms-installation
@@ -107,24 +107,24 @@ def state_is(name, before, after):
         return not modules and not dkms and after.get('sourceTrees') == []
     if name in ('installed', 'one-kernel', 'legacy'):
         count = 4 if name == 'installed' else 2
-        version = '0.9.0' if name == 'legacy' else '0.99.0'
+        version = '0.0.0' if name == 'legacy' else '0.0.1'
         return (status == 'ii  '+version+'-1' and len(modules) == count
                 and all(m.get('version') == version for m in modules)
                 and dkms.count(': installed') == count//(1 if name == 'legacy' else 2))
     expected = {
-        'dependency-unconfigured': ('iU  0.99.0-1', 0),
+        'dependency-unconfigured': ('iU  0.0.1-1', 0),
         'unpack-aborted': ('in', 0),
-        'partial': ('iF  0.99.0-1', 0),
-        'failed-add': ('iF  0.99.0-1', 0),
-        'failed-build': ('iF  0.99.0-1', 0),
-        'failed-install': ('iF  0.99.0-1', 0),
-        'failed-index': ('iF  0.99.0-1', 4),
-        'failed-inventory': ('iF  0.99.0-1', 4),
-        'failed-remove': ('ri  0.99.0-1', 4),
-        'failed-purge': ('pi  0.99.0-1', 4),
-        'failed-remove-index': ('ri  0.99.0-1', 0),
-        'legacy-partial': ('iF  0.9.0-1', 0),
-        'legacy-remove-failed': ('pi  0.9.0-1', 2),
+        'partial': ('iF  0.0.1-1', 0),
+        'failed-add': ('iF  0.0.1-1', 0),
+        'failed-build': ('iF  0.0.1-1', 0),
+        'failed-install': ('iF  0.0.1-1', 0),
+        'failed-index': ('iF  0.0.1-1', 4),
+        'failed-inventory': ('iF  0.0.1-1', 4),
+        'failed-remove': ('ri  0.0.1-1', 4),
+        'failed-purge': ('pi  0.0.1-1', 4),
+        'failed-remove-index': ('ri  0.0.1-1', 0),
+        'legacy-partial': ('iF  0.0.0-1', 0),
+        'legacy-remove-failed': ('pi  0.0.0-1', 2),
     }
     require(name in expected, 'unsupported matrix state oracle: '+name)
     return (status, len(modules)) == expected[name]
@@ -160,7 +160,7 @@ def starting_context(case_id, step):
 def command_is(case_id, step):
     number = int(case_id)
     if number in (17, 19):
-        prefix = ['python3', '/source/scripts/package_preflight.py', 'unpack'] if number == 17 else ['sh', '/tmp/old-control/preinst', 'upgrade', '0.99.0-1']
+        prefix = ['python3', '/source/scripts/package_preflight.py', 'unpack'] if number == 17 else ['sh', '/tmp/old-control/preinst', 'upgrade', '0.0.1-1']
     elif number in (68, 69):
         prefix = ['in-process', 'runtime_deployment.Files.prune_removed_directories']
     elif number == 3:

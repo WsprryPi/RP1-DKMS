@@ -322,9 +322,8 @@ does not create runtime state.
 The [package transition contract](../operations/package-lifecycle.md) requires
 read-only preflight before the package manager, exact inactive ownership, complete
 payload identity and native DKMS/cache agreement. Same-version replacement
-rebuilds every eligible installed kernel. The selected historical predecessor is
-`a1cb772107ba46f626b67af0b83a45c7b54ede78` (`0.9.0-1`); its boot/systemd
-lifecycle differs. Direct upgrade/downgrade is refused. Owning predecessor removal
+rebuilds every eligible installed kernel. The maintained synthetic predecessor is
+`0.0.0-1`; its legacy boot/systemd lifecycle differs. Direct upgrade/downgrade is refused. Owning predecessor removal
 precedes clean successor installation; rollback removes the successor before exact
 retained predecessor reinstall. No package transition restores runtime sessions,
 application state or qualification. Native kernel hooks remain distribution-owned;
@@ -402,13 +401,13 @@ authorization for their system effects. Output-inhibited administration, live
 GPIO behavior, timing, transmission, and RF are separate evidence classes and
 must not be inferred from one another.
 
-For the `0.99.0` dual-route development identity, structural compatibility also requires
+For the `0.0.1` dual-route development identity, structural compatibility also requires
 the route-specific endpoint node name emitted by the corresponding current
 overlay: `rp1-gpclk-dkms-gpio4` for route `1` or
 `rp1-gpclk-dkms-gpio20` for route `2`. Any other endpoint name is rejected even
 when its remaining properties are otherwise valid.
 
-The development build reports the route-specific `0.99.0` identities in the
+The development build reports the route-specific `0.0.1` identities in the
 [development identity contract](development-identity.md). Its exact RP1
 topology, kernel, architecture, module-version, resource, and route observations
 apply together.

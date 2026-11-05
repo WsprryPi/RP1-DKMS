@@ -2,6 +2,6 @@
 #ifndef RP1_GPCLK_VERSION_H
 #define RP1_GPCLK_VERSION_H
 
-#define RP1_GPCLK_MODULE_VERSION "0.99.0"
+#define RP1_GPCLK_MODULE_VERSION "0.0.1"
 
 #endif

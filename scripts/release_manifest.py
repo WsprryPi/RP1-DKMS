@@ -21,9 +21,9 @@ def validate_source(files):
                         (f'VERSION="{VERSION}"; DEBIAN_VERSION="{DEBIAN}"', 'scripts/rp1-gpclk-route-manager.py')]:
         require(token in text(name), 'package version mismatch: '+name)
     for name, token in (
-        ('include/rp1_gpclk/compatibility.h', '#define RP1_GPCLK_COMPATIBILITY_VERSION "0.99.0"'),
-        ('scripts/development_route_manager.py', 'value.get("renderedVersion")!="0.99.0"'),
-        ('scripts/rp1-gpclk-diagnostics.py', '"rp1_gpclk_dkms", "0.99.0"')):
+        ('include/rp1_gpclk/compatibility.h', '#define RP1_GPCLK_COMPATIBILITY_VERSION "0.0.1"'),
+        ('scripts/development_route_manager.py', 'value.get("renderedVersion")!="0.0.1"'),
+        ('scripts/rp1-gpclk-diagnostics.py', '"rp1_gpclk_dkms", "0.0.1"')):
         require(token in text(name), 'current version source mismatch: '+name)
     binding = ast.parse(text('scripts/runtime_binding.py'))
     constants = {n.targets[0].id: ast.literal_eval(n.value) for n in binding.body

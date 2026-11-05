@@ -9,7 +9,7 @@ not a target or application qualification record.
 
 ## Identities and ownership
 
-The maintained predecessor is a synthetic `0.9.0-1` lifecycle fixture. Its
+The maintained predecessor is a synthetic `0.0.0-1` lifecycle fixture. Its
 [record](../../release/lifecycle-predecessor-v1.json) binds licensed legacy
 packaging templates and their exact checksums. The builder uses current module
 source with a fixture version and an ordinary single-consumer DKMS profile.
@@ -50,7 +50,7 @@ guard **before** invoking dpkg or APT:
 
 ```sh
 sudo python3 -I /absolute/reviewed/source/scripts/package_preflight.py unpack
-sudo dpkg -i /absolute/candidate/rp1-gpclk-dkms_0.99.0-1_all.deb
+sudo dpkg -i /absolute/candidate/rp1-gpclk-dkms_0.0.1-1_all.deb
 ```
 
 Run those as separate reviewed steps. Proceed to dpkg only after a `permitted`
@@ -65,8 +65,8 @@ Python in isolated mode. It does not trust an older installed helper. Configure 
 appropriate checks before native DKMS effects.
 
 Debian invokes the outgoing prerm before the incoming preinst. Consequently a
-new package cannot prevent an old script's earlier effects. Direct `0.9.0` to
-`0.99.0` replacement is unsupported and refused; do not bypass the external
+new package cannot prevent an old script's earlier effects. Direct synthetic `0.0.0` to
+`0.0.1` replacement is unsupported and refused; do not bypass the external
 preflight by running dpkg first. The approved path is owning runtime/development
 cleanup, owning predecessor removal, then a clean successor installation.
 The old scripts copy inactive overlays into `/boot` and contain debhelper

@@ -165,8 +165,8 @@ int main(int argc, char **argv)
 		return 2;
 	}
 	compatibility_id = expected_route == RP1_GPCLK_ROUTE_GPIO4 ?
-			"v0.99.0-rp1-gpio4" :
-			"v0.99.0-rp1-gpio20";
+			"v0.0.1-rp1-gpio4" :
+			"v0.0.1-rp1-gpio20";
 	if (argc != 2) {
 		fprintf(stderr, "usage: %s finite|cancel-start|cancel-middle|cancel-boundary\n",
 			argv[0]);
@@ -196,7 +196,7 @@ int main(int argc, char **argv)
 	}
 	header(&query.header, sizeof(query));
 	if (ioctl(fd, RP1_GPCLK_IOC_QUERY, &query)) { perror("QUERY"); return 1; }
-	if (query.route != expected_route || strcmp(query.build_id, "0.99.0") ||
+	if (query.route != expected_route || strcmp(query.build_id, "0.0.1") ||
 	    strcmp(query.compatibility_id, compatibility_id) ||
 	    (query.capabilities & (RP1_GPCLK_CAP_SUBMIT_EVENTS |
 	     RP1_GPCLK_CAP_BOUNDED_DMA_CHUNKS)) !=

@@ -412,7 +412,7 @@ class Tests(unittest.TestCase):
             (database/'rp1-gpclk-dkms.md5sums').write_text(''.join(
                 hashlib.md5(name.encode(), usedforsecurity=False).hexdigest()+'  '+name+'\n' for name in names))
             files = deploy.Files()
-            with patch.object(admin, 'run', return_value='install ok installed\n0.99.0-1'), \
+            with patch.object(admin, 'run', return_value='install ok installed\n0.0.1-1'), \
                  patch.object(admin, 'safe_directory'), patch.object(admin, 'read_regular', side_effect=lambda p, limit: Path(p).read_bytes()), \
                  patch.object(deploy.package_preflight, 'OWNER_UID', os.geteuid()):
                 baseline = files.packaged_baseline(root)

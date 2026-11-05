@@ -47,7 +47,7 @@ engineering test client. Start with [use an installed system](getting-started.md
 
 ## Software and support limits
 
-The development source version is **0.99.0**, Debian package **0.99.0-1**;
+The development source version is **0.0.1**, Debian package **0.0.1-1**;
 it is not a published release.
 Neutral activation creates the route-manager group if absent, including when
 Debian package configuration has not run. Existing group membership and numeric

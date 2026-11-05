@@ -12,7 +12,7 @@ DROPIN="/etc/systemd/system/rp1-gpclk-route-manager@.service.d/90-source-develop
 UNIT="rp1-gpclk-route-manager@source-development-status.service"
 RECORD="/var/lib/rp1-gpclk-dkms/development/route-manager.json"
 PACKAGE_PATHS=("/usr/sbin/rp1-gpclk-route-manager","/usr/libexec/rp1-gpclk-dkms/rp1-gpclk-route-manager","/usr/lib/systemd/system/rp1-gpclk-route-manager@.service")
-COMPAT={"gpio4":"v0.99.0-rp1-gpio4","gpio20":"v0.99.0-rp1-gpio20"}
+COMPAT={"gpio4":"v0.0.1-rp1-gpio4","gpio20":"v0.0.1-rp1-gpio20"}
 
 class Failure(RuntimeError): pass
 def root(path:str)->pathlib.Path:
@@ -60,7 +60,7 @@ def manifest(path:pathlib.Path,route:str,kernel:str)->dict:
     value=load(path)
     if (value.get("schema")!=MANIFEST_SCHEMA or value.get("classification")!="source-development" or value.get("qualification") is not False or
             value.get("sourceState")!="clean" or value.get("targetKernel")!=kernel or value.get("route")!=route or
-            value.get("renderedVersion")!="0.99.0" or not re.fullmatch(r"[0-9a-f]{40}",str(value.get("sourceCommit","")))): raise Failure("development manifest identity differs")
+            value.get("renderedVersion")!="0.0.1" or not re.fullmatch(r"[0-9a-f]{40}",str(value.get("sourceCommit","")))): raise Failure("development manifest identity differs")
     return value
 def package_inventory()->list[dict]:
     result=[]
@@ -114,7 +114,7 @@ def install(args:argparse.Namespace)->dict:
         target["directory"].mkdir(parents=True,mode=0o755)
         shutil.copyfile(executable,target["executable"]); target["executable"].chmod(0o755)
         shutil.copyfile(args.module_manifest,target["manifest"]); target["manifest"].chmod(0o644)
-        binding={"schema":SCHEMA,"classification":"Experimental/source-development","qualification":False,"sourceCommit":commit,"moduleSourceCommit":source["sourceCommit"],"sourceManifest":str(target["manifest"]),"sourceManifestSha256":digest(target["manifest"]),"executable":str(target["executable"]),"executableSha256":digest(target["executable"]),"adoptionRecord":str(target["adoption"]),"module":"rp1_gpclk_dkms","moduleVersion":"0.99.0","uapiSha256":source["uapiIdentity"]["sha256"],"kernel":args.kernel,"route":args.route,"compatibilityId":COMPAT[args.route]}
+        binding={"schema":SCHEMA,"classification":"Experimental/source-development","qualification":False,"sourceCommit":commit,"moduleSourceCommit":source["sourceCommit"],"sourceManifest":str(target["manifest"]),"sourceManifestSha256":digest(target["manifest"]),"executable":str(target["executable"]),"executableSha256":digest(target["executable"]),"adoptionRecord":str(target["adoption"]),"module":"rp1_gpclk_dkms","moduleVersion":"0.0.1","uapiSha256":source["uapiIdentity"]["sha256"],"kernel":args.kernel,"route":args.route,"compatibilityId":COMPAT[args.route]}
         atomic(target["binding"],canonical(binding),0o644)
         dropin=("# SPDX-License-Identifier: MIT\n[Service]\nExecStart=\n"+f"ExecStart={target['executable']}\n"+f"Environment=RP1_GPCLK_SOURCE_DEVELOPMENT_BINDING={target['binding']}\n").encode()
         atomic(target["dropin"],dropin,0o644); systemctl("daemon-reload"); systemctl("restart","rp1-gpclk-route-manager.socket")

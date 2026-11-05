@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def payload_sources(root=ROOT):
-    prefix = 'usr/src/rp1-gpclk-dkms-0.99.0/'
+    prefix = 'usr/src/rp1-gpclk-dkms-0.0.1/'
     names = ['Kbuild', 'Makefile', 'include/uapi/linux/rp1_gpclk.h',
              'include/uapi/linux/rp1_route_admin.h', 'controller/main.c',
              'controller/consumer.h', 'controller/state.h',
@@ -25,7 +25,7 @@ def payload_sources(root=ROOT):
         'usr/libexec/rp1-gpclk-dkms/package_signatures.py': 'scripts/package_signatures.py',
         'usr/libexec/rp1-gpclk-dkms/rp1-gpclk-route-manager': 'scripts/rp1-gpclk-route-manager.py',
         'usr/sbin/rp1-gpclk-route-manager': 'scripts/rp1-gpclk-route-manager.py',
-        'usr/share/rp1-gpclk-dkms/0.99.0/rp1-gpclk-route-manager.schema.json': 'schema/rp1-gpclk-route-manager.schema.json',
+        'usr/share/rp1-gpclk-dkms/0.0.1/rp1-gpclk-route-manager.schema.json': 'schema/rp1-gpclk-route-manager.schema.json',
         'usr/share/doc/rp1-gpclk-dkms/route-manager.md': 'engineering/contracts/route-manager.md',
     })
     for name in ('rp1-gpclk-route-manager.socket', 'rp1-gpclk-route-manager@.service'):
@@ -42,7 +42,7 @@ def render_dkms(text):
     if (text.count('MAKE[0]="make KERNEL_BUILD=${kernel_source_dir}"') != 1 or
             'BUILT_MODULE_NAME[1]' in text):
         raise ValueError('DKMS build profile differs')
-    text = text.replace('#MODULE_VERSION#', '0.99.0')
+    text = text.replace('#MODULE_VERSION#', '0.0.1')
     text = text.replace('MAKE[0]="make KERNEL_BUILD=${kernel_source_dir}"',
                         'MAKE[0]="make KERNEL_BUILD=${kernel_source_dir} RP1_RUNTIME_CONTROLLER=1"')
     text += ('\nBUILT_MODULE_NAME[1]="rp1_route_controller"\n'
@@ -59,7 +59,7 @@ def stage(destination):
         shutil.copyfile(ROOT/source, path)
         path.chmod(0o755 if target.endswith('/rp1-gpclk-route-manager') or
                    target.startswith('usr/libexec/rp1-gpclk-dkms/') else 0o644)
-    dkms = destination/'usr/src/rp1-gpclk-dkms-0.99.0/dkms.conf'
+    dkms = destination/'usr/src/rp1-gpclk-dkms-0.0.1/dkms.conf'
     dkms.write_text(render_dkms((ROOT/'dkms.conf').read_text()))
     dkms.chmod(0o644)
 

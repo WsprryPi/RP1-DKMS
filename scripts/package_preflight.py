@@ -12,7 +12,7 @@ import sys
 OWNER_UID = 0  # Internal fixture seam; never an environment or CLI override.
 KERNEL = re.compile(r'[0-9]+\.[0-9]+\.[0-9]+\+rpt-rpi-(?:2712|v8)')
 PACKAGE = 'rp1-gpclk-dkms'
-VERSION = '0.99.0'
+VERSION = '0.0.1'
 
 
 def present(path):
@@ -245,7 +245,7 @@ def framework(root):
     return values
 
 
-def module_elf(path, version='0.99.0'):
+def module_elf(path, version='0.0.1'):
     import bz2
     import gzip
     import io
@@ -300,11 +300,11 @@ def module_ownership(root):
             if identity in seen:
                 raise ValueError('duplicate compressed provider module preserved')
             seen.add(identity)
-            source = base/'0.99.0/source'
+            source = base/'0.0.1/source'
             if (not source.is_symlink() or source.resolve() !=
-                    (root/'usr/src/rp1-gpclk-dkms-0.99.0').resolve()):
+                    (root/'usr/src/rp1-gpclk-dkms-0.0.1').resolve()):
                 raise ValueError('provider module has no current DKMS source ownership')
-            cached = list((base/'0.99.0'/parts[0]).glob('*/module/'+name+'.ko*'))
+            cached = list((base/'0.0.1'/parts[0]).glob('*/module/'+name+'.ko*'))
             if len(cached) != 1 or cached[0].is_symlink() or module_elf(path) != module_elf(cached[0]):
                 raise ValueError('foreign or modified provider module preserved')
 

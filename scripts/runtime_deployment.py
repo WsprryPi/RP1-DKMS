@@ -142,8 +142,8 @@ class Files:
             return {}
         status = admin.run(('/usr/bin/dpkg-query', '-W', '-f=${Status}\n${Version}',
                             'rp1-gpclk-dkms'))
-        if status != 'install ok installed\n0.99.0-1':
-            raise ValueError('passive package baseline requires exact installed 0.99.0-1')
+        if status != 'install ok installed\n0.0.1-1':
+            raise ValueError('passive package baseline requires exact installed 0.0.1-1')
         owned = package_preflight.payload_ownership(root, complete=True)
         names = ('usr/lib/systemd/system/rp1-gpclk-route-manager.socket',
                  'usr/lib/systemd/system/rp1-gpclk-route-manager@.service',

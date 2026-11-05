@@ -33,10 +33,10 @@
       "const": "WsprryPi/RP1-DKMS"
     },
     "productVersion": {
-      "const": "0.99.0"
+      "const": "0.0.1"
     },
     "debianVersion": {
-      "const": "0.99.0-1"
+      "const": "0.0.1-1"
     },
     "dkmsModule": {
       "const": "rp1-gpclk-dkms"
@@ -51,7 +51,7 @@
       "const": "release"
     },
     "releaseTag": {
-      "const": "v0.99.0"
+      "const": "v0.0.1"
     },
     "sourceCommit": {
       "type": "string",
@@ -70,7 +70,7 @@
       ],
       "properties": {
         "path": {
-          "const": "usr/src/rp1-gpclk-dkms-0.99.0/include/uapi/linux/rp1_gpclk.h"
+          "const": "usr/src/rp1-gpclk-dkms-0.0.1/include/uapi/linux/rp1_gpclk.h"
         },
         "sha256": {
           "type": "string",
@@ -91,7 +91,7 @@
           "const": "rp1-gpclk-dkms"
         },
         "filename": {
-          "const": "rp1-gpclk-dkms_0.99.0-1_all.deb"
+          "const": "rp1-gpclk-dkms_0.0.1-1_all.deb"
         },
         "sha256": {
           "type": "string",

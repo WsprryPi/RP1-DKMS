@@ -37,12 +37,12 @@ def test_render() -> None:
                    for reference in schema_references)
         assert manifest["classification"] == "source-development" and manifest["qualification"] is False
         assert manifest["moduleName"] == "rp1_gpclk_dkms"
-        assert manifest["versionIdentity"]["moduleVersion"] == "0.99.0"
+        assert manifest["versionIdentity"]["moduleVersion"] == "0.0.1"
         assert manifest["versionIdentity"]["path"] == "include/rp1_gpclk/version.h"
         assert manifest["versionIdentity"]["sha256"] == DEV.sha256(output / "include/rp1_gpclk/version.h")
         assert [item["operation"] for item in manifest["transformations"]] == ["replace-module-version-placeholder","relax-development-kernel-name-filter"]
         assert manifest["changedFiles"] == ["dkms.conf"]
-        assert 'PACKAGE_VERSION="0.99.0"' in (output / "dkms.conf").read_text()
+        assert 'PACKAGE_VERSION="0.0.1"' in (output / "dkms.conf").read_text()
         assert 'BUILD_EXCLUSIVE_KERNEL=".*"' in (output / "dkms.conf").read_text()
         assert 'PACKAGE_VERSION="#MODULE_VERSION#"' not in (output / "dkms.conf").read_text()
         assert not (source / "DEVELOPMENT_MANIFEST.json").exists()
@@ -98,7 +98,7 @@ def test_false_qualification_and_cli() -> None:
     assert '"releaseQualified": False' in source and '"classification": "Experimental"' in source
     preflight = command(str(ROOT / "scripts/development-preflight"), "--source", str(ROOT))
     identity = json.loads(preflight.stdout)
-    assert identity["moduleVersion"] == "0.99.0"
+    assert identity["moduleVersion"] == "0.0.1"
     assert identity["versionSource"] == "include/rp1_gpclk/version.h"
     assert identity["versionSourceSha256"] == DEV.sha256(ROOT / identity["versionSource"])
     for script in ("development-preflight", "development-install", "development-enroll", "development-module",
@@ -121,18 +121,18 @@ def test_controlled_lifecycle() -> None:
 case "$1" in
  install) mkdir -p "$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$7/updates/dkms"; printf '\\177ELFfake-development-module' >"$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$7/updates/dkms/rp1_gpclk_dkms.ko" ;;
  remove) rm -f "$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$RP1_TEST_KERNEL/updates/dkms/rp1_gpclk_dkms.ko" ;;
- status) [ -d "$RP1_GPCLK_DEVELOPMENT_ROOT/usr/src/rp1-gpclk-dkms-0.99.0" ] || exit 0; printf 'rp1-gpclk-dkms/0.99.0, %s, installed\\n' "$RP1_TEST_KERNEL" ;;
+ status) [ -d "$RP1_GPCLK_DEVELOPMENT_ROOT/usr/src/rp1-gpclk-dkms-0.0.1" ] || exit 0; printf 'rp1-gpclk-dkms/0.0.1, %s, installed\\n' "$RP1_TEST_KERNEL" ;;
 esac
 ''')
         executable(tools/"modinfo", '''
 field=$2
-case "$field" in name) echo rp1_gpclk_dkms;; version) echo 0.99.0;; vermagic) echo "$RP1_TEST_KERNEL SMP mod_unload aarch64";; signer|sig_key|sig_hashalgo) :;; esac
+case "$field" in name) echo rp1_gpclk_dkms;; version) echo 0.0.1;; vermagic) echo "$RP1_TEST_KERNEL SMP mod_unload aarch64";; signer|sig_key|sig_hashalgo) :;; esac
 ''')
         executable(tools/"depmod", ":\n")
         executable(tools/"modprobe", '''
 if [ "${1:-}" = -r ]; then rm -rf "$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms"; exit 0; fi
 mkdir -p "$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/parameters"
-echo 0.99.0 >"$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/version"
+echo 0.0.1 >"$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/version"
 case "$2" in output_inhibit=1) echo Y;; *) echo N;; esac >"$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/parameters/output_inhibit"
 ''')
         environment={**os.environ,"RP1_GPCLK_DEVELOPMENT_ROOT":str(fake_root),"RP1_GPCLK_DEVELOPMENT_TEST_ROOT":"1","RP1_TEST_KERNEL":kernel,
@@ -240,14 +240,14 @@ case "$2" in output_inhibit=1) echo Y;; *) echo N;; esac >"$RP1_GPCLK_DEVELOPMEN
         enrolled=command(str(source/"scripts/development-enroll"),"--manifest",str(manifest),"--route","gpio4","--kernel",kernel,env=environment)
         assert enrolled.returncode==0,enrolled.stderr
         enrollment=json.loads(enrolled.stdout)
-        assert enrollment["record"]["moduleVersion"]=="0.99.0" and enrollment["record"]["qualification"] is False
+        assert enrollment["record"]["moduleVersion"]=="0.0.1" and enrollment["record"]["qualification"] is False
         removed=command(str(source/"scripts/development-enroll"),"--remove","--manifest",str(manifest),"--route","gpio4","--kernel",kernel,env=environment)
         assert removed.returncode==0,removed.stderr
         unloaded=command(str(source/"scripts/development-module"),"unload","--manifest",str(manifest),env=environment)
         assert unloaded.returncode==0,unloaded.stderr
         rolled=command(str(source/"scripts/development-rollback"),"--record",str(replacement/"ROLLBACK.json"),env=environment)
         assert rolled.returncode==0,rolled.stderr
-        assert not (fake_root/f"usr/src/rp1-gpclk-dkms-0.99.0").exists()
+        assert not (fake_root/f"usr/src/rp1-gpclk-dkms-0.0.1").exists()
 
 
 def main() -> None:

@@ -59,7 +59,7 @@ def _validate_snapshot(candidate, commit, release=False):
     import re
     require(re.findall(br'^#define RP1_GPCLK_MODULE_VERSION "([^"]+)"$',
         files['include/rp1_gpclk/version.h'][1], re.M) == [VERSION.encode()], 'source module version mismatch')
-    require(b'#define RP1_GPCLK_COMPATIBILITY_VERSION "0.99.0"' in files['include/rp1_gpclk/compatibility.h'][1],
+    require(b'#define RP1_GPCLK_COMPATIBILITY_VERSION "0.0.1"' in files['include/rp1_gpclk/compatibility.h'][1],
             'source compatibility version mismatch')
     require(read_json(files['uapi-identity.json'][1])['sha256'] ==
             sha(files['include/uapi/linux/rp1_gpclk.h'][1]), 'source UAPI identity mismatch')
@@ -111,7 +111,7 @@ def _validate_snapshot(candidate, commit, release=False):
                 'UAPI digest mismatch')
     require(manifest['uapi']['sha256'] == member_map[manifest['uapi']['path']]['sha256'], 'manifest UAPI mismatch')
     dkms = member_map[prefix+'dkms.conf']['bytes'].decode()
-    for token in ('PACKAGE_VERSION="0.99.0"', 'BUILT_MODULE_NAME[0]="rp1_gpclk_dkms"',
+    for token in ('PACKAGE_VERSION="0.0.1"', 'BUILT_MODULE_NAME[0]="rp1_gpclk_dkms"',
                   'BUILT_MODULE_NAME[1]="rp1_route_controller"', 'RP1_RUNTIME_CONTROLLER=1'):
         require(token in dkms, 'DKMS/module/controller identity mismatch')
     require('#MODULE_VERSION#' not in dkms, 'unresolved DKMS placeholder')

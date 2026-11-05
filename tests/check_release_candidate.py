@@ -223,13 +223,15 @@ class FormatTests(unittest.TestCase):
             files[name] = (0o644, (ROOT/name).read_bytes())
         validate_source(files)
         for name, original, substitution in (
-            ('include/rp1_gpclk/version.h', b'0.99.0', b'0.9.0'),
-            ('include/rp1_gpclk/version.h', b'0.99.0', b'1.0.0'),
-            ('include/rp1_gpclk/version.h', b'0.99.0', b'1.0.1'),
-            ('include/rp1_gpclk/version.h', b'0.99.0', b'1.0.2'),
-            ('include/rp1_gpclk/compatibility.h', b'v0.99.0-rp1-gpio4', b'v1.1.2-rp1-gpio4'),
-            ('scripts/runtime_binding.py', b'0.99.0', b'1.1.1'),
-            ('release/wsprrypi-consumer-contract.json', b'rp1-gpclk-dkms_0.99.0-1_all.deb', b'rp1-gpclk-dkms_1.0.0-1_all.deb'),
+            ('include/rp1_gpclk/version.h', b'0.0.1', b'0.0.0'),
+            ('include/rp1_gpclk/version.h', b'0.0.1', b'0.99.0'),
+            ('include/rp1_gpclk/version.h', b'0.0.1', b'0.9.0'),
+            ('include/rp1_gpclk/version.h', b'0.0.1', b'1.0.0'),
+            ('include/rp1_gpclk/version.h', b'0.0.1', b'1.0.1'),
+            ('include/rp1_gpclk/version.h', b'0.0.1', b'1.0.2'),
+            ('include/rp1_gpclk/compatibility.h', b'v0.0.1-rp1-gpio4', b'v1.1.2-rp1-gpio4'),
+            ('scripts/runtime_binding.py', b'0.0.1', b'1.1.1'),
+            ('release/wsprrypi-consumer-contract.json', b'rp1-gpclk-dkms_0.0.1-1_all.deb', b'rp1-gpclk-dkms_1.0.0-1_all.deb'),
             ('include/uapi/linux/rp1_gpclk.h', b'#define', b'#define @VERSION@'),
             ('overlays/rp1-gpclk-gpio4.dts', b'"gpio4"', b'"gpio20"')):
             changed = dict(files)
@@ -274,7 +276,7 @@ class LinuxTests(unittest.TestCase):
         contract = json.loads((self.source/'release/wsprrypi-consumer-contract.json').read_text())
         self.assertEqual(set(manifest), set(contract['manifestKeys']))
         self.assertEqual(manifest['releaseChannel'], contract['stableChannel'])
-        self.assertEqual(manifest['releaseTag'], 'v0.99.0')
+        self.assertEqual(manifest['releaseTag'], 'v0.0.1')
         self.assertFalse(c.read_json((self.candidate/c.METADATA).read_bytes())['published'])
         self.assertEqual({p.name for p in self.candidate.iterdir()}, c.ASSETS)
         self.assertEqual(c.git(self.source, 'status', '--porcelain=v1'), b'')
@@ -381,7 +383,7 @@ class LinuxTests(unittest.TestCase):
         files = c.source_files(self.source, self.commit)
         tree = c.git(self.source, 'rev-parse', self.commit+'^{tree}').decode().strip()
         timestamp = c.epoch(self.source, self.commit)
-        prefix = 'usr/src/rp1-gpclk-dkms-0.99.0/'
+        prefix = 'usr/src/rp1-gpclk-dkms-0.0.1/'
         for case in ('control-version', 'dkms-controller', 'uapi', 'overlay', 'omission', 'unexpected'):
             with self.subTest(case=case), tempfile.TemporaryDirectory(dir=self.base) as temporary:
                 root = Path(temporary)
@@ -391,7 +393,7 @@ class LinuxTests(unittest.TestCase):
                 c.command(['dpkg-deb', '--raw-extract', str(candidate/c.DEB), str(unpack)])
                 if case == 'control-version':
                     path = unpack/'DEBIAN/control'
-                    path.write_text(path.read_text().replace('Version: 0.99.0-1', 'Version: 0.9.0-1'))
+                    path.write_text(path.read_text().replace('Version: 0.0.1-1', 'Version: 0.9.0-1'))
                 elif case == 'dkms-controller':
                     path = unpack/prefix/'dkms.conf'
                     path.write_text(path.read_text().replace('BUILT_MODULE_NAME[1]="rp1_route_controller"',
@@ -432,7 +434,7 @@ class LinuxTests(unittest.TestCase):
             lambda v: v.update(sourceCommit='0'*40),
             lambda v: v.update(productVersion='0.9.0'),
             lambda v: v.update(releaseChannel='development'),
-            lambda v: v.update(releaseTag='v0.99.0-rc.1'),
+            lambda v: v.update(releaseTag='v0.0.1-rc.1'),
             lambda v: v['package'].update(filename='rp1-gpclk-dkms_0.9.0-1_all.deb'),
             lambda v: v['package'].update(sha256='0'*64),
             lambda v: v['uapi'].update(sha256='0'*64),
