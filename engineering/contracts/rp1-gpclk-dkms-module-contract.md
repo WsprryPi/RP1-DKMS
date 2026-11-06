@@ -435,7 +435,7 @@ compatibility, provenance, licensing, and security metadata. The source
 version, tag, Debian version, DKMS version, module version, UAPI, package, and
 release metadata must agree according to the release policy.
 
-The current source is development software, not a published release. The
+Version `1.0.0-rc.1` is a prerelease for evaluation. The
 [candidate procedure](../operations/release-candidate.md) defines exact clean-source
 builds, inventories, checksums, and independent reconstruction. The package owns
 both interlocked modules; neither is loaded at installation. Both route overlays

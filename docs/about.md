@@ -48,7 +48,7 @@ engineering test client. Start with the procedure in
 
 ## Software and support limits
 
-This is development source, not a published release.
+Version `1.0.0-rc.1` is a prerelease for evaluation.
 Neutral activation creates the route-manager group if absent, including when
 Debian package configuration has not run. Existing group membership and numeric
 identity are preserved. This source has distinct package, module, and route identities. Evidence for
