@@ -39,7 +39,7 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 from provider_identity import describe, validate as validate_identity
-from version_identity import compare as compare_versions
+from version_identity import compare as compare_versions, package_filename
 
 
 LEGACY_REPOSITORY = "WsprryPi/RP1-GPCLK-DKMS"
@@ -418,7 +418,7 @@ def validate_manifest(manifest: Any, *, tag: str, tag_commit: str) -> dict[str, 
     require(isinstance(package, dict), "manifest package must be an object")
     require_exact_keys(package, {"name", "filename", "sha256"}, "manifest package")
     require(package["name"] == PACKAGE_NAME, "manifest package name is incompatible")
-    expected_filename = f"{PACKAGE_NAME}_{manifest['debianVersion']}_all.deb"
+    expected_filename = package_filename(manifest['debianVersion'])
     require(package["filename"] == expected_filename, "manifest package filename and Debian version differ")
     require(isinstance(package["sha256"], str) and SHA256.fullmatch(package["sha256"]), "manifest package SHA-256 is invalid")
     uapi = manifest["uapi"]

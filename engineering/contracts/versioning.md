@@ -25,6 +25,12 @@ must have nondecreasing SemVer precedence and increasing Debian order. Ordering 
 SemVer precedence identifies a replacement, subject to native Debian downgrade
 ordering. Build metadata is never treated as a SemVer precedence component.
 
+Published Debian package filenames replace the native version's `~` with `.`
+because GitHub normalizes that character in release asset names. Package control
+metadata retains `~` and its Debian ordering. The builder verifies the native
+filename before copying the unchanged bytes to the public filename; manifests,
+checksums, and consumers use that public name. Stable filenames are unchanged.
+
 Before dpkg or APT, run the incoming reviewed source's read-only package guard
 with `unpack --package /absolute/verified/PACKAGE.deb`. It authenticates outgoing
 ownership, inactivity, module/cache agreement, repository, passive lifecycle,

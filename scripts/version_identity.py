@@ -83,9 +83,14 @@ def identity():
     return from_header(path.read_text())
 
 
+def package_filename(debian):
+    """Public asset name; GitHub replaces Debian's prerelease tilde with a dot."""
+    return f'{PACKAGE}_{debian.replace("~", ".")}_all.deb'
+
+
 VERSION, DEBIAN = identity()
 COMPATIBILITY = {route: f'v{VERSION}-rp1-{route}' for route in ('gpio4', 'gpio20')}
-DEB = f'{PACKAGE}_{DEBIAN}_all.deb'
+DEB = package_filename(DEBIAN)
 
 
 def debian_compare(left, right):

@@ -52,7 +52,9 @@ def build_once(files, commit, tree, timestamp, output, release=False):
         command(['dpkg-buildpackage', '--no-sign', '-b'], cwd=source,
                 env=build_environment(timestamp))
         packages = sorted(Path(temporary).glob('*.deb'))
-        require([p.name for p in packages] == [DEB], 'exactly one canonical Debian package required')
+        from version_identity import PACKAGE, DEBIAN
+        require([p.name for p in packages] == [f'{PACKAGE}_{DEBIAN}_all.deb'],
+                'exactly one canonical Debian package required')
         output.mkdir()
         (output/DEB).write_bytes(packages[0].read_bytes())
         (output/SOURCE).write_bytes(source_archive(files, timestamp))

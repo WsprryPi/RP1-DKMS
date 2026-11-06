@@ -434,6 +434,9 @@ A release is tagged, checksummed, reproducible from source, and accompanied by
 compatibility, provenance, licensing, and security metadata. The source
 version, tag, Debian version, DKMS version, module version, UAPI, package, and
 release metadata must agree according to the release policy.
+Public package filenames use the GitHub-safe projection defined by the
+[version identity contract](versioning.md); native Debian control versions
+retain prerelease ordering.
 
 Version `1.0.0-rc.1` is a prerelease for evaluation. The
 [candidate procedure](../operations/release-candidate.md) defines exact clean-source

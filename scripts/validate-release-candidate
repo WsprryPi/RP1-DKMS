@@ -212,7 +212,8 @@ def _validate_snapshot(candidate, commit, release=False):
         prepare_debian(source_dir)
         command(['dpkg-buildpackage', '--no-sign', '-b'], cwd=source_dir, env=build_environment(timestamp))
         packages = list(Path(temporary).glob('*.deb'))
-        require([p.name for p in packages] == [DEB] and packages[0].read_bytes() == (candidate/DEB).read_bytes(),
+        require([p.name for p in packages] == [f'{PACKAGE}_{DEBIAN}_all.deb'] and
+                packages[0].read_bytes() == (candidate/DEB).read_bytes(),
                 'package not reproducible from exact source/environment')
     return {'status': 'PASS', 'classification': classification, 'published': False,
             'sourceCommit': commit, 'sourceTree': tree, 'independentlyRebuilt': True}

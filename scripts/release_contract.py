@@ -16,10 +16,9 @@ import time
 import subprocess
 import tarfile
 
-from version_identity import VERSION, DEBIAN
+from version_identity import VERSION, DEBIAN, DEB
 PACKAGE = 'rp1-gpclk-dkms'
 SOURCE = f'{PACKAGE}-{VERSION}.tar.gz'
-DEB = f'{PACKAGE}_{DEBIAN}_all.deb'
 MANIFEST = 'rp1-gpclk-dkms-installation-manifest-v1.json'
 METADATA = 'release-metadata.json'
 COMPATIBILITY = 'rp1-gpclk-compatibility-manifest.json'

@@ -38,7 +38,7 @@ PACKAGE = 'rp1-gpclk-dkms'
 from version_identity import VERSION, DEBIAN, DEB as PACKAGE_FILE, expand
 NAMES = ('rp1_gpclk_dkms', 'rp1_route_controller')
 OUT = Path('/results')
-DEB = Path(f'/candidate/rp1-gpclk-dkms_{DEBIAN}_all.deb')
+DEB = Path('/candidate') / PACKAGE_FILE
 OLD = Path('/predecessor/rp1-gpclk-dkms_0.0.0-1_all.deb')
 KERNELS = ('6.18.50+rpt-rpi-2712', '6.18.50+rpt-rpi-v8')
 STEPS = []

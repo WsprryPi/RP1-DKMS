@@ -273,6 +273,16 @@ class MigrationRepositoryTests(RunnerFixtures, unittest.TestCase):
             plan.pop("providerRepository"); (state/"plan.json").write_text(json.dumps(plan))
             self.assertEqual(MOD.load_plan(state), plan)
 
+    def test_prerelease_manifest_uses_public_filename_and_native_control_version(self):
+        self.select_new()
+        manifest = valid_manifest('2.1.0-rc.2')
+        manifest['debianVersion'] = '2.1.0~rc.2-1'
+        manifest['package']['filename'] = 'rp1-gpclk-dkms_2.1.0.rc.2-1_all.deb'
+        MOD.validate_manifest(manifest, tag='v2.1.0-rc.2', tag_commit='a'*40)
+        manifest['package']['filename'] = 'rp1-gpclk-dkms_2.1.0~rc.2-1_all.deb'
+        with self.assertRaisesRegex(MOD.ContractError, 'filename'):
+            MOD.validate_manifest(manifest, tag='v2.1.0-rc.2', tag_commit='a'*40)
+
 
 class CurrentDefaultTests(unittest.TestCase):
     def test_operational_cli_refuses_old_repository(self):

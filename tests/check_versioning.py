@@ -64,6 +64,14 @@ class Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 identity.debian_version('2.3.4', revision)
 
+    def test_public_package_filename_preserves_native_version(self):
+        native = identity.debian_version('2.3.4-rc.2+build.7', '3')
+        self.assertEqual(native, '2.3.4~rc.2+build.7-3')
+        self.assertEqual(identity.package_filename(native),
+                         'rp1-gpclk-dkms_2.3.4.rc.2+build.7-3_all.deb')
+        self.assertEqual(identity.package_filename('2.3.4-3'),
+                         'rp1-gpclk-dkms_2.3.4-3_all.deb')
+
     def test_standalone_identity_without_checkout(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -92,7 +100,7 @@ class Tests(unittest.TestCase):
                 capture_output=True, text=True, check=True)
             value = json.loads(result.stdout)
             self.assertEqual(value[:4], ['7.12.3-rc.4', '7.12.3~rc.4-8',
-                'rp1-gpclk-dkms_7.12.3~rc.4-8_all.deb', '7.12.3-rc.4'])
+                'rp1-gpclk-dkms_7.12.3.rc.4-8_all.deb', '7.12.3-rc.4'])
             self.assertEqual(value[4]['gpio4'], 'v7.12.3-rc.4-rp1-gpio4')
             self.assertIn('PACKAGE_VERSION="7.12.3-rc.4"', value[5])
 
