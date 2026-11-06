@@ -91,7 +91,7 @@ def main():
         raise
     print(json.dumps({'status': 'PASS', 'sourceCommit': args.source_commit,
                       'packageSha256': sha(outputs[0]), 'published': False,
-                      'packageScriptsPassive': False}))
+                      'packageScriptsPassive': record['packageScriptsPassive']}))
 
 
 if __name__ == '__main__':
