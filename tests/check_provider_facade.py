@@ -41,6 +41,7 @@ class Tests(unittest.TestCase):
             with self.assertRaises(api.ContractError):api.strict_json(raw)
     def test_identity_generic_version_and_contradictory_route(self):
         value=identity.describe();value['productVersion']='12.34.56-rc.1+test.2'
+        value['debianVersion']='12.34.56~rc.1+test.2-1'
         value['compatibilityIdentities']={r:'v'+value['productVersion']+'-rp1-'+r for r in ('gpio4','gpio20')}
         identity.validate(value)
         value['compatibilityIdentities']['gpio4']='v0.0.1-rp1-gpio4'
@@ -49,7 +50,7 @@ class Tests(unittest.TestCase):
         for field in identity.describe():
             value=identity.describe();del value[field]
             with self.assertRaises(ValueError):identity.validate(value)
-        for field,value in [('schemaVersion',True),('capabilities',[]),('uapiSha256',{})]:
+        for field,value in [('schemaVersion',True),('capabilities',[]),('uapiSha256',{}),('debianVersion','99.0.0-1'),('productVersion','9'*49+'.0.0')]:
             data=identity.describe();data[field]=value
             with self.assertRaises(ValueError):identity.validate(data)
     def test_stale_plan_refused_before_any_native_effect(self):

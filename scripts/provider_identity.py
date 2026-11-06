@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 import sys
 sys.dont_write_bytecode = True
-from version_identity import from_header, parse
+from version_identity import from_header, parse, debian_version
 
 CONTRACT = 'rp1-gpclk-provider-identity-v1'
 LIFECYCLE = 'rp1-gpclk-provider-lifecycle-v1'
@@ -49,9 +49,13 @@ def validate(value, requirements=None):
             or value['repository']!='WsprryPi/RP1-DKMS' or value['module']!='rp1-gpclk-dkms'):
         raise ValueError('provider identity contract differs')
     parse(value['productVersion'])
+    if len(value['productVersion'])>48:raise ValueError('provider version exceeds UAPI identity capacity')
     if (not isinstance(value['debianVersion'],str) or len(value['debianVersion'])>128
             or not re.fullmatch(r'[0-9][0-9A-Za-z.+:~\-]*',value['debianVersion'])):
         raise ValueError('invalid native provider version')
+    revision=value['debianVersion'].rsplit('-',1)[-1]
+    if value['debianVersion']!=debian_version(value['productVersion'],revision):
+        raise ValueError('native provider version contradicts product identity')
     if value['interfaces']!=INTERFACES:
         raise ValueError('provider lifecycle/runtime interface differs')
     caps=value['capabilities']
