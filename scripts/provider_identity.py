@@ -18,7 +18,7 @@ INTERFACES = {
     'lifecycle': LIFECYCLE,
 }
 CAPABILITIES = ['route-neutral-install', 'identical-repeat', 'same-version-replace',
-                'semantic-upgrade', 'owned-remove', 'runtime-update', 'neutral-activation']
+                'semantic-upgrade', 'owned-remove', 'runtime-update', 'neutral-activation', 'release-audit']
 
 
 def read(path, maximum=1024*1024):

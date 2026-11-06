@@ -630,8 +630,8 @@ class GitHubClient:
         raise ContractError("Git tag indirection exceeds the bounded resolution limit")
 
 
-def download_release(state_dir: pathlib.Path, client: GitHubClient, runner: Runner) -> dict[str, Any]:
-    release = select_release(client.releases())
+def download_release(state_dir: pathlib.Path, client: GitHubClient, runner: Runner, *, release=None) -> dict[str, Any]:
+    release = select_release(client.releases() if release is None else [release])
     tag = str(release["tag_name"])
     assets = release_assets(release)
     package_names = sorted(name for name in assets if re.fullmatch(r"rp1-gpclk-dkms_[0-9A-Za-z.+:~-]+_all\.deb", name))
@@ -3085,10 +3085,46 @@ def lifecycle_lock():
     finally:os.close(fd)
 
 
+def verify_release(args, runner):
+    """Audit a published artifact without reading or changing installed state."""
+    state=secure_state_dir(args.state_dir)
+    client=GitHubClient(os.environ.get('GITHUB_TOKEN'))
+    release=(client.json(API_BASE+'/releases/tags/'+urllib.parse.quote(args.tag,safe=''))
+             if args.tag else select_release(client.releases()))
+    release=select_release([release])
+    if args.tag:require(release['tag_name']==args.tag,'published tag differs')
+    resolved=download_release(state,client,runner,release=release)
+    source=pathlib.Path(resolved['checkout']['path'])
+    metadata=validate_identity(describe(source),strict_json(args.requirements.read_bytes()) if args.requirements else None)
+    checksums=client.bytes(release_assets(release)[CHECKSUMS_NAME],limit=MAX_METADATA_BYTES,allow_asset_redirect=True)
+    hashes=parse_checksums(checksums)
+    assets=release_assets(release)
+    require(set(assets)==set(hashes)|{CHECKSUMS_NAME},'published asset inventory differs from checksums')
+    expected={**hashes,CHECKSUMS_NAME:sha256_bytes(checksums)}
+    for item in release['assets']:
+        name=item['name'];authoritative_asset_url(resolved['tag'],name,assets[name])
+        if item.get('digest') is not None:require(item['digest']=='sha256:'+expected[name],'published asset digest differs: '+name)
+    if args.compare_candidate is not None:
+        candidate=args.compare_candidate
+        require(candidate.is_absolute() and candidate.resolve(strict=True)==candidate and candidate.is_dir(), 'candidate directory substituted')
+        require({p.name for p in candidate.iterdir()}==set(expected),'candidate/published asset inventory differs')
+        for name,digest in expected.items():
+            path=candidate/name
+            require(path.is_file() and not path.is_symlink() and path.stat().st_size<=MAX_PACKAGE_BYTES
+                    and sha256_file(path)==digest,'candidate differs from published asset: '+name)
+        package=resolved['manifest']['package']
+        require(sha256_file(candidate/package['filename'])==package['sha256'],'published package changed during audit')
+    return {'providerIdentity':metadata,'sourceCommit':resolved['commit'],
+            'sourceTree':git_output(runner,source,'rev-parse','HEAD^{tree}'),
+            'releaseTag':resolved['tag'],'publicationVerified':True,
+            'installationPerformed':False,'candidateMatched':args.compare_candidate is not None}
+
+
 def dispatch(args):
     operation=args.command
     envelope={'schemaVersion':1,'contract':PUBLIC_CONTRACT,'operation':operation,'status':'ok'}
     if operation=='identity': return {**envelope,'providerIdentity':validate_identity(describe())}
+    if operation=='verify-release': return {**envelope,**verify_release(args,Runner(getattr(args,'debug',False)))}
     if operation in {'status','plan-status','removal-plan'}:
         if operation=='status': return {**envelope,**public_status(args.record)}
         return {**envelope,**public_plan(args)}
@@ -3173,6 +3209,11 @@ def parser() -> argparse.ArgumentParser:
         item.add_argument("--receipt", type=pathlib.Path)
     for item in (removal_update_parser, remove_parser):
         item.add_argument("--state-dir", type=pathlib.Path)
+    audit=sub.add_parser('verify-release')
+    audit.add_argument('--state-dir',type=pathlib.Path,required=True)
+    audit.add_argument('--requirements',type=pathlib.Path)
+    audit.add_argument('--tag')
+    audit.add_argument('--compare-candidate',type=pathlib.Path)
     for item in (apply_parser, update_parser, runtime_parser, removal_update_parser, remove_parser):
         item.add_argument("--plan-sha256", required=True)
     return result

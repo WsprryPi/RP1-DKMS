@@ -110,3 +110,18 @@ Development selection can use exact authoritative commits or explicitly selected
 clean local development checkouts with canonical origin and complete provenance.
 Local fixture commits remain unpublished development evidence. Installation,
 neutral administration, native lifecycle tests, and RF qualification are separate.
+
+## Non-installing release acceptance
+
+`verify-release --state-dir PRIVATE_DIRECTORY --requirements REQUIREMENTS_JSON`
+verifies a published release through the provider's artifact/source parser. The
+optional `--tag TAG` selects one eligible published release; otherwise selection
+uses the latest eligible stable release. `--compare-candidate DIRECTORY` requires
+the independent local candidate's complete asset inventory and hashes to match
+the publication. The `release-audit` capability advertises this interface.
+
+The operation writes only private caller staging data. It performs no installed
+inventory, runtime, package installation/removal, service, overlay, or module
+operation. Its public result reports source commit/tree, provider identity,
+publication verification, candidate comparison, and `installationPerformed: false`.
+A release-profile rebuild alone never establishes publication or qualification.

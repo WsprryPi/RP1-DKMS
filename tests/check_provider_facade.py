@@ -64,6 +64,30 @@ class Tests(unittest.TestCase):
             with self.assertRaisesRegex(api.ContractError,'plan digest changed'):api.dispatch(args)
             apply.assert_not_called()
 
+    def test_public_release_audit_never_accesses_installed_state_and_binds_candidate(self):
+        from argparse import Namespace
+        for changed in [False,True]:
+            with self.subTest(changed=changed),tempfile.TemporaryDirectory() as raw:
+                root=Path(raw).resolve();root.chmod(0o700);state=root/'state';state.mkdir(mode=0o700)
+                candidate=root/'candidate';candidate.mkdir()
+                payload=b'published';sha=api.sha256_bytes(payload)
+                sums=(sha+'  payload.bin\n').encode()
+                (candidate/'payload.bin').write_bytes(b'changed' if changed else payload)
+                (candidate/api.CHECKSUMS_NAME).write_bytes(sums)
+                tag='v'+identity.describe()['productVersion']
+                release={'tag_name':tag,'assets':[{'name':name,'state':'uploaded',
+                    'digest':'sha256:'+digest,'browser_download_url':api.REPOSITORY_URL.removesuffix('.git')+'/releases/download/'+tag+'/'+name}
+                    for name,digest in [('payload.bin',sha),(api.CHECKSUMS_NAME,api.sha256_bytes(sums))]]}
+                client=mock.Mock();client.json.return_value=release;client.bytes.return_value=sums
+                resolved={'tag':tag,'commit':'e'*40,'checkout':{'path':str(Path(__file__).resolve().parents[1])},
+                    'manifest':{'package':{'filename':'payload.bin','sha256':sha}}}
+                args=Namespace(command='verify-release',state_dir=state,requirements=None,tag=tag,compare_candidate=candidate)
+                with mock.patch.object(api,'GitHubClient',return_value=client),mock.patch.object(api,'select_release',return_value=release),mock.patch.object(api,'download_release',return_value=resolved),mock.patch.object(api,'git_output',return_value='f'*40),mock.patch.object(api,'existing_inventory',side_effect=AssertionError('installed state accessed')),mock.patch.object(api,'lifecycle_lock',side_effect=AssertionError('effect lock accessed')):
+                    if changed:
+                        with self.assertRaisesRegex(api.ContractError,'candidate differs'):api.dispatch(args)
+                    else:
+                        result=api.dispatch(args);self.assertTrue(result['publicationVerified']);self.assertTrue(result['candidateMatched']);self.assertIs(result['installationPerformed'],False)
+
     def test_only_created_empty_provider_directories_are_retired(self):
         with tempfile.TemporaryDirectory() as raw:
             root=Path(raw).resolve()
