@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from unittest import mock
 
 sys.dont_write_bytecode = True
 sys.path.insert(0, '/source/scripts')
@@ -76,9 +77,15 @@ def main():
         lifecycle.setup()
         def run(stage,*command,expected=0):
             return lifecycle.run(stage,list(command),expected)
+        spec=importlib.util.spec_from_file_location('provider_preflight', '/source/scripts/provider_lifecycle.py')
+        provider=importlib.util.module_from_spec(spec);sys.modules[spec.name]=provider;spec.loader.exec_module(provider)
         def preflight(version):
-            run('preflight-'+version,'python3','-I',str(sources[version]/'scripts/package_preflight.py'),
-                'unpack','--package',str(packages[version]))
+            # Synthetic version trees have no Git checkout identity. Only that
+            # authentication seam is replaced: the production caller, subprocess,
+            # package reader, CLI parser, and host-state guard all execute.
+            resolved={'checkout':{},'packagePath':str(packages[version])}
+            with mock.patch.object(provider, 'revalidate_checkout', return_value=sources[version]):
+                provider.package_preflight(resolved, 'unpack', provider.Runner())
         preflight(VERSION)
         run('install-A','dpkg','-i',str(packages[VERSION]))
         original=lifecycle.snapshot()

@@ -1523,11 +1523,14 @@ def package_preflight(resolved: Mapping[str, Any], operation: str, runner: Runne
     source = revalidate_checkout(resolved["checkout"], runner)
     guard = source / "scripts/package_preflight.py"
     require(guard.is_file() and not guard.is_symlink(), "selected source lacks package preflight")
-    run_package_preflight(guard, operation, runner)
+    run_package_preflight(guard, operation, runner, package=pathlib.Path(resolved["packagePath"]) if operation == "unpack" else None)
 
 
-def run_package_preflight(guard: pathlib.Path, operation: str, runner: Runner) -> None:
-    reply = runner.run(["python3", "-I", str(guard), operation], check=False)
+def run_package_preflight(guard: pathlib.Path, operation: str, runner: Runner, *, package: pathlib.Path | None = None) -> None:
+    command = ["python3", "-I", str(guard), operation]
+    if package is not None:
+        command.extend(["--package", str(package)])
+    reply = runner.run(command, check=False)
     value = json_result(CommandResult(reply.stdout or reply.stderr, reply.stderr, reply.returncode), "package preflight")
     require(reply.returncode == 0 and value.get("contract") == "rp1-gpclk-package-preflight-v1"
             and value.get("status") == "permitted" and value.get("operation") == operation
