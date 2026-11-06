@@ -289,6 +289,7 @@ class CurrentDefaultTests(unittest.TestCase):
                  mock.patch.object(MOD, 'runtime_residue_inventory', return_value=[]), \
                  mock.patch.object(MOD, 'prepare_development', return_value=selected) as source, \
                  mock.patch.object(MOD, 'download_release') as release_download, \
+                 mock.patch.object(MOD, 'record_digest', return_value=None), \
                  mock.patch.object(MOD, 'render_plan'):
                 self.assertEqual(MOD.main(['prepare', '--state-dir', str(state),
                     '--source-policy', 'development', '--install', 'true']), 0)
@@ -1693,6 +1694,7 @@ class ApplyPolicyTests(RunnerFixtures, unittest.TestCase):
                 return_value=["/var/lib/rp1-gpclk-dkms/runtime-admin"]), \
              mock.patch.object(MOD, "load_ownership_record",
                                return_value=(owned, mock.sentinel.identity, None)), \
+             mock.patch.object(MOD, "record_digest", return_value=None), \
              mock.patch.object(MOD, "prepare_development",
                                return_value=resolved) as resolve:
             plan = MOD.prepare(args, self.runner())
