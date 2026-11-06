@@ -65,7 +65,7 @@ clock, DMA, and pinctrl properties without interpreting phandles through a
 fixed path. These observations do not substitute for WsprryPi's requested and
 persisted route or for the route manager's configured and reconciled state.
 
-The legacy summary distinguishes healthy `Qualified`, healthy `Experimental`,
+The diagnostic summary distinguishes healthy `Qualified`, healthy `Experimental`,
 build-compatible but live-disabled, unavailable, rejected, and indeterminate
 because required inspection lacked privileges. Run as an administrator only
 when support needs fields reported as permission-denied; elevated inspection

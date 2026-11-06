@@ -51,9 +51,9 @@ physical connection.
 
 ## Does switching require a reboot?
 
-The WsprryPi-managed runtime workflow switches in the current boot. An older
-boot-configured profile follows a different reboot/reconciliation procedure.
-Do not mix profiles to work around a failure.
+No. The WsprryPi-managed runtime workflow switches routes in the current boot.
+If switching fails, preserve the reported error and follow
+[troubleshooting](troubleshooting.md).
 
 ## Does a successful DKMS build prove my transmitter works?
 

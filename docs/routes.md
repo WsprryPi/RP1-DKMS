@@ -94,8 +94,3 @@ selected** status, and check that transmission remains disabled. RP1 startup
 restoration stays idle even when a general saved reboot preference would allow
 transmission; that preference is retained, not silently rewritten. After normal
 removal or a neutral installation, a reboot does not invent a GPIO selection.
-
-An older packaged route manager can instead use boot-selected overlays and
-reboot/reconciliation. Do not mix that profile with the managed runtime
-workflow described here. Ask for support if you cannot identify which profile
-owns an existing installation.

@@ -24,10 +24,9 @@ Start with the message beside **Transmit Pin** or in the route-status dialog.
 | **Route not switched** | Preflight refused the change before it began. Read the reason; do not assume a route was applied. |
 | **Recovery required**, **Mismatch**, or **Unavailable** | Preserve the complete message and [investigate](troubleshooting.md). These are not instructions to force-load a module or delete a record. |
 
-**Active** in detailed facts names the provider's reported GPIO. The managed
-runtime's successful operator message is **Route selected**. An older
-boot-configured profile can use different messages, including **Reboot required**;
-identify that installation before following a runtime switching procedure.
+**Active** in detailed facts names the provider's reported GPIO. Successful
+managed runtime switching reports **Route selected** after application
+restoration completes.
 
 ## Route facts
 

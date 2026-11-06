@@ -27,9 +27,9 @@ a terminal for administrator inspection or a reviewed recovery action.
    no route, follow [route selection](routes.md). A fresh installation with no
    route is normal. Si5351 or Pico operation does not require an RP1 route.
 
-If RP1 controls are absent, unavailable, or prompt a reboot, first identify
-your installed WsprryPi/provider version and deployment profile. Use
-[installation](installation.md) or request support; do not enable a developer
+If RP1 controls are absent or unavailable, check the installer result and
+provider readiness. Use [installation](installation.md) or request support
+with the installed WsprryPi/provider identities; do not enable a developer
 setting or install another provider just to expose a control. A `--no-web`
 installation has no web workflow; its administrator can use the
 [command-line inspection tools](command-line.md).

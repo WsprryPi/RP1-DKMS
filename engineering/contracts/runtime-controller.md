@@ -171,9 +171,9 @@ the service inhibited.
 
 ## Boundaries and validation
 
-Cooperative privileged administration is a requirement. Root can load an old
-uninstrumented consumer, edit device tree, alter a mask or force-remove modules;
-this design does not isolate itself from unrestricted root. Do not operate
+Cooperative privileged administration is a requirement. Root can load a consumer
+without the controller interlock, edit device tree, alter a mask, or force-remove
+modules; this design does not isolate itself from unrestricted root. Do not operate
 configfs/dtoverlay, install alternate modules, bind other drivers or load dependent
 overlays during a transaction. Such interference invalidates the campaign.
 

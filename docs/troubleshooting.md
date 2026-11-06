@@ -40,7 +40,7 @@ commands to make an error disappear.
 | Signing or trust was rejected | Review the certificate and target kernel policy with the administrator. A nonempty signer name does not prove trust. Do not disable enforcement. |
 | Permission denied | Execution and administrative tools require the installed ownership and access policy. Use administrator inspection when appropriate; do not broaden device permissions. |
 | Manager socket is unavailable | Collect service/socket state and installer diagnostics. Do not start an unrelated service profile or apply a second overlay. |
-| No RP1 control, or **Apply route and reboot** appears | Confirm the application version and manager profile. This handbook's normal **Switch route** procedure uses the managed runtime profile; do not mix it with a boot-configured installation. |
+| RP1 controls are absent or unavailable | Check the installer result and provider readiness. Use the [installation guidance](installation.md), or request support with the complete message and installed application/provider identities. |
 | `recovery_required` or an incomplete transaction | Preserve journals and installation records. Use owning recovery after reviewing the cause. |
 | `conflict`, mixed identity, or changed files | Stop. Identify who owns the files and current runtime. A reinstall must not overwrite foreign or modified state. |
 | Route removed but service unavailable | Keep output disabled, fix the service error, then retry the same removal. See [maintenance](maintenance.md#when-service-restoration-fails). |

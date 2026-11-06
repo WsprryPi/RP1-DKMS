@@ -89,8 +89,9 @@ workflow behavior.
 The source installer's `--build-only` still registers source and builds through
 DKMS with privilege; it is not the unprivileged direct Kbuild path. Its
 `development-rollback` removes the recorded installation and does not restore
-the retained predecessor automatically. Legacy firmware route/overlay helpers
-also have narrower ownership checks than the runtime/package workflows; review
+the retained predecessor automatically. The source-development firmware
+route/overlay helpers also have narrower ownership checks than the
+runtime/package workflows; review
 their [explicit limits](../operations/source-development.md#firmware-helper-limits)
 before including them in a target plan.
 

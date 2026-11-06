@@ -538,8 +538,8 @@ foreign, substituted, mixed, unsafe, open, or contradictory state is `conflict`.
 During an exact inverse deployment, a same-boot `recovered-inhibited` route
 journal chain may likewise be retired after the modules, endpoints, manager
 socket, and application are all verified inactive and inhibited. This remains
-retryable if an older application archived the recovered activation journal or
-an earlier retirement removed only an ordered prefix of dependent journals.
+retryable when the recovered activation journal is archived or an interrupted
+retirement has removed only an ordered prefix of dependent journals.
 Applications use the versioned [update preparation contract](runtime-update.md)
 for provider recovery and inverse deployment. The provider interprets sessions,
 generations, journals and interrupted removal; applications retain version

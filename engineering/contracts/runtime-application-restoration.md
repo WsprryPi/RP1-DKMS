@@ -52,8 +52,8 @@ the selected route is idle. Only then does the companion atomically update
 `GPIO.Transmit Pin` and `Operation.Transmit=false`. It preserves other settings,
 including `Enable on Boot`, comments and file mode. The canonical installed
 service command/configuration is checked before effects. Missing services,
-unsupported commands and old application builds require installation repair;
-they are not silently replaced.
+unsupported commands, and incompatible application builds require installation
+repair; they are not silently replaced.
 
 An owned `91-rp1-route-idle.conf` supplies the startup-only
 `WSPRRYPI_ROUTE_RESTORE_IDLE` token. WsprryPi overrides automatic transmission
@@ -153,8 +153,8 @@ as `recovery_required` and directs the caller to `restore --execute`; it never
 converts a route-only success into application readiness.
 
 Runtime-controller removal must reconcile the owned application inhibitor
-before discarding the runtime inventory or journals. If an interrupted or older
-removal has already left only the exact owned inhibitor, use
+before discarding the runtime inventory or journals. If removal has left only
+the exact owned inhibitor, use
 `scripts/runtime_inhibitor_cleanup.py inspect` to obtain a reviewed plan. The
 cleanup operation is eligible only when the canonical WsprryPi service and all
 fixed runtime-controller bindings, tools, journals, loaded modules, and endpoints
@@ -193,10 +193,10 @@ The companion remains application-owned and is not installed by DKMS, but its
 bytes are bound and reverified before runtime effects. This makes a companion
 update a new deployment identity rather than an in-place script substitution.
 
-An old `/dev/null` service mask is not automatically adopted as workflow-owned.
-Restore the canonical service installation and intentionally clear that legacy
-mask during coherent deployment. The software cannot infer whether that mask
-is now an administrator's desired state.
+An existing `/dev/null` service mask is not automatically adopted as
+workflow-owned. Deployment requires the canonical service installation;
+clearing an administrator mask requires an intentional administrator decision.
+The software cannot infer the administrator's desired state.
 
 Offline tests exercise public manager dispatch, real temporary journals and
 drop-ins, fake systemd/kernel effects, interruption at durable journal boundaries,
