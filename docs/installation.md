@@ -2,9 +2,10 @@
 
 # Install with WsprryPi
 
-This repository contains unreleased development source. The production WsprryPi
-installer does not select it. The procedures below describe the managed provider
-interfaces; installation requires separately selected, accepted source.
+Version `1.0.0-rc.1` is a prerelease for evaluation. WsprryPi independently
+controls provider selection and acceptance. The procedures below describe the
+managed provider interfaces; installation requires separately selected,
+accepted source.
 
 Use a WsprryPi version with RP1 support and its normal installer. It obtains
 the independently maintained provider, checks identities and prerequisites,
