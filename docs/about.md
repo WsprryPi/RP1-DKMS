@@ -14,7 +14,7 @@ work before cleanup.
 
 | Part | Purpose |
 | --- | --- |
-| WsprryPi | Installation, setup, scheduling, signal planning and operator controls |
+| WsprryPi | Installation, setup, scheduling, signal planning, and operator controls |
 | DKMS | Builds the modules for eligible installed Raspberry Pi kernel headers |
 | `rp1_gpclk_dkms` | Executes bounded signal sequences on the selected route |
 | `rp1_route_controller` | Manages the route's device-tree lifecycle |
@@ -22,7 +22,7 @@ work before cleanup.
 | `/dev/rp1-gpclk` | Root-only execution endpoint, normally present when a route is selected |
 
 The stock `clk-rp1` driver remains the clock provider. No custom kernel is
-required. Unknown resource identity, conflicting ownership or an uncertain
+required. Unknown resource identity, conflicting ownership, or an uncertain
 cleanup result blocks operation.
 
 ## Installation, route selection and transmission
@@ -33,17 +33,18 @@ These are separate operations:
    and builds modules. It does not load a module or select a GPIO route.
 2. **Neutral activation** establishes managed administration without a
    transmission route. The execution endpoint is absent.
-3. **Route selection** connects one managed GPIO route. A saved RP1 route can
-   also be restored by the owning WsprryPi installer or startup workflow.
-4. **Transmission** requires WsprryPi's separate readiness, ownership and
+3. **Route selection** connects one managed GPIO route. The owning WsprryPi
+   installer or startup workflow can also restore a saved RP1 route.
+4. **Transmission** requires WsprryPi's separate readiness, ownership, and
    operation checks and the operator's deliberate request.
 
 A route is the selected signal path, not an antenna connection or proof of
 RF suitability. GPIO4 and GPIO20 need separate wiring and support evidence.
 
-For everyday use, open WsprryPi, check the selected route and leave it in place
+For everyday use, open WsprryPi, check the selected route, and leave it in place
 when it matches your wiring. You do not need to load a module or run an
-engineering test client. Start with [use an installed system](getting-started.md).
+engineering test client. Start with the procedure in
+[use an installed system](getting-started.md).
 
 ## Software and support limits
 
@@ -58,10 +59,10 @@ matching a version string alone is insufficient.
 WsprryPi includes verified scoped evidence for each route with its application.
 No separate evidence-release download or refresh is needed. That evidence
 applies to specific systems and operating conditions; it does not establish
-support for every kernel, board, frequency, mode or RF setup. A successful
-DKMS build establishes build compatibility only.
+support for every kernel, board, frequency, mode, or RF setup. A successful
+DKMS build establishes only build compatibility.
 
 Use [WsprryPi's band qualification guidance](https://wsprry-pi.readthedocs.io/en/devel/About_Wsprry_Pi/index.html#band-qualification)
-for application band and mode choices. The provider's structural compatibility,
-current readiness and externally established qualification are separate facts;
+to choose the application band and mode. The provider's structural compatibility,
+current readiness, and externally established qualification are separate facts;
 [status](status.md) explains how to read them.

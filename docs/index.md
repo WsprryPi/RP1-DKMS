@@ -13,9 +13,9 @@ those steps and the occasional maintenance tasks that need an administrator.
 
 ## Start with your task
 
-If WsprryPi is already installed, start with
-[use an installed system](getting-started.md). You do not need to install RP1
-again or switch an already correct route merely to check it.
+If WsprryPi is already installed, start with the procedure in
+[use an installed system](getting-started.md). You do not need to reinstall RP1
+or switch a working route just to check it.
 
 | Task | Where to go |
 | --- | --- |

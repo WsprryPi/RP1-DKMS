@@ -20,7 +20,7 @@ inspection behind `&&`, and do not run the recovery commands as a batch.
 ## System and module inventory
 
 These commands read system/package metadata. They do not load a module,
-select a route or open the execution endpoint:
+select a route, or open the execution endpoint:
 
 ```sh
 cat /etc/os-release
@@ -46,12 +46,12 @@ Read the results together:
 - `uname -r` identifies the running kernel. DKMS needs an installed result for
   that kernel, not only a successful build listed for a different one.
 - A Debian package result identifies package installation. It does not prove
-  runtime deployment, route selection or the absence of a conflicting source
+  runtime deployment, route selection, or the absence of a conflicting source
   installation.
 - `filename` shows which installed module file is found for this kernel;
   `vermagic` includes its kernel identity. Retain both modules' results.
   Matching version strings alone do not establish exact source identity.
-- A permission error, missing command or missing module should remain in the
+- A permission error, missing command, or missing module should remain in the
   report. Do not load a module to make this inventory succeed.
 
 ## Managed runtime inspection
@@ -71,7 +71,7 @@ sudo python3 /usr/lib/rp1-gpclk-dkms/runtime_route_client.py query
 ```
 
 These are observational commands: they do not install, switch routes, submit
-output or repair state. They can perform passive endpoint queries. Avoid
+output, or repair state. They can perform passive endpoint queries. Avoid
 concurrent route changes while gathering a consistent report. `inspect`
 prints one JSON document and returns the [classified exit code](status.md).
 `query` returns the managed route service's response and exits 2 on a reported
@@ -81,7 +81,7 @@ do not substitute a different manager profile.
 `query` can report a connection/profile error without a JSON response; preserve
 stderr too. Its process exit status is not the provider's 10–14 classification.
 In a JSON response, examine `state.activeRoute`, `state.application.phase`,
-`state.applicationInhibited` and any error details. A retained transaction
+`state.applicationInhibited`, and any error details. A retained transaction
 record can describe a completed change. A successful query or an
 administrative `outputEnabled` field alone does not prove physical RF is off.
 Use the [readiness interpretation](status.md) and the actual operation context.
@@ -109,13 +109,13 @@ sudo journalctl -k -b --no-pager -n 100 -g 'rp1_gpclk|rp1-gpclk|rp1_route|rp1-ro
 the actual message. `journalctl -b` reads the current boot; retain the failed
 boot's logs before a planned reboot when possible. A stopped or masked service
 can reflect administrator intent rather than a fault. These commands do not
-restart, unmask or enable it. Review logs before posting them publicly.
+restart, unmask, or enable it. Review logs before posting them publicly.
 
 ## Administrative recovery
 
 The following commands **change the installed runtime or application service**.
 Use them only for the described known state after transmission has stopped,
-cleanup is complete and the owning runtime has been identified. Preserve the
+cleanup is complete, and the owning runtime has been identified. Preserve the
 failure response first. They are not a general repair script.
 
 Choose **one** case from [maintenance and recovery](maintenance.md). Query
@@ -133,7 +133,7 @@ sudo python3 /usr/lib/rp1-gpclk-dkms/runtime_route_client.py restore --execute
 
 The selected route must remain unchanged. A previously running application
 should return online and idle; stopped/masked intent remains preserved. A
-refusal about an unresolved route, boot or deployment is not a reason to force
+refusal due to an unresolved route, boot, or deployment is not a reason to force
 the service to start.
 
 ### Retry normal removal
@@ -161,13 +161,13 @@ sudo python3 /usr/lib/rp1-gpclk-dkms/runtime_route_client.py recover --execute
 
 Recovery returns to no route and **keeps the application inhibited**. It does
 not resume transmission or complete every deployment/update recovery. If the
-command refuses ownership, reports a cleanup fault or cannot prove completion,
+command refuses ownership, reports a cleanup fault, or cannot prove completion,
 stop and request support. Do not delete journals or force unload.
 Keep the recovered system inhibited pending the administrator's next managed
 restoration/selection procedure. Recovery success does not mean the web
 interface must have restarted or that you should enable transmission.
 
 Routine selection and switching belong in [WsprryPi's route controls](routes.md).
-Lower-level deployment plans, signing and package operations are described in
-the repository's engineering procedures for administrators maintaining those
-specific profiles.
+The repository's engineering procedures describe lower-level deployment plans,
+signing, and package operations for administrators maintaining those specific
+profiles.

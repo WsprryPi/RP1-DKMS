@@ -3,8 +3,8 @@
 # Use an installed system
 
 Start here when WsprryPi is already installed on your Pi 5-family system.
-You normally manage RP1 from the WsprryPi web interface; a terminal is only
-needed for administrator inspection or a reviewed recovery action.
+You normally manage RP1 from the WsprryPi web interface; you only need
+a terminal for administrator inspection or a reviewed recovery action.
 
 ## Open WsprryPi
 
@@ -20,14 +20,14 @@ needed for administrator inspection or a reviewed recovery action.
    should read **GPIO** (the Si5351 switch is off). If another output path is
    selected, [make the transmitter idle](#make-the-transmitter-idle) before
    changing it to GPIO. On a supported Pi 5-family system,
-   WsprryPi uses the RP1 provider for that path. There is no separate RP1
-   backend choice to find in this control.
+   WsprryPi uses the RP1 provider for that path. This control has no separate RP1
+   backend choice.
 4. Check **Transmit Pin** and the adjacent route status. If the intended route
-   is already selected and status confirms it, leave it selected. If there is
+   is already selected and the status confirms it, leave it selected. If there is
    no route, follow [route selection](routes.md). A fresh installation with no
    route is normal. Si5351 or Pico operation does not require an RP1 route.
 
-If RP1 controls are absent, unavailable or ask for a reboot, first identify
+If RP1 controls are absent, unavailable, or prompt a reboot, first identify
 your installed WsprryPi/provider version and deployment profile. Use
 [installation](installation.md) or request support; do not enable a developer
 setting or install another provider just to expose a control. A `--no-web`
@@ -36,7 +36,7 @@ installation has no web workflow; its administrator can use the
 
 ## Make the transmitter idle
 
-Use this procedure before a route change, update or other maintenance.
+Use this procedure before a route change, update, or other maintenance.
 
 1. On **Operations**, turn **Transmit enabled** off. This prevents future
    scheduled transmissions; an already committed transmission can continue.
@@ -52,8 +52,8 @@ Use this procedure before a route change, update or other maintenance.
    do not start another tone or treat uncertainty as a completed stop.
 4. Confirm that **Current state** reports no active or pending work (normally
    **Transmit paused** with transmission disabled), **Transmit enabled** remains
-   off, and no cancellation, cleanup error or route transaction is outstanding.
-   A disconnected browser, disabled Stop button or old status display does
+   off, and no cancellation, cleanup error, or route transaction is outstanding.
+   A disconnected browser, disabled Stop button, or old status display does
    not establish the current state. If you cannot confirm it, follow
    [troubleshooting](troubleshooting.md) and keep the RF setup safe.
 
@@ -64,12 +64,12 @@ does not establish that every connected part of a transmitter is safe to handle.
 ## Check readiness before operating
 
 1. Confirm that the selected GPIO matches the physical signal connection.
-   If a change is needed, keep the transmitter idle and follow
+   If a change is needed, keep the transmitter idle and follow the procedure in
    [select or remove a route](routes.md).
 2. Wait for **Route selected**, with the intended GPIO. A selected route is a
    prepared output path, not a transmission in progress. **Route Unsaved**,
-   **Reconnecting** or a queued change is not completion.
-3. Review WsprryPi's band, mode, frequency and drive settings, its accepted
+   **Reconnecting**, or a queued change is not completion.
+3. Review WsprryPi's band, mode, frequency, and drive settings, its accepted
    [band qualification guidance](https://wsprry-pi.readthedocs.io/en/devel/About_Wsprry_Pi/index.html#band-qualification),
    and your actual RF path. Resolve any application readiness or operation
    confirmation message before enabling transmission. Development RP1

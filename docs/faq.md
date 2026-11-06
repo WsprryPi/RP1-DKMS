@@ -19,20 +19,20 @@ correct route or run a test transmission to inspect it.
 ## Why is there no execution device after installation?
 
 Fresh setup is route-neutral. `/dev/rp1-gpclk` normally appears after you select
-GPIO4 or GPIO20 through WsprryPi. Package installation, neutral activation and
+GPIO4 or GPIO20 through WsprryPi. Package installation, neutral activation, and
 route selection are separate steps.
 
 ## Does selecting a route start transmitting?
 
 No. Selection establishes the managed path. WsprryPi separately checks the
-requested operation, ownership and readiness before submitting output.
+requested operation, ownership, and readiness before submitting output.
 
 ## Is switching transmission off the same as Stop or End?
 
 No. **Transmit enabled** off prevents future scheduled work while committed
 work can finish. **Stop transmission** cancels active work and disables future
 transmission. The Test Tone dialog's **End** can restore previous work; closing
-the dialog is not an all-output-off check. Use
+the dialog is not an all-output-off check. Follow
 [make the transmitter idle](getting-started.md#make-the-transmitter-idle)
 before maintenance or a route change.
 
@@ -46,7 +46,7 @@ application does not return. See [connection recovery](routes.md#if-the-browser-
 ## Can I use GPIO4 and GPIO20 at the same time?
 
 No. Only one managed route can be active. They share GPCLK0 and have separate
-wiring, overlay identities and qualification. Use the route that matches the
+wiring, overlay identities, and qualification. Use the route that matches the
 physical connection.
 
 ## Does switching require a reboot?
@@ -58,7 +58,7 @@ Do not mix profiles to work around a failure.
 ## Does a successful DKMS build prove my transmitter works?
 
 It proves build compatibility for the identified headers and toolchain.
-Runtime state, cleanup, frequency accuracy, timing and RF suitability require
+Runtime state, cleanup, frequency accuracy, timing, and RF suitability require
 their own checks. Consult the WsprryPi band/mode limits for your application.
 
 ## Does removing a route uninstall the software?
@@ -71,7 +71,7 @@ application inhibition.
 ## Route selected is shown, but why is transmission still disabled?
 
 Route selection deliberately leaves WsprryPi idle. Application band/mode
-eligibility, frequency settings, current ownership/cleanup state and any
+eligibility, frequency settings, current ownership/cleanup state, and any
 required bounded-operation confirmation remain separate checks. Keep the
 specific refusal message and use [status](status.md) or
 [troubleshooting](troubleshooting.md); changing a module parameter is not an
@@ -88,7 +88,7 @@ before changing software channels.
 
 Use WsprryPi's Setup controls and its
 [timing and calibration guide](https://wsprry-pi.readthedocs.io/en/devel/Advanced_Operations/timing_calibration.html).
-The RP1 provider executes the signal plan supplied by the application. A route
+The RP1 provider executes the signal plan the application supplies. A route
 change does not calibrate the clock, and a drive setting in mA is not a measured
 RF power level. Check the complete RF path rather than changing module load
 parameters or increasing drive to compensate for an unexplained problem.
@@ -100,7 +100,7 @@ Preserve the failure and follow [maintenance and recovery](maintenance.md).
 
 ## Where are the developer documents?
 
-Technical contracts, API details, builds, packaging and maintainer procedures
+Technical contracts, API details, builds, packaging, and maintainer procedures
 are in the repository's
 [engineering directory](https://github.com/WsprryPi/RP1-DKMS/tree/devel/engineering).
 They are kept separately from this operator handbook.

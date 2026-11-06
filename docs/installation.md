@@ -17,14 +17,14 @@ You need:
 
 - a Raspberry Pi 5 or Compute Module 5 system with an identified RP1 topology;
 - a stock Raspberry Pi kernel and matching kernel headers;
-- administrator access, Internet access and space for the kernel-module build;
+- administrator access, Internet access, and space for the kernel-module build;
 - a supported operating system for your selected WsprryPi version; and
 - an inactive RF setup while installing or changing wiring.
 
 WsprryPi's installer requests the exact running-kernel header package and
 required build tools when RP1 installation is selected. Provider packaging
 requires a DKMS installation accepted by its package preflight. Unsupported DKMS configurations,
-missing headers and unknown signing policies are refused. Do not disable
+missing headers, and unknown signing policies are refused. Do not disable
 signature enforcement to make a build load.
 
 Being able to run WsprryPi with another backend does not establish that the
@@ -40,13 +40,13 @@ nearby kernel's headers or bypass the provider's checks.
    Select the manual version that matches your application channel.
 2. Let the complete installer finish. An individual successful DKMS/build step
    is not overall installation success. Retain the final result, reported
-   configuration URLs and any error details. Follow an explicit installer
+   configuration URLs, and any error details. Follow an explicit installer
    reboot request before checking the installed application.
 3. Open the URL it reports from the Pi's local network. Keep transmission
    disabled and go to **Setup > Transmitter**. See
    [use an installed system](getting-started.md) for the exact output-path
    control and idle checks.
-4. For fresh setup, expect neutral administration with **no route selected**.
+4. For a fresh setup, expect neutral administration with **no route selected**.
    An explicitly saved RP1 GPIO4/GPIO20 route may be restored during a repeat
    installation, with transmission still disabled.
 5. If installation succeeds, follow [route selection](routes.md). If it fails,
@@ -82,12 +82,12 @@ stops installation; no alternate hardware backend is substituted.
 ## Standalone administration
 
 Standalone package installation is intended for administrators maintaining an
-explicit deployment. The source package by itself does not supply a complete
+explicit deployment. The source package alone does not provide a complete
 WsprryPi runtime setup. Before using that path, review the repository's
 [package lifecycle procedure](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/package-lifecycle.md),
-[packaging prerequisites](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/debian-packaging.md)
+[packaging prerequisites](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/debian-packaging.md),
 and [signing policy](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/signing.md).
 
-Do not apply firmware overlays, force-load modules or edit boot configuration
+Do not apply firmware overlays, force-load modules, or edit boot configuration
 over a WsprryPi-managed runtime to work around an installer refusal. Preserve
 the reported state and use its owning recovery procedure.
