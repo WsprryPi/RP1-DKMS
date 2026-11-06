@@ -64,5 +64,53 @@ class Tests(unittest.TestCase):
             with self.assertRaisesRegex(api.ContractError,'plan digest changed'):api.dispatch(args)
             apply.assert_not_called()
 
+    def test_legacy_adoption_refuses_nonobject_before_receipt_creation(self):
+        from argparse import Namespace
+        with tempfile.TemporaryDirectory() as raw:
+            root=Path(raw).resolve();root.chmod(0o700)
+            receipt=root/'old.json';receipt.write_text('[]');receipt.chmod(0o600)
+            output=root/'new.json'
+            with self.assertRaisesRegex(api.ContractError,'must be an object'):
+                api.adopt_receipt(Namespace(receipt=receipt,record=output),mock.Mock())
+            self.assertFalse(output.exists())
+
+    def test_legacy_adoption_checks_both_native_modules_before_new_receipt(self):
+        import development_workflow as native
+        from argparse import Namespace
+        from contextlib import ExitStack
+        for changed in [False,True]:
+            with self.subTest(controllerChanged=changed),tempfile.TemporaryDirectory() as raw,ExitStack() as stack:
+                root=Path(raw).resolve();root.chmod(0o700)
+                source=root/'source';source.mkdir()
+                manifest=source/'DEVELOPMENT_MANIFEST.json';manifest.write_text('{}')
+                rollback=root/'rollback.json';rollback.write_text(json.dumps({'sourceManifestSha256':api.sha256_file(manifest)}))
+                module=root/'consumer.ko';module.write_bytes(b'consumer')
+                old={'schema':'wsprrypi-rp1-gpclk-dkms-ownership-v1','owner':'WsprryPi',
+                     'repository':api.REPOSITORY,'channel':'development','productVersion':'12.34.56',
+                     'targetKernel':'fixture','rollbackRecord':str(rollback),
+                     'installedModulePath':str(module),'installedModuleSha256':api.sha256_file(module)}
+                receipt=root/'old.json';receipt.write_text(json.dumps(old));receipt.chmod(0o600)
+                output=root/'new.json'
+                modules={name:{'installedPath':'/'+name,'installedFileSha256':'a'*64,'decompressedElfSha256':'b'*64}
+                         for name in [api.MODULE_NAME,api.CONTROLLER_MODULE_NAME]}
+                def resolved(kernel,version,name):
+                    item=dict(modules[name])
+                    if changed and name==api.CONTROLLER_MODULE_NAME:item['installedFileSha256']='c'*64
+                    return item
+                for name,value in [('load_ownership_record',({},None,None)),('existing_inventory',{}),
+                                   ('validate_development_rollback_authority',None),('validate_runtime_development_provider',None),
+                                   ('root_path',source)]:
+                    stack.enter_context(mock.patch.object(api,name,return_value=value))
+                stack.enter_context(mock.patch.object(native,'owned_source',return_value={'installedModules':modules}))
+                stack.enter_context(mock.patch.object(native,'resolve_module',side_effect=resolved))
+                args=Namespace(receipt=receipt,record=output)
+                if changed:
+                    with self.assertRaisesRegex(api.ContractError,'native module bytes changed'):api.adopt_receipt(args,mock.Mock())
+                    self.assertFalse(output.exists())
+                else:
+                    api.adopt_receipt(args,mock.Mock())
+                    value=json.loads(output.read_text());self.assertEqual(value['owner'],'RP1-DKMS')
+                self.assertTrue(receipt.exists());self.assertFalse((root/'provider-adoption.json').exists())
+
 
 if __name__=='__main__':__import__("nonempty_unittest").main()

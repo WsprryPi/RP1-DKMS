@@ -2991,6 +2991,7 @@ def adopt_receipt(args, runner):
     require(args.receipt is not None and not args.record.exists(), 'adoption requires a receipt and absent provider record')
     raw=record_file_identity(args.receipt)
     value=strict_json(args.receipt.read_bytes())
+    require(isinstance(value,dict),'predecessor receipt must be an object')
     require(value.get('schema')=='wsprrypi-rp1-gpclk-dkms-ownership-v1' and value.get('owner')=='WsprryPi',
             'unsupported predecessor receipt')
     require(value.get('repository')==REPOSITORY, 'predecessor repository differs')
