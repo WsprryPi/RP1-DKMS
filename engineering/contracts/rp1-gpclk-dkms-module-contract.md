@@ -5,7 +5,10 @@
 ## Purpose and authority
 
 This document defines the engineering, ownership, safety, compatibility,
-packaging, and release contract for `WsprryPi/RP1-DKMS`.
+packaging, and release contract for `WsprryPi/RP1-GPIO-CLK-DKMS`.
+
+The sole supported repository authority is `WsprryPi/RP1-GPIO-CLK-DKMS`.
+Repository aliases and predecessor receipt adoption are unsupported.
 
 This repository is authoritative for the kernel module, canonical UAPI,
 device-tree overlays, DKMS packaging, module lifecycle tooling, compatibility
@@ -330,7 +333,7 @@ The [package transition contract](../operations/package-lifecycle.md) requires
 read-only preflight before the package manager, exact inactive ownership, complete
 payload identity and native DKMS/cache agreement. Exact package repeats converge
 without forced module removal. Compatible passive packages support upgrades;
-legacy-effects fixtures and unknown lifecycle state require owning removal first.
+unknown repository or lifecycle state is refused without adoption.
 Downgrade recovery removes the successor before exact retained predecessor
 reinstall. [Version identity](versioning.md) defines source-derived identities,
 SemVer precedence, Debian ordering, payload conflicts, and upgrade eligibility. No package transition restores runtime sessions,

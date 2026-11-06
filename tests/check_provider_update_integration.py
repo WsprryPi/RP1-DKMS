@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 """Exercise the actual provider/installer JSON boundary without hardware.
 
-Pass an explicit RP1-DKMS checkout. Only its offline test adapters run.
+Pass an explicit RP1-GPIO-CLK-DKMS checkout. Only its offline test adapters run.
 """
 import contextlib
 import importlib.util

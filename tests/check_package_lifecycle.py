@@ -212,30 +212,24 @@ class Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             stage.preinst(destination)
 
-    def test_synthetic_predecessor_fixture_and_tamper_refusal(self):
-        builder = runpy.run_path(str(ROOT/'scripts/build-lifecycle-predecessor'))
-        record = json.loads((ROOT/'release/lifecycle-predecessor-v1.json').read_text())
+    def test_synthetic_version_fixture_preserves_passive_packaging(self):
+        builder = runpy.run_path(str(ROOT/'scripts/build-lifecycle-version-fixture'))
+        record = json.loads((ROOT/'release/lifecycle-version-fixture-v1.json').read_text())
         builder['select']('a'*40, record)
         for commit in ('main', 'a'*12, 'G'*40):
             with self.assertRaises(ValueError): builder['select'](commit, record)
         files = {'include/rp1_gpclk/version.h': (0o644,
             b'#define RP1_GPCLK_MODULE_VERSION "1.2.3"\n')}
-        files.update({
-            'tests/fixtures/lifecycle-legacy/'+name: (0o644, (ROOT/'tests/fixtures/lifecycle-legacy'/name).read_bytes())
-            for name in record['fixtureSha256']})
+        for name in ('rules', 'control', 'rp1-gpclk-dkms.preinst',
+                     'rp1-gpclk-dkms.postinst', 'rp1-gpclk-dkms.prerm'):
+            files['debian/'+name] = (0o644, (ROOT/'debian'/name).read_bytes())
         rendered, changes = builder['render'](files, record)
         self.assertIn(b'"0.0.0"', rendered['include/rp1_gpclk/version.h'][1])
-        self.assertIn(b'Synthetic legacy lifecycle', rendered['debian/changelog'][1])
-        self.assertIn(b'override_dh_builddeb:', rendered['debian/rules'][1])
-        self.assertEqual(len(changes), len(record['fixtureSha256']))
-        for name in record['fixtureSha256']:
-            if name != 'rules':
-                self.assertEqual(rendered['debian/'+name][1],
-                    (ROOT/'tests/fixtures/lifecycle-legacy'/name).read_bytes())
-        changed = json.loads(json.dumps(record))
-        changed['fixtureSha256']['rules'] = '0'*64
-        with self.assertRaisesRegex(ValueError, 'fixture differs'):
-            builder['render'](files, changed)
+        self.assertIn(b'Synthetic passive version', rendered['debian/changelog'][1])
+        for name in files:
+            if name.startswith('debian/'):
+                self.assertEqual(rendered[name], files[name])
+        self.assertEqual(changes, [])
         with self.assertRaises(ValueError):
             builder['render']({'include/rp1_gpclk/version.h': (0o644, b'no version')}, record)
 

@@ -87,9 +87,9 @@ stops installation; no alternate hardware backend is substituted.
 Standalone package installation is intended for administrators maintaining an
 explicit deployment. The source package alone does not provide a complete
 WsprryPi runtime setup. Before using that path, review the repository's
-[package lifecycle procedure](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/package-lifecycle.md),
-[packaging prerequisites](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/debian-packaging.md),
-and [signing policy](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/signing.md).
+[package lifecycle procedure](https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/blob/devel/engineering/operations/package-lifecycle.md),
+[packaging prerequisites](https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/blob/devel/engineering/operations/debian-packaging.md),
+and [signing policy](https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/blob/devel/engineering/operations/signing.md).
 
 Do not apply firmware overlays, force-load modules, or edit boot configuration
 over a WsprryPi-managed runtime to work around an installer refusal. Preserve

@@ -1,7 +1,7 @@
 {
   "SPDX-License-Identifier": "MIT",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://wsprrypi.github.io/RP1-DKMS/schema/rp1-gpclk-source-development-manifest.schema.json",
+  "$id": "https://wsprrypi.github.io/RP1-GPIO-CLK-DKMS/schema/rp1-gpclk-source-development-manifest.schema.json",
   "title": "RP1 GPCLK exact-source development manifest v1",
   "type": "object",
   "allOf": [

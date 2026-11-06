@@ -40,7 +40,7 @@ jobs:
       - name: Provision disposable Debian and exact representative headers
         timeout-minutes: 20
         run: docker build -t rp1-lifecycle -f tools/package-lifecycle.Containerfile .
-      - name: Rebuild exact candidate and synthetic legacy lifecycle fixture
+      - name: Rebuild exact candidate and synthetic passive version fixture
         timeout-minutes: 15
         run: |
           mkdir -p /tmp/rp1-lifecycle-inputs
@@ -51,7 +51,7 @@ jobs:
             -w /source rp1-lifecycle sh -eu -c '
               ./scripts/build-release-candidate --version "$(python3 scripts/version_identity.py version)" --source-commit "$SOURCE_COMMIT" --output /output/candidate
               ./scripts/validate-release-candidate --candidate /output/candidate --source-commit "$SOURCE_COMMIT"
-              ./scripts/build-lifecycle-predecessor --source-commit "$SOURCE_COMMIT" --output /output/predecessor'
+              ./scripts/build-lifecycle-version-fixture --source-commit "$SOURCE_COMMIT" --output /output/predecessor'
       - name: Real package and DKMS lifecycle with controlled faults
         timeout-minutes: 65
         run: |

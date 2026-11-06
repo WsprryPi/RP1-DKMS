@@ -210,12 +210,7 @@ def setup():
     for name in ('modprobe', 'insmod', 'rmmod', 'systemctl', 'deb-systemd-invoke',
                  'deb-systemd-helper', 'reboot', 'shutdown'):
         if shutil.which(name):
-            legacy = ''
-            if name in ('systemctl', 'deb-systemd-invoke', 'deb-systemd-helper'):
-                legacy = ('if [ -f /tmp/legacy-phase ]; then\n'+
-                    ' printf "%s\\n" "'+name+' $*" >> /results/legacy-service-calls.log\n'+
-                    (' exit 99\n' if name == 'systemctl' else ' exec @REAL@ "$@"\n')+'fi\n')
-            replace_command(name, '#!/bin/sh\n'+legacy+'printf "%s\\n" "'+name+' $*" >> /tmp/forbidden-calls\nexit 99\n')
+            replace_command(name, '#!/bin/sh\nprintf "%s\\n" "'+name+' $*" >> /tmp/forbidden-calls\nexit 99\n')
     for name in ('dkms', 'depmod', 'gcc', 'aarch64-linux-gnu-gcc-14'):
         stage = '"${1:-}"' if name == 'dkms' else ('gcc' if 'gcc' in name else name)
         match = ''
@@ -674,54 +669,27 @@ def signature_failure():
 
 
 def predecessor():
-    # Legacy-effects fixture scripts execute in this disposable root. Only service
-    # effects are interlocked; their attempts are recorded separately.
-    legacy = Path('/tmp/legacy-phase')
-    legacy.touch()
-    state = run('legacy-fixture-install', ['dpkg', '-i', OLD])
-    require(state['packageManager'] == 'ii  0.0.0-1', 'predecessor is not configured')
-    require(len(state['modules']) == len(KERNELS) and all(m['version'] == '0.0.0' for m in state['modules']),
-            'predecessor ordinary module profile differs')
-    require(Path('/boot/firmware/overlays/rp1-gpclk-gpio4.dtbo').exists(), 'legacy fixture overlay effect missing')
-    legacy.unlink()
-    before = snapshot()
-    run('refuse-direct-upgrade-before-dpkg', ['python3', '/source/scripts/package_preflight.py', 'unpack', '--package', str(DEB)], 1)
-    require(snapshot() == before, 'refused upgrade changed predecessor')
-    # Actual old/new package transitions follow the approved owning removal
-    # recipe. The predecessor is a synthetic effects fixture, not historical software.
-    legacy.touch()
-    Path('/tmp/lifecycle-fault').write_text('remove')
-    state = run('failed-owning-predecessor-removal', ['dpkg', '--purge', PACKAGE], 1)
-    require(state['packageManager'] == 'pi  0.0.0-1' and len(state['modules']) == len(KERNELS),
-            'failed predecessor removal did not preserve its attributable modules')
-    state = run('owning-predecessor-removal', ['dpkg', '--purge', PACKAGE])
-    legacy.unlink()
-    absent(state)
-    require(not Path('/boot/firmware/overlays/rp1-gpclk-gpio4.dtbo').exists(), 'owned legacy overlay not retired')
-    installed(run('successor-clean-install', ['dpkg', '-i', DEB]))
-    # The retained predecessor refuses in-place downgrade; call its exact
-    # preinst before dpkg could invoke the installed candidate's prerm.
-    require(raw(['dpkg-deb', '-e', str(OLD), '/tmp/old-control']).returncode == 0, 'old control extraction failed')
-    run('refuse-direct-downgrade-before-dpkg', ['sh', '/tmp/old-control/preinst', 'upgrade', f'{DEBIAN}'], 1)
+    # Both inputs use the current passive package contract at synthetic versions.
+    state = run('version-fixture-install', ['dpkg', '-i', OLD])
+    require(state['packageManager'] == 'ii  0.0.0-1', 'synthetic version is not configured')
+    require(len(state['modules']) == 2 * len(KERNELS) and all(m['version'] == '0.0.0' for m in state['modules']),
+            'synthetic version module profile differs')
+    neutral()
+    installed(run('passive-version-upgrade', ['dpkg', '-i', DEB]))
+    require(raw(['dpkg-deb', '-e', str(OLD), '/tmp/old-control']).returncode == 0, 'version control extraction failed')
+    run('refuse-direct-downgrade-before-dpkg', ['sh', '/tmp/old-control/preinst', 'upgrade', DEBIAN], 1)
     absent(run('rollback-remove-successor', ['dpkg', '--purge', PACKAGE]))
-    legacy.touch()
-    state = run('rollback-install-retained-predecessor', ['dpkg', '-i', OLD])
-    require(state['packageManager'] == 'ii  0.0.0-1' and len(state['modules']) == len(KERNELS), 'rollback did not converge')
-    state = run('rollback-cleanup-predecessor', ['dpkg', '--purge', PACKAGE])
-    legacy.unlink()
-    absent(state)
-    run('failed-successor-unpack', ['dpkg', '--unpack', DEB])
-    Path('/tmp/lifecycle-fault').write_text('build')
-    run('failed-successor-configure', ['dpkg', '--configure', PACKAGE], 1)
-    absent(run('failed-successor-removal', ['dpkg', '--purge', PACKAGE]))
-    legacy.touch()
     Path('/tmp/lifecycle-fault').write_text('build')
     run('failed-rollback', ['dpkg', '-i', OLD], 1)
     state = run('retry-exact-rollback-configure', ['dpkg', '--configure', PACKAGE])
-    require(state['packageManager'] == 'ii  0.0.0-1' and len(state['modules']) == len(KERNELS), 'rollback retry did not converge')
-    state = run('final-predecessor-cleanup', ['dpkg', '--purge', PACKAGE])
-    legacy.unlink()
-    absent(state)
+    require(state['packageManager'] == 'ii  0.0.0-1' and len(state['modules']) == 2 * len(KERNELS),
+            'synthetic version rollback retry did not converge')
+    Path('/tmp/lifecycle-fault').write_text('remove')
+    state = run('failed-owning-predecessor-removal', ['dpkg', '--purge', PACKAGE], 1)
+    require(len(state['modules']) == 2 * len(KERNELS), 'failed removal lost modules')
+    absent(run('final-predecessor-cleanup', ['dpkg', '--purge', PACKAGE]))
+    installed(run('successor-clean-install', ['dpkg', '-i', DEB]))
+    absent(run('purge', ['dpkg', '--purge', PACKAGE]))
 
 
 def main():

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Bounded, read-only RP1-GPCLK-DKMS diagnostics."""
+"""Bounded, read-only RP1-GPIO-CLK-DKMS diagnostics."""
 
 from __future__ import annotations
 import argparse, errno, fcntl, grp, hashlib, json, os, pathlib, platform, pwd, stat, struct, subprocess

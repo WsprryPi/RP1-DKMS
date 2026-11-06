@@ -8,7 +8,7 @@ setup. Operations require authorization for the actual system and configuration.
 See [qualification boundaries](engineering/operations/qualification-metadata.md).
 
 Report a suspected vulnerability privately through GitHub's security advisory
-feature for `WsprryPi/RP1-DKMS`. Do not include sensitive details in a
+feature for `WsprryPi/RP1-GPIO-CLK-DKMS`. Do not include sensitive details in a
 public issue.
 
 Security-sensitive areas include:

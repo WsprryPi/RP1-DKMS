@@ -1,7 +1,7 @@
 {
   "SPDX-License-Identifier": "MIT",
   "schema": "rp1-gpclk-package-lifecycle-matrix-v1",
-  "predecessorRecord": "release/lifecycle-predecessor-v1.json",
+  "predecessorRecord": "release/lifecycle-version-fixture-v1.json",
   "states": {
     "absent": {
       "packageManager": "",
@@ -63,18 +63,18 @@
       "machineResult": "rp1-gpclk-package-preflight-v1",
       "executionAuthorization": false
     },
-    "legacy": {
+    "version-fixture": {
       "packageManager": "ii  0.0.0-1",
       "dkms": "one 0.0.0 registration",
-      "modulesByKernel": "ordinary consumer only for each eligible kernel",
+      "modulesByKernel": "one consumer and one controller for each eligible kernel",
       "sourceTree": "exact selected predecessor source",
-      "overlays": "historical inactive /boot copies plus inactive /usr/lib files",
+      "overlays": "inactive package data under /usr/lib",
       "routeRuntime": "absent",
-      "services": "historical debhelper metadata; target effects not qualified",
+      "services": "unchanged; no lifecycle calls",
       "bootConfiguration": "unchanged",
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
-      "operatorAction": "owning legacy cleanup/removal before successor install",
+      "operatorAction": "ordinary passive upgrade or explicit owning removal",
       "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
@@ -108,14 +108,14 @@
       "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
-    "legacy-partial": {
+    "version-fixture-partial": {
       "packageManager": "iF  0.0.0-1",
       "dkms": "attributable predecessor build prefix",
       "modulesByKernel": "bounded predecessor prefix; no successor modules",
       "sourceTree": "exact selected predecessor source",
       "overlays": "inactive /usr/lib payload; predecessor boot copies await successful configure",
       "routeRuntime": "absent",
-      "services": "historical debhelper metadata; target effects not qualified",
+      "services": "unchanged; no lifecycle calls",
       "bootConfiguration": "unchanged",
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
@@ -273,14 +273,14 @@
       "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
-    "legacy-remove-failed": {
+    "version-fixture-remove-failed": {
       "packageManager": "pi  0.0.0-1",
       "dkms": "one 0.0.0 registration",
-      "modulesByKernel": "ordinary consumer only for each eligible kernel",
+      "modulesByKernel": "one consumer and one controller for each eligible kernel",
       "sourceTree": "exact selected predecessor source",
-      "overlays": "historical inactive /boot copies plus inactive /usr/lib files",
+      "overlays": "inactive package data under /usr/lib",
       "routeRuntime": "absent",
-      "services": "historical debhelper metadata; target effects not qualified",
+      "services": "unchanged; no lifecycle calls",
       "bootConfiguration": "unchanged",
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
@@ -547,10 +547,10 @@
     {
       "id": "17",
       "startingState": "authoritative-inactive-0.0.0",
-      "operation": "direct-upgrade",
-      "disposition": "refused",
-      "exitStatus": 1,
-      "expectedState": "refused",
+      "operation": "upgrade-current-passive-version-fixture",
+      "disposition": "permitted",
+      "exitStatus": 0,
+      "expectedState": "installed",
       "evidenceClass": "read-only-preflight-before-dpkg",
       "checks": [
         "tests/check_package_lifecycle.py",
@@ -1096,7 +1096,7 @@
       "operation": "fault-and-diagnose",
       "disposition": "refused",
       "exitStatus": 1,
-      "expectedState": "legacy-partial",
+      "expectedState": "version-fixture-partial",
       "evidenceClass": "real-dpkg-with-controlled-command-or-archive-stream-fault",
       "checks": [
         "tests/check_package_lifecycle.py",
@@ -1110,7 +1110,7 @@
       "operation": "repair-and-retry",
       "disposition": "permitted",
       "exitStatus": 0,
-      "expectedState": "legacy",
+      "expectedState": "version-fixture",
       "evidenceClass": "real-dpkg-dkms",
       "checks": [
         "tests/check_package_lifecycle.py",
@@ -1124,7 +1124,7 @@
       "operation": "remove-then-reinstall-exact-predecessor",
       "disposition": "permitted",
       "exitStatus": 0,
-      "expectedState": "legacy",
+      "expectedState": "version-fixture",
       "evidenceClass": "real-dpkg-dkms",
       "checks": [
         "tests/check_package_lifecycle.py",
@@ -1230,7 +1230,7 @@
       "operation": "fault-and-diagnose",
       "disposition": "refused",
       "exitStatus": 1,
-      "expectedState": "legacy-remove-failed",
+      "expectedState": "version-fixture-remove-failed",
       "evidenceClass": "real-dpkg-with-controlled-dkms-remove-fault",
       "checks": [
         "tests/check_package_lifecycle.py",
@@ -1279,7 +1279,6 @@
     }
   ],
   "limitations": [
-    "Legacy 0.0.0 cleanup has historical boot/systemd effects; new package operations are passive.",
     "Read-only transition checks must precede dpkg/apt: the outgoing prerm runs before the incoming preinst.",
     "Command failures and header signing/compression variants are controlled fixtures; package operations and DKMS commands are real.",
     "No target loading, trust-enforcement, service-manager, endpoint, GPIO, application or RF qualification.",

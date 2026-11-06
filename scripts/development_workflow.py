@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Exact-source RP1-GPCLK-DKMS development lifecycle.
+"""Exact-source RP1-GPIO-CLK-DKMS development lifecycle.
 
 This deliberately does not create or consume release identity.  Mutating
 operations write an attributable rollback record before changing host state.
@@ -427,8 +427,8 @@ def transition_preflight(version: str, kernel: str, dkms_status: list[str],
         raise Failure("installed module set differs from the selected development profile")
     if destination.exists() or destination.is_symlink():
         prior = owned_source(destination, previous)
-        if prior.get('repositoryUrl') not in ('https://github.com/WsprryPi/RP1-DKMS.git',
-                                               'https://github.com/WsprryPi/RP1-DKMS') and previous != version:
+        if prior.get('repositoryUrl') not in ('https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS.git',
+                                               'https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS'):
             raise Failure("predecessor repository ownership is unknown; explicit maintainer removal required")
         return destination
     if dkms_status or any(candidates.values()) or loaded.exists() or loaded_controller.exists():

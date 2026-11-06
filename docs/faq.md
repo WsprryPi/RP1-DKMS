@@ -102,5 +102,5 @@ Preserve the failure and follow [maintenance and recovery](maintenance.md).
 
 Technical contracts, API details, builds, packaging, and maintainer procedures
 are in the repository's
-[engineering directory](https://github.com/WsprryPi/RP1-DKMS/tree/devel/engineering).
+[engineering directory](https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/tree/devel/engineering).
 They are kept separately from this operator handbook.

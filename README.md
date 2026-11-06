@@ -2,7 +2,7 @@
 
 # RP1 DKMS
 
-RP1-DKMS provides Linux kernel modules and managed GPIO route administration for
+RP1-GPIO-CLK-DKMS provides Linux kernel modules and managed GPIO route administration for
 RP1 on Raspberry Pi 5 and Compute Module 5 systems. DKMS builds the modules for
 the installed stock Raspberry Pi kernel. The stock `clk-rp1` driver remains the
 clock provider; no custom kernel is required.

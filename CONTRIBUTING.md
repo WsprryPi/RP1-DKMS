@@ -2,7 +2,7 @@
 
 # Contributing
 
-Thank you for helping improve RP1-GPCLK-DKMS.
+Thank you for helping improve RP1-GPIO-CLK-DKMS.
 
 Before contributing, read [AGENTS.md](AGENTS.md), the
 [module contract](engineering/contracts/rp1-gpclk-dkms-module-contract.md), and

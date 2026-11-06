@@ -10,7 +10,7 @@ import unittest
 from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location('accept_rp1', ROOT/'tests/fixtures/legacy_release_acceptance.py')
+spec = importlib.util.spec_from_file_location('accept_rp1', ROOT/'tests/fixtures/release_acceptance.py')
 A = importlib.util.module_from_spec(spec); spec.loader.exec_module(A)
 
 
@@ -70,7 +70,7 @@ class Tests(unittest.TestCase):
             self.assertIs(result[field], False)
 
     def test_installer_selects_patch_over_original_release(self):
-        original_lock = json.loads((ROOT/'tests/fixtures/rp1-release-1.0.0.json').read_bytes())
+        original_lock = json.loads((ROOT/'tests/fixtures/synthetic-release-1.0.0.json').read_bytes())
         current = self.publication()
         original = copy.deepcopy(current)
         original.update(tag_name=original_lock['releaseTag'], html_url=original_lock['releaseUrl'])

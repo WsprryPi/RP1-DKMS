@@ -53,7 +53,7 @@ required. Exclude concurrent privileged package/DKMS/runtime administration.
   replace the attributable instance through the native package lifecycle.
 - Downgrades require an explicit reviewed owning removal and exact retained
   package reinstall. There is no silent in-place downgrade or force flag.
-- Unknown repository/lifecycle and legacy-effects fixtures,
+- Unknown repository or lifecycle identities,
   active runtime/module state, and changed or foreign data require their specific
   owning recovery or migration. Numeric ordering alone grants no ownership.
 

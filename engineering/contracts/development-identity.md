@@ -47,10 +47,10 @@ manager. Source-development renders the same version with separate Experimental
 identity and no release metadata. The [candidate pipeline](../operations/release-candidate.md)
 produces the unpublished package and release-shaped consumer metadata from a
 clean exact commit. Candidate preparation does not freeze or publish the provider.
-The package-transition tests use a normalized synthetic predecessor;
-the synthetic fixture tests legacy lifecycle effects only. Compatible passive
-packages support normal upgrades. Legacy or unknown lifecycle state requires
-owning removal before clean installation. See [versioning](versioning.md).
+Package-transition tests use current passive packaging at synthetic versions.
+They establish no publication or predecessor support. Compatible passive packages
+support normal upgrades. Unknown lifecycle state confers no replacement authority.
+See [versioning](versioning.md).
 
 ## Maintainer transition policy
 

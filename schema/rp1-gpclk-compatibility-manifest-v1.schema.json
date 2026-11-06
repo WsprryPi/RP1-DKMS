@@ -1,6 +1,6 @@
 {
   "$schema":"https://json-schema.org/draft/2020-12/schema",
-  "$id":"https://github.com/WsprryPi/RP1-DKMS/schema/rp1-gpclk-compatibility-manifest-v1.schema.json",
+  "$id":"https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/schema/rp1-gpclk-compatibility-manifest-v1.schema.json",
   "$comment":"SPDX-License-Identifier: MIT",
   "title":"RP1 GPCLK compatibility manifest v1",
   "type":"object","additionalProperties":false,

@@ -5,7 +5,7 @@
 ## Scope
 
 This contract defines the evidence boundary between an external WsprryPi
-Qualification Harness, WsprryPi, and the `RP1-DKMS` development
+Qualification Harness, WsprryPi, and the `RP1-GPIO-CLK-DKMS` development
 module. These are integration/evidence requirements, not a claim that every
 Harness or application version implements the complete path. Resolve actual
 version capabilities and readiness before selecting a plan. This contract does not

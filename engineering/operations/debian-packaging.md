@@ -78,14 +78,12 @@ is selected. This does not change the immutable production load-time default.
 ## Transitions, removal and rollback
 
 The supported transition policy is [package lifecycle and recovery](package-lifecycle.md).
-The maintained synthetic predecessor exercises an ordinary consumer
-with legacy boot-overlay/systemd lifecycle effects. It is not the original
-package from the predecessor repository. Direct upgrade
-and downgrade are refused. Use owning predecessor cleanup/removal before clean
-current-source installation; rollback likewise removes the successor before reinstalling
-the exact retained predecessor. Never submit an old archive over an installed
-successor. Debian runs an outgoing prerm before an incoming preinst, so the
-read-only transition preflight must precede dpkg/APT.
+The maintained synthetic version fixture uses the same passive package contract
+as the candidate. It exercises ordinary upgrades, explicit removal and rollback,
+and interrupted configuration without importing historical package behavior.
+Unknown repository and lifecycle identities confer no transition authority.
+Debian runs an outgoing prerm before an incoming preinst, so read-only transition
+preflight must precede dpkg/APT.
 
 Exact repeated installation retains the attributable installed modules; missing
 data is repaired through native DKMS convergence. Compatible package upgrades

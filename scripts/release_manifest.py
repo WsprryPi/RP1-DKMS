@@ -54,7 +54,7 @@ def documents(files, commit, tree, timestamp, directory, release=False):
     prefix = f'usr/src/{PACKAGE}-{VERSION}/'
     uapi_path = prefix+'include/uapi/linux/rp1_gpclk.h'
     manifest = {'schema': 'rp1-gpclk-dkms-installation-manifest-v1', 'schemaVersion': 1,
-        'repository': 'WsprryPi/RP1-DKMS', 'releaseTag': 'v'+VERSION, 'sourceCommit': commit,
+        'repository': 'WsprryPi/RP1-GPIO-CLK-DKMS', 'releaseTag': 'v'+VERSION, 'sourceCommit': commit,
         'productVersion': VERSION, 'debianVersion': DEBIAN,
         'package': {'name': PACKAGE, 'filename': DEB, 'sha256': sha((directory/DEB).read_bytes())},
         'dkmsModule': PACKAGE, 'kernelModule': MODULES[0],
@@ -74,7 +74,7 @@ def documents(files, commit, tree, timestamp, directory, release=False):
         'SPDX-License-Identifier': 'MIT', 'classification': classification, 'published': False,
         'productVersion': VERSION, 'debianVersion': DEBIAN, 'intendedTag': 'v'+VERSION,
         'releaseTag': 'v'+VERSION if release else None,
-        'releaseUrl': 'https://github.com/WsprryPi/RP1-DKMS/releases/tag/v'+VERSION if release else None,
+        'releaseUrl': 'https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/releases/tag/v'+VERSION if release else None,
         'githubAssetDigest': None,
         'sourceCommit': commit, 'sourceTree': tree,
         'sourceArchive': {'filename': SOURCE, 'sha256': sha((directory/SOURCE).read_bytes())},

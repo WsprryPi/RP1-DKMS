@@ -1,13 +1,13 @@
 <!-- SPDX-License-Identifier: MIT -->
 
-# RP1-DKMS repository and work-harness cleanup
+# RP1-GPIO-CLK-DKMS repository and work-harness cleanup
 
 Copyright (c) 2026 Lee Bussy. Adapted from WsprryPico's repository and
 work-harness cleanup guidance, distributed under the [MIT License](../../LICENSES/MIT.txt).
 
-Reusable execution prompt for a request such as **“clean up RP1-DKMS”**,
+Reusable execution prompt for a request such as **“clean up RP1-GPIO-CLK-DKMS”**,
 **“clean up this repository”**, or **“clean up the project and its harnesses”**
-when RP1-DKMS is the identified project. Read this entire prompt before
+when RP1-GPIO-CLK-DKMS is the identified project. Read this entire prompt before
 execution. Saving, linking or reviewing this prompt does not execute cleanup.
 An explicit inventory-only request stops after the inventory.
 
@@ -64,7 +64,7 @@ present capabilities, not a report of development or acceptance activity.
 
 The required level of product description is illustrated by:
 
-> RP1-DKMS provides a Linux kernel module for bounded control of the
+> RP1-GPIO-CLK-DKMS provides a Linux kernel module for bounded control of the
 > Raspberry Pi RP1 GPCLK0 peripheral. DKMS builds it for the installed stock
 > Raspberry Pi kernel; route selection and output require separate administration.
 
@@ -106,22 +106,22 @@ it contains a particular development keyword.
 ## Authority and scope
 
 An explicit cleanup invocation authorizes inventory, documentation maintenance
-and deletion of inspected, confidently classified obsolete RP1-DKMS artifacts
+and deletion of inspected, confidently classified obsolete RP1-GPIO-CLK-DKMS artifacts
 within the scope below. Produce and present the inventory before the first
 cleanup mutation, then proceed through clear items without routine per-file
 approval. An uncertain item stays on hold while independent work continues.
 
-1. The identified RP1-DKMS checkout, including tracked, untracked and ignored
-   files. The usual local checkout is `/Users/lbussy/GitHub/RP1-DKMS`; discover
+1. The identified RP1-GPIO-CLK-DKMS checkout, including tracked, untracked and ignored
+   files. The usual local checkout is `/Users/lbussy/GitHub/RP1-GPIO-CLK-DKMS`; discover
    its actual root, branch, revision, worktree and working state at execution.
 2. Local project-owned build trees, source snapshots, temporary directories,
    module/package copies, captures, logs, browser test profiles, staging areas and
    disposable test environments outside the checkout.
-3. Equivalent RP1-DKMS work areas on Raspberry Pi harness hosts identified
+3. Equivalent RP1-GPIO-CLK-DKMS work areas on Raspberry Pi harness hosts identified
    from current configuration, scripts, documentation and task context.
-   Inventory hosts only where a concrete RP1-DKMS connection exists;
+   Inventory hosts only where a concrete RP1-GPIO-CLK-DKMS connection exists;
    do not import WsprryPico's host or path hints.
-4. Clearly attributable RP1-DKMS run outputs inside a shared harness. This
+4. Clearly attributable RP1-GPIO-CLK-DKMS run outputs inside a shared harness. This
    scope covers disposable project data; maintained sibling-repository source,
    shared tools and another project's data remain outside it.
 

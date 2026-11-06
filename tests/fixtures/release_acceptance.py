@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-"""Historical acceptance fixtures, not an installation or release-selection tool."""
+"""Synthetic release parser fixtures; no real publication or predecessor support."""
 # Fixture logic retained from WsprryPi a091f0ef, scripts/maintainer/accept_rp1_release.py (MIT).
 from __future__ import annotations
 
@@ -17,13 +17,11 @@ import tempfile
 sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/"scripts"))
-LOCK_PATH = ROOT / "tests/fixtures/rp1-release-1.0.1.json"
+LOCK_PATH = ROOT / "tests/fixtures/synthetic-release-1.0.1.json"
 spec = importlib.util.spec_from_file_location("rp1_installer", ROOT / "scripts/provider_lifecycle.py")
 installer = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = installer
 spec.loader.exec_module(installer)
-# This read-only fixture verifier remains bound to its recorded repository.
-installer.configure_provider_repository(installer.LEGACY_REPOSITORY)
 require = installer.require
 
 

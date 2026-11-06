@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: RP1-GPCLK-DKMS
-Source: https://github.com/WsprryPi/RP1-DKMS
+Upstream-Name: RP1-GPIO-CLK-DKMS
+Source: https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS
 
 Files: *
 Copyright: 2025-2026 WsprryPi contributors

@@ -143,7 +143,7 @@ def _validate_snapshot(candidate, commit, release=False):
             metadata['sourceTree'] == tree and metadata['productVersion'] == VERSION and
             metadata['debianVersion'] == DEBIAN and metadata['intendedTag'] == 'v'+VERSION and
             metadata['releaseTag'] == ('v'+VERSION if release else None) and
-            metadata['releaseUrl'] == ('https://github.com/WsprryPi/RP1-DKMS/releases/tag/v'+VERSION if release else None) and
+            metadata['releaseUrl'] == ('https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/releases/tag/v'+VERSION if release else None) and
             metadata['githubAssetDigest'] is None,
             'candidate/development/publication provenance mismatch')
     require(metadata['sourceArchive'] == {'filename': SOURCE, 'sha256': sha(source)}, 'source archive provenance mismatch')

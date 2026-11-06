@@ -40,7 +40,7 @@ def installed_version(root, owned=None):
 def package_transition(root, owned):
     """Authenticate passive outgoing package and exact incoming payload identity.
 
-    Unknown legacy templates have no receipt, so they remain cleanup-first.
+    Unrecognized templates have no receipt and grant no transition authority.
     Native outgoing scripts run only after this independent incoming preflight.
     """
     if INCOMING is None:

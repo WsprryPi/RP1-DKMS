@@ -1,0 +1,41 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "schema": "wsprrypi-rp1-release-lock-v1",
+  "repository": "WsprryPi/RP1-GPIO-CLK-DKMS",
+  "sourceCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "sourceTree": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "productVersion": "1.0.0",
+  "debianVersion": "1.0.0-1",
+  "classification": "release",
+  "published": true,
+  "qualification": false,
+  "compatibilityIdentities": {
+    "gpio4": "v1.0.0-rp1-gpio4",
+    "gpio20": "v1.0.0-rp1-gpio20"
+  },
+  "uapiSha256": {
+    "consumer": "83fa44644c01b62cf8c23a434411c5e29913c8825523294477a8fb5326d5406a",
+    "controller": "8c60b66ebee6b96cbee2666a93bf4475fea66287e2212967745d8dfeb05cfbb5"
+  },
+  "overlaySha256": {
+    "gpio4": "201c5388a9895b544b2013a83eca4882c2406019040eda400eee26923db1051a",
+    "gpio20": "078904fa58183ed1f4a502e9233782fc0a9bc7256e41754403f46276e616f6f5"
+  },
+  "runtime": {
+    "binding": "rp1-gpclk-runtime-binding-v3",
+    "readiness": "rp1-gpclk-runtime-readiness-v1",
+    "update": "rp1-gpclk-runtime-update-v1"
+  },
+  "assets": {
+    "SHA256SUMS": "9fa3d595206b3691b319f0e756224655d10d7cf19879ff660d981b74f8b51309",
+    "candidate-validation.json": "d02714a79924c6224ef22828902ba5e5d3065674b6c00c435b1a40634ce9edad",
+    "release-metadata.json": "b04801f8558105acfd0497a50e9045243c260302cb0490f355dfa9930a44b11d",
+    "rp1-gpclk-compatibility-manifest.json": "3698b54696522757475a6560d96a5ecb6d6992fab73bd60f9a2ae51e4e221c52",
+    "rp1-gpclk-dkms-1.0.0.tar.gz": "065fa9deb36077b25fc9d4fcabd9d37093becb545ac7fc12d3581688ed944ded",
+    "rp1-gpclk-dkms-installation-manifest-v1.json": "8c7b451ce4c27422ad72fe65d751a0451d8d411f35a695d0fe30db8575c93c5a",
+    "rp1-gpclk-dkms_1.0.0-1_all.deb": "54465a4850699372ad682db2e8f59f33ca5a28286bb8e625c1025db27c3c2ba2"
+  },
+  "releaseTag": "v1.0.0",
+  "releaseUrl": "https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/releases/tag/v1.0.0",
+  "fixture": "synthetic-only; publication fields simulate parser inputs"
+}

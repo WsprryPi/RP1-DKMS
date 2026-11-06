@@ -4,7 +4,7 @@
 
 This document describes the **packaged boot/reboot profile**, including its
 passive source-development binding. The
-[runtime profile](https://github.com/WsprryPi/RP1-DKMS/blob/main/engineering/operations/runtime-manager-workflow.md) uses the same socket
+[runtime profile](https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/blob/main/engineering/operations/runtime-manager-workflow.md) uses the same socket
 with a different contract and schema. Query the profile before constructing any
 effect request; do not send these reboot operations to a runtime deployment.
 Package installation alone neither activates this executor's socket nor deploys

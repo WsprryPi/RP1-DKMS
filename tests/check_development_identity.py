@@ -70,6 +70,15 @@ with tempfile.TemporaryDirectory() as directory:
         manifest_path = destination/'DEVELOPMENT_MANIFEST.json'
         manifest_path.write_bytes(dev.canonical(manifest))
         dev.owned_source(destination, VERSION)
+        # Equal versions cannot turn an obsolete source authority into an owned repeat.
+        for repository in ('RP1-DKMS', 'RP1-GPCLK-DKMS'):
+            manifest['repositoryUrl'] = 'https://github.com/WsprryPi/'+repository+'.git'
+            manifest_path.write_bytes(dev.canonical(manifest))
+            rejected(lambda: dev.transition_preflight(VERSION, 'test-kernel', []),
+                     'repository ownership is unknown')
+        manifest['repositoryUrl'] = 'https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS.git'
+        manifest_path.write_bytes(dev.canonical(manifest))
+        assert dev.transition_preflight(VERSION, 'test-kernel', []) == destination
         (destination/'file').chmod(0o666)
         rejected(lambda: dev.owned_source(destination, VERSION), 'permissions')
         (destination/'file').chmod(0o644)

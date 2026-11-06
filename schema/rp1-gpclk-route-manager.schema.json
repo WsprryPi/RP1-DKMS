@@ -1,7 +1,7 @@
 {
   "SPDX-License-Identifier": "MIT",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/WsprryPi/RP1-DKMS/schema/rp1-gpclk-route-manager.schema.json",
+  "$id": "https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/schema/rp1-gpclk-route-manager.schema.json",
   "title": "RP1 GPCLK route manager request or response",
   "oneOf": [
     {"$ref": "#/$defs/queryRequest"}, {"$ref": "#/$defs/preflightRequest"},

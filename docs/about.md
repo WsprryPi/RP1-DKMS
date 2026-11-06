@@ -4,7 +4,7 @@
 
 RP1 is the I/O controller used on Pi 5-family systems. GPCLK is a general-purpose
 clock output, used here as the signal source for the transmitter's RF interface.
-WsprryPi prepares the signal and schedules transmissions. RP1-DKMS
+WsprryPi prepares the signal and schedules transmissions. RP1-GPIO-CLK-DKMS
 controls the Pi's RP1 GPCLK0 output using the stock Raspberry Pi clock driver.
 The module accepts finite tone and gap sequences and permits one execution
 owner at a time. Cancellation prevents further chunks and drains bounded

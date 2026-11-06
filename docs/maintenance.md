@@ -43,7 +43,7 @@ reviewed source's read-only preflight with the verified candidate package. Keep 
 previous package for recovery, and check that obsolete source, DKMS, schema, and
 module artifacts are gone after the update. Changed files, unknown ownership,
 incompatible lifecycle state, or an active runtime require owning recovery first.
-Follow the [standalone package procedure](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/package-lifecycle.md)
+Follow the [standalone package procedure](https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/blob/devel/engineering/operations/package-lifecycle.md)
 for commands, removal, and explicit downgrade recovery.
 
 ## After a kernel update
@@ -141,7 +141,7 @@ and check its overall result rather than deleting RP1 directories manually.
 
 Standalone removal requires prior owning route/deployment cleanup and verified
 absence of active modules and endpoints. Follow the
-[package lifecycle procedure](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/package-lifecycle.md).
+[package lifecycle procedure](https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS/blob/devel/engineering/operations/package-lifecycle.md).
 Administrator signing keys, trust entries, shared configuration, and unrelated
 files are retained. Removing a GPIO route alone is sufficient if you
 want to stop using that output while keeping the software installed.

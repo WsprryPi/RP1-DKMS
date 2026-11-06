@@ -30,7 +30,7 @@
       "const": 1
     },
     "repository": {
-      "const": "WsprryPi/RP1-DKMS"
+      "const": "WsprryPi/RP1-GPIO-CLK-DKMS"
     },
     "productVersion": {
       "type": "string",

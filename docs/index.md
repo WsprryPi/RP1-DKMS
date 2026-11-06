@@ -2,7 +2,7 @@
 
 # RP1 GPCLK DKMS
 
-RP1-DKMS lets WsprryPi control the RP1 clock output on Raspberry Pi 5
+RP1-GPIO-CLK-DKMS lets WsprryPi control the RP1 clock output on Raspberry Pi 5
 and Compute Module 5 systems. It provides the kernel modules and managed route
 service used to send a signal through **GPIO4** or **GPIO20**. DKMS builds the
 modules for the installed stock Raspberry Pi kernel.

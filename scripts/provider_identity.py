@@ -32,7 +32,7 @@ def describe(root=None):
     version, debian = from_header(read(root/'include/rp1_gpclk/version.h',4096).decode())
     return {
         'schemaVersion': 1, 'contract': CONTRACT,
-        'repository': 'WsprryPi/RP1-DKMS', 'module': 'rp1-gpclk-dkms',
+        'repository': 'WsprryPi/RP1-GPIO-CLK-DKMS', 'module': 'rp1-gpclk-dkms',
         'productVersion': version, 'debianVersion': debian,
         'interfaces': dict(INTERFACES), 'capabilities': list(CAPABILITIES),
         'compatibilityIdentities': {route: 'v'+version+'-rp1-'+route for route in ('gpio4','gpio20')},
@@ -46,7 +46,7 @@ def validate(value, requirements=None):
               'interfaces','capabilities','compatibilityIdentities','uapiSha256'}
     if (not isinstance(value,dict) or set(value)!=fields or type(value['schemaVersion']) is not int
             or value['schemaVersion']!=1 or value['contract']!=CONTRACT
-            or value['repository']!='WsprryPi/RP1-DKMS' or value['module']!='rp1-gpclk-dkms'):
+            or value['repository']!='WsprryPi/RP1-GPIO-CLK-DKMS' or value['module']!='rp1-gpclk-dkms'):
         raise ValueError('provider identity contract differs')
     parse(value['productVersion'])
     if len(value['productVersion'])>48:raise ValueError('provider version exceeds UAPI identity capacity')

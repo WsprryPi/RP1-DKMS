@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: MIT -->
 
-# RP1-GPCLK-DKMS repository instructions
+# RP1-GPIO-CLK-DKMS repository instructions
 
 These instructions apply to the entire project unless a more specific nested
 `AGENTS.md` overrides them.
@@ -25,7 +25,7 @@ These instructions apply to the entire project unless a more specific nested
 - Cleanup retires obsolete project material and maintains clear documentation
   of the current product while preserving useful source, tests, tools, settings
   and recovery resources.
-- For an explicit request to clean up RP1-GPCLK-DKMS or this project/repository,
+- For an explicit request to clean up RP1-GPIO-CLK-DKMS or this project/repository,
   follow [the reusable cleanup prompt](engineering/development/repository-cleanup-prompt.md).
 - Inventory deletion, rewrite, retention and hold decisions before cleanup
   changes. Cover project artifacts in the checkout, local work areas and

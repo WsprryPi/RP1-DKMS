@@ -10,7 +10,7 @@ CHECKS = (
     'check_versioning.py',
     'check_provider_lifecycle.py',
     'check_provider_facade.py',
-    'check_legacy_release_acceptance.py',
+    'check_release_acceptance.py',
     'check_provider_update_integration.py',
     'check_development_workflow.py',
     'check_development_identity.py',

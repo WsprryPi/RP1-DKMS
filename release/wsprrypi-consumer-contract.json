@@ -44,7 +44,7 @@
   "deferredAcceptance": [
     "Physical execution and RF qualification remain separate from lifecycle/interface acceptance"
   ],
-  "providerRepository": "WsprryPi/RP1-DKMS",
+  "providerRepository": "WsprryPi/RP1-GPIO-CLK-DKMS",
   "runtimeReadiness": "rp1-gpclk-runtime-readiness-v1",
   "providerLifecycle": "rp1-gpclk-provider-lifecycle-v1",
   "providerIdentity": "rp1-gpclk-provider-identity-v1",

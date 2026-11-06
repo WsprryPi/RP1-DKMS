@@ -10,7 +10,7 @@ Build-Depends:
  python3,
 Standards-Version: 4.7.2
 Rules-Requires-Root: no
-Homepage: https://github.com/WsprryPi/RP1-DKMS
+Homepage: https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS
 
 Package: rp1-gpclk-dkms
 Architecture: all

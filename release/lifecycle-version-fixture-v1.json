@@ -1,0 +1,14 @@
+{
+  "SPDX-License-Identifier": "MIT",
+  "schema": "rp1-gpclk-lifecycle-version-fixture-v1",
+  "version": "0.0.0",
+  "debianVersion": "0.0.0-1",
+  "classification": "synthetic-lifecycle-fixture",
+  "previouslyPublished": false,
+  "profile": "runtime-controller",
+  "transitionPolicy": "current-passive-package-upgrade",
+  "rollbackPolicy": "remove-successor-then-reinstall-exact-retained-fixture",
+  "directUpgrade": true,
+  "directDowngrade": false,
+  "fixturePolicy": "Current passive package at a synthetic test version; never publish."
+}

@@ -17,7 +17,8 @@ Neither side reconstructs the other's private recovery plans.
 
 `identity` returns one bounded JSON envelope with integer `schemaVersion: 1`,
 `contract: rp1-gpclk-provider-lifecycle-v1`, the operation, and `status: ok`.
-Its `providerIdentity` has the `rp1-gpclk-provider-identity-v1` contract and
+Its sole repository authority is `WsprryPi/RP1-GPIO-CLK-DKMS`. Other repository
+identities and application-owned receipt imports are rejected. Its `providerIdentity` has the `rp1-gpclk-provider-identity-v1` contract and
 reports repository/module, product and Debian versions, runtime/lifecycle
 interfaces, lifecycle capabilities, both route compatibility identities, and
 canonical consumer/controller UAPI hashes. The canonical version header is the
@@ -98,12 +99,6 @@ or nonempty directories are preserved.
 Completed development evidence and immutable predecessor recovery inputs remain
 attributable recovery material rather than installed provider payload. They may
 be retired separately only after terminal rollback and absence of live references.
-
-The explicit `adopt --receipt EXPORTED_RECEIPT` adapter accepts the prior
-WsprryPi ownership schema from a client-supplied, protected export. It verifies
-the existing native/runtime evidence before creating the provider-owned receipt.
-The client retires its unchanged old receipt only after successful adoption.
-The provider does not discover or rewrite application configuration or records.
 
 Production source selection requires actual eligible published artifacts.
 Development selection can use exact authoritative commits or explicitly selected

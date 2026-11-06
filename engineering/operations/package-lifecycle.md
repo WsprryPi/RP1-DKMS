@@ -9,16 +9,11 @@ not a target or application qualification record.
 
 ## Identities and ownership
 
-The maintained predecessor is a synthetic lifecycle fixture. Its
-[record](../../release/lifecycle-predecessor-v1.json) binds licensed legacy
-packaging templates and their exact checksums. The builder uses current module
-source with a fixture version and an ordinary single-consumer DKMS profile.
-It exercises legacy overlay copies, service helper attempts, native package
-operations, cleanup refusal, rollback, and retry behavior in restricted containers.
-It is not the historical package, preserves no old Git object dependency, and
-establishes no historical or target qualification. Template provenance is retained.
-The successor owns both interlocked modules in one DKMS instance. Equal UAPI
-bytes do not establish package or runtime migration compatibility.
+The maintained [synthetic version fixture](../../release/lifecycle-version-fixture-v1.json)
+uses current passive packaging and both modules at a test-only version. It
+exercises normal upgrades, removal, rollback, and retry in restricted containers.
+It supplies no published predecessor identity or historical qualification.
+Equal UAPI bytes alone establish no package or runtime transition authority.
 
 The current package owns its complete dpkg-listed data: versioned `/usr/src`
 closure, inactive `/usr/lib/rp1-gpclk-dkms/overlays`, route executors under
@@ -38,7 +33,7 @@ trust enrollment, DKMS-global configuration, boot configuration, foreign overlay
 files, unrelated DKMS instances and application state remain outside package
 ownership. Runtime state, source-development installations, manager drop-ins and
 The provider's `/var/lib/rp1-gpclk-dkms/provider-installation.json` receipt and
-legacy client `/var/lib/wsprrypi/rp1-gpclk-dkms-installation.json` record block
+unrecognized application `/var/lib/wsprrypi/rp1-gpclk-dkms-installation.json` record block
 replacement/removal until their owning workflow retires them. A nonstandard
 application record path must also be checked by its owning orchestrator; the
 package does not search arbitrary application files or infer their ownership.
@@ -65,24 +60,15 @@ either endpoint. The incoming preinst embeds those exact guard bytes and runs
 Python in isolated mode. It does not trust an older installed helper. Configure and removal repeat the
 appropriate checks before native DKMS effects.
 
-Debian invokes the outgoing prerm before the incoming preinst. Consequently a
-new package cannot prevent an old script's earlier effects. Direct predecessor-to-successor replacement is unsupported and refused; do not bypass the external
-preflight by running dpkg first. The approved path is owning runtime/development
-cleanup, owning predecessor removal, then a clean successor installation.
-The old scripts copy inactive overlays into `/boot` and contain debhelper
-systemd integration. Their cleanup has historical boot/service effects and needs
-its own authorization on an actual host. It is not covered by the current
-package's passive guarantees. Never delete their evidence to admit the successor.
+Debian invokes the outgoing prerm before the incoming preinst. Run the external
+preflight first: an incoming package cannot prevent an unrecognized outgoing
+script's effects. Unrecognized packages, receipts, and source identities are
+refused and confer no cleanup or replacement authority.
 
-Packages from the predecessor repository are different software identities,
-and require manual removal. Direct replacement is
-refused: use owning cleanup and removal before a clean installation. No fixture
-result establishes target acceptance for those original packages.
-
-The same rule applies to downgrade: never submit a predecessor archive over an
-installed successor. Version ordering is not rollback. The predecessor preinst
-also refuses an in-place downgrade, but that check is later than the successor
-prerm. Verify successor absence before submitting the retained old archive.
+Only packages using the current passive contract participate in ordinary
+updates. Downgrades require explicit owning removal and verified absence before
+reinstallation of an exact retained package. Version ordering alone grants no
+rollback authority.
 
 ## Repeat, kernels, compression and signing
 
@@ -186,8 +172,7 @@ install the retained predecessor through its owning policy. This restores the
 predecessor's package/module profile across installed kernels; it does not
 restore runtime-controller sessions, routes, WsprryPi ownership/configuration,
 services, a transmission or qualification. A failed predecessor configure is
-retried with that exact package's own `dpkg --configure` path. Legacy effects
-remain separately scoped, including during rollback.
+retried with that exact package's own `dpkg --configure` path. Only versions using the current passive package contract are accepted.
 
 ## Disposable integration harness
 
@@ -204,7 +189,7 @@ can record results without `CAP_DAC_OVERRIDE`.
 
 ```sh
 docker build -t rp1-package-lifecycle -f tools/package-lifecycle.Containerfile .
-./scripts/build-lifecycle-predecessor \
+./scripts/build-lifecycle-version-fixture \
   --source-commit "$(git rev-parse HEAD)" \
   --output /absolute/new/predecessor
 python3 tools/run-package-lifecycle.py --image rp1-package-lifecycle \
@@ -212,13 +197,11 @@ python3 tools/run-package-lifecycle.py --image rp1-package-lifecycle \
   --predecessor /absolute/new/predecessor --output /absolute/new/results
 ```
 
-The predecessor builder runs in the provisioned Linux build environment, not on
+The synthetic version-fixture builder runs in the provisioned Linux build environment, not on
 macOS. Use the current exact clean source commit; no historical tag or Git object is required.
 Use `--scenario` for a focused rerun. The harness records distribution,
 architecture, package manager, DKMS/compiler/compression tools, header configs,
-candidate/predecessor digests and every before/after transition. Legacy service
-attempts are separately logged and interlocked; candidate service/module-loader
-attempts fail the test. Native DKMS is real; command faults and signing/compression
+candidate/predecessor digests and every before/after transition. All service and module-loader attempts fail the test. Native DKMS is real; command faults and signing/compression
 header variants are explicitly controlled test inputs.
 
 The `packaged-runtime-baseline` scenario checks runtime directory pruning and

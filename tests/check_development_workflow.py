@@ -22,6 +22,7 @@ def fixture_repo(base: pathlib.Path) -> pathlib.Path:
     command("git", "init", "-q", cwd=source); command("git", "config", "user.email", "test@example.invalid", cwd=source)
     command("git", "config", "user.name", "test", cwd=source); command("git", "add", ".", cwd=source)
     assert command("git", "commit", "-qm", "fixture", cwd=source).returncode == 0
+    assert command("git", "remote", "add", "origin", "https://github.com/WsprryPi/RP1-GPIO-CLK-DKMS.git", cwd=source).returncode == 0
     return source
 
 

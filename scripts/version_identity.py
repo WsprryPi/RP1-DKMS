@@ -9,7 +9,7 @@ import json
 import re
 import subprocess
 
-REPOSITORY = 'WsprryPi/RP1-DKMS'
+REPOSITORY = 'WsprryPi/RP1-GPIO-CLK-DKMS'
 LIFECYCLE = 'passive-dkms-v1'
 PACKAGE = 'rp1-gpclk-dkms'
 SEMVER = re.compile(r'(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?')

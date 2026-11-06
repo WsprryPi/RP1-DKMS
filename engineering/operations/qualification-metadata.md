@@ -2,7 +2,7 @@
 
 # Qualification boundaries
 
-RP1-DKMS development source has no inherited release, hardware, or RF qualification.
+RP1-GPIO-CLK-DKMS development source has no inherited release, hardware, or RF qualification.
 Build compatibility, structural compatibility, operational readiness, external
 scoped qualification, and WsprryPi application eligibility are separate facts.
 GPIO4 evidence does not qualify GPIO20, nor does a finite conducted tone result

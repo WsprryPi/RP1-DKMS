@@ -1,8 +1,8 @@
 #!/usr/bin/python3 -I
 # SPDX-License-Identifier: MIT
-"""Build a synthetic legacy-effects package from current source for isolated tests.
+"""Build a synthetic version of current passive packaging for isolated tests.
 
-This is not the original predecessor package and establishes no historical qualification.
+This fixture establishes no publication, predecessor identity, or qualification.
 """
 import argparse
 import json
@@ -17,8 +17,6 @@ sys.path.insert(0, str(ROOT/'scripts'))
 from release_contract import (build_environment, command, epoch, git, inventory,
                               package_members, require, sha, source_files, tools, write_source)
 
-TRANSFORM = '\noverride_dh_builddeb:\n\tdh_builddeb -- -Zgzip -z9 --threads-max=1\n'
-
 
 def select(commit, record):
     require(len(commit) == 40 and all(c in '0123456789abcdef' for c in commit),
@@ -28,25 +26,16 @@ def select(commit, record):
 
 
 def render(files, record):
-    """Render legacy package effects with current module source, never old Git objects."""
+    """Use current passive packaging with a synthetic version, never historical templates."""
     files = dict(files)
     changes = []
-    for name, digest in record['fixtureSha256'].items():
-        path = 'tests/fixtures/lifecycle-legacy/'+name
-        require(path in files, 'missing predecessor fixture input: '+name)
-        data = files[path][1]
-        require(sha(data) == digest, 'predecessor fixture differs: '+name)
-        files['debian/'+name] = (0o755 if name == 'rules' else 0o644), data
-        changes.append({'path': 'debian/'+name, 'operation': 'maintained-legacy-fixture', 'sha256': digest})
     version = files['include/rp1_gpclk/version.h'][1]
     import re
     version, count = re.subn(rb'(#define RP1_GPCLK_MODULE_VERSION ")[^"]+("[\r\n])',
                             lambda match: match.group(1)+record['version'].encode()+match.group(2), version)
     require(count == 1, 'predecessor fixture version substitution failed')
     files['include/rp1_gpclk/version.h'] = 0o644, version
-    files['debian/changelog'] = 0o644, ('rp1-gpclk-dkms ('+record['debianVersion']+') UNRELEASED; urgency=medium\n\n  * Synthetic legacy lifecycle regression fixture; never publish.\n\n -- Fixture <fixture@example.invalid>  Thu, 01 Jan 1970 00:00:00 +0000\n').encode()
-    mode, rules = files['debian/rules']
-    files['debian/rules'] = mode, rules+TRANSFORM.encode()
+    files['debian/changelog'] = 0o644, ('rp1-gpclk-dkms ('+record['debianVersion']+') UNRELEASED; urgency=medium\n\n  * Synthetic passive version regression fixture; never publish.\n\n -- Fixture <fixture@example.invalid>  Thu, 01 Jan 1970 00:00:00 +0000\n').encode()
     return files, changes
 
 
@@ -55,7 +44,7 @@ def main():
     parser.add_argument('--source-commit', required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
-    record = json.loads((ROOT/'release/lifecycle-predecessor-v1.json').read_text())
+    record = json.loads((ROOT/'release/lifecycle-version-fixture-v1.json').read_text())
     select(args.source_commit, record)
     require(sys.platform == 'linux', 'Linux Debian packaging tools required')
     output = args.output
@@ -69,7 +58,7 @@ def main():
     require(git(ROOT, 'rev-parse', 'HEAD').decode().strip() == args.source_commit,
             'predecessor fixture requires current source identity')
     original = source_files(ROOT, args.source_commit)
-    record = json.loads(original['release/lifecycle-predecessor-v1.json'][1])
+    record = json.loads(original['release/lifecycle-version-fixture-v1.json'][1])
     select(args.source_commit, record)
     files, changes = render(original, record)
     package = 'rp1-gpclk-dkms_'+record['debianVersion']+'_all.deb'
@@ -91,7 +80,7 @@ def main():
     record.update(package=package, packageSha256=sha(outputs[0]),
                   packageInventory=inventory(members), controlInventory=inventory(controls),
                   transformations=changes, reproducible=True,
-                  sourceCommit=args.source_commit, runtimeInputsUnchanged=False, packageScriptsPassive=False,
+                  sourceCommit=args.source_commit, runtimeInputsUnchanged=False, packageScriptsPassive=True,
                   build={'sourceDateEpoch': epoch(ROOT, args.source_commit), 'tools': tools()})
     output.mkdir()
     try:

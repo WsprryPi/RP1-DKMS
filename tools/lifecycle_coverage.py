@@ -26,7 +26,7 @@ ROWS = '''
 14 foreign-state refuse-duplicate-module
 15 missing-headers refuse-missing-headers
 16 foreign-state refuse-unknown-hook
-17 predecessor refuse-direct-upgrade-before-dpkg
+17 predecessor passive-version-upgrade
 18 predecessor successor-clean-install
 19 predecessor refuse-direct-downgrade-before-dpkg
 20 multi-kernel one-kernel-purge
@@ -84,7 +84,7 @@ ROWS = expand(ROWS)
 RULES = {row[0]: (row[1], row[2:]) for row in (line.split() for line in ROWS.splitlines() if line)}
 MATRIX = Path(__file__).resolve().parents[1]/'release/package-lifecycle-matrix-v1.json'
 def fixture_identity():
-    return json.loads((MATRIX.parent/'lifecycle-predecessor-v1.json').read_text())
+    return json.loads((MATRIX.parent/'lifecycle-version-fixture-v1.json').read_text())
 KERNELS = ('6.18.50+rpt-rpi-2712', '6.18.50+rpt-rpi-v8')
 
 
@@ -112,12 +112,12 @@ def state_is(name, before, after):
         return not modules and not dkms and after.get('sourceTrees') == []
     if name == 'preinstall-refused':
         return not modules and not dkms and after.get('sourceTrees') == []
-    if name in ('installed', 'one-kernel', 'legacy'):
-        count = 4 if name == 'installed' else 2
-        version = FIXTURE['version'] if name == 'legacy' else f'{VERSION}'
-        return (status == 'ii  '+(FIXTURE['debianVersion'] if name == 'legacy' else DEBIAN) and len(modules) == count
+    if name in ('installed', 'one-kernel', 'version-fixture'):
+        count = 2 if name == 'one-kernel' else 4
+        version = FIXTURE['version'] if name == 'version-fixture' else f'{VERSION}'
+        return (status == 'ii  '+(FIXTURE['debianVersion'] if name == 'version-fixture' else DEBIAN) and len(modules) == count
                 and all(m.get('version') == version for m in modules)
-                and dkms.count(': installed') == count//(1 if name == 'legacy' else 2))
+                and dkms.count(': installed') == count//2)
     expected = {
         'dependency-unconfigured': (f'iU  {DEBIAN}', 0),
         'unpack-aborted': ('in', 0),
@@ -130,8 +130,8 @@ def state_is(name, before, after):
         'failed-remove': (f'ri  {DEBIAN}', 4),
         'failed-purge': (f'pi  {DEBIAN}', 4),
         'failed-remove-index': (f'ri  {DEBIAN}', 0),
-        'legacy-partial': ('iF  '+FIXTURE['debianVersion'], 0),
-        'legacy-remove-failed': ('pi  '+FIXTURE['debianVersion'], 2),
+        'version-fixture-partial': ('iF  '+FIXTURE['debianVersion'], 0),
+        'version-fixture-remove-failed': ('pi  '+FIXTURE['debianVersion'], 4),
     }
     require(name in expected, 'unsupported matrix state oracle: '+name)
     return (status, len(modules)) == expected[name]
@@ -144,9 +144,9 @@ def starting_context(case_id, step):
     groups = {
         0: (1, 6, 7, 8, 9, 10, 11, 12, 15, 16, 18, 27, 32, 33, 34, 35, 36,
             37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 50, 56, 57, 58, 62, 26, 65, 67),
-        2: (17, 20, 28, 29, 66),
+        2: (20, 28, 29),
         3: (5,),
-        4: (2, 3, 4, 13, 19, 21, 22, 23, 25, 30, 31, 49, 51, 52, 53,
+        4: (17, 66, 2, 3, 4, 13, 19, 21, 22, 23, 25, 30, 31, 49, 51, 52, 53,
             54, 55, 60, 61, 63, 64, 68, 69),
         5: (14,),
     }
@@ -166,8 +166,8 @@ def starting_context(case_id, step):
 
 def command_is(case_id, step):
     number = int(case_id)
-    if number in (17, 19):
-        prefix = ['python3', '/source/scripts/package_preflight.py', 'unpack'] if number == 17 else ['sh', '/tmp/old-control/preinst', 'upgrade', f'{DEBIAN}']
+    if number == 19:
+        prefix = ['sh', '/tmp/old-control/preinst', 'upgrade', f'{DEBIAN}']
     elif number in (68, 69):
         prefix = ['in-process', 'runtime_deployment.Files.prune_removed_directories']
     elif number == 3:
@@ -222,7 +222,7 @@ def attribute(value):
         require([step['stage'] for step in steps] == ['interrupted-before-configure', 'recover-configure', 'purge'], 'unpack recovery stages differ')
     final = {'clean-cycle': 'final-purge', 'foreign-state': 'purge-restored-fixture',
              'packaged-runtime-baseline': 'purge-after-runtime-retirement',
-             'predecessor': 'final-predecessor-cleanup', 'compression-signing': 'remove-.ko.zst'}
+             'predecessor': 'purge', 'compression-signing': 'remove-.ko.zst'}
     if scenario != 'header-profiles':
         require(steps[-1]['stage'] == final.get(scenario, 'purge') and steps[-1]['exitStatus'] == 0
                 and state_is('absent', steps[-1]['before'], steps[-1]['after']), 'final cleanup stage missing')
