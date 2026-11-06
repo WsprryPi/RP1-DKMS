@@ -291,7 +291,7 @@ class CurrentDefaultTests(unittest.TestCase):
                  mock.patch.object(MOD, 'download_release') as release_download, \
                  mock.patch.object(MOD, 'record_digest', return_value=None), \
                  mock.patch.object(MOD, 'render_plan'):
-                self.assertEqual(MOD.main(['prepare', '--state-dir', str(state),
+                self.assertEqual(MOD.main(['prepare', '--state-dir', str(state), '--record', str(state/'installation.json'),
                     '--source-policy', 'development', '--install', 'true']), 0)
             source.assert_called_once()
             self.assertEqual(source.call_args.args[1:3], ('devel', None))
@@ -311,7 +311,7 @@ class CurrentDefaultTests(unittest.TestCase):
                  mock.patch.object(MOD, 'runtime_residue_inventory', return_value=[]), \
                  mock.patch.object(MOD, 'download_release', side_effect=MOD.ContractError('no eligible release')), \
                  mock.patch.object(MOD, 'prepare_development') as source:
-                self.assertEqual(MOD.main(['prepare', '--state-dir', str(state),
+                self.assertEqual(MOD.main(['prepare', '--state-dir', str(state), '--record', str(state/'installation.json'),
                     '--source-policy', 'main', '--install', 'true']), 1)
             source.assert_not_called()
             self.assertFalse((state/'plan.json').exists())
