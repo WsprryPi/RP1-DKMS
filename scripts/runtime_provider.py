@@ -48,7 +48,7 @@ def canonical_digest(value):
 
 def validate_idle(query, idle):
     if (not isinstance(query, dict) or not isinstance(idle, dict) or
-            idle.get('schemaVersion') != 3 or
+            type(idle.get('schemaVersion')) is not int or idle['schemaVersion'] != 1 or
             idle.get('contract') != client.CONTRACT or
             idle.get('operation') != 'idle' or idle.get('status') != 'ok' or
             not isinstance(idle.get('state'), dict)):
@@ -196,14 +196,14 @@ class Host:
 
     def manager(self):
         try:
-            query = client.exchange({'schemaVersion': 3, 'operation': 'query'})
+            query = client.exchange({'schemaVersion': 1, 'operation': 'query'})
             if (query.get('operation') != 'query' or query.get('status') != 'ok' or
                     not isinstance(query.get('state'), dict)):
                 raise ValueError('runtime query response schema')
             result = {'status': 'observed', 'query': query}
             route = query.get('state', {}).get('activeRoute')
             if route in ROUTES:
-                idle = client.exchange({'schemaVersion': 3,
+                idle = client.exchange({'schemaVersion': 1,
                     'operation': 'idle', 'route': route})
                 validate_idle(query, idle)
                 result['idle'] = idle
@@ -307,7 +307,7 @@ class Host:
 
     def update_route_recover(self, expected):
         import runtime_manager
-        return runtime_manager.dispatch({'schemaVersion': 3, 'operation': 'recover',
+        return runtime_manager.dispatch({'schemaVersion': 1, 'operation': 'recover',
             'execute': True, 'requestId': str(uuid.uuid4()),
             'actor': 'runtime-provider-update'}, mutation_lock=contextlib.nullcontext,
             expected_recovery=expected)
@@ -864,7 +864,7 @@ def route_plan(result, route):
                 'requestedRoute': result['routes']['requested'],
                 'configuredRoute': result['routes']['configured'],
                 'persistedRoute': result['routes']['persisted']}
-    checked = client.exchange({'schemaVersion': 3, 'operation': 'preflight', 'route': route})
+    checked = client.exchange({'schemaVersion': 1, 'operation': 'preflight', 'route': route})
     if checked.get('status') != 'ok':
         raise ValueError('route preflight failed')
     return {'version': 1, 'operation': 'select', 'route': route, 'alreadyReady': False,
@@ -1053,7 +1053,7 @@ def main(host=None):
     if selected['alreadyReady']:
         reply = {'status': 'idempotent-ready'}
     else:
-        reply = client.exchange({'schemaVersion': 3, 'operation': 'switch',
+        reply = client.exchange({'schemaVersion': 1, 'operation': 'switch',
             'route': args.route, 'execute': True, 'requestId': str(uuid.uuid4()),
             'actor': 'runtime-provider-installer',
             'preflightToken': selected['preflightToken']})

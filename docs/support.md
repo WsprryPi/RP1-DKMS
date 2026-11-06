@@ -5,7 +5,7 @@
 For WsprryPi installation, web interface, scheduling and application setup,
 start with [WsprryPi support](https://wsprry-pi.readthedocs.io/en/devel/Support/index.html).
 For a confirmed module, provider packaging or route-management problem, use
-[RP1-GPCLK-DKMS issues](https://github.com/WsprryPi/RP1-DKMS/issues).
+[RP1-DKMS issues](https://github.com/WsprryPi/RP1-DKMS/issues).
 If the cause is unclear, describe the failing action and its message in the
 WsprryPi support request.
 

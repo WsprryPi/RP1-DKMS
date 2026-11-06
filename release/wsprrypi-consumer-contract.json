@@ -38,7 +38,7 @@
     "non-draft",
     "non-prerelease"
   ],
-  "runtimeBinding": "rp1-gpclk-runtime-binding-v3",
+  "runtimeBinding": "rp1-gpclk-runtime-binding-v1",
   "runtimeUpdate": "rp1-gpclk-runtime-update-v1",
   "qualificationClaim": false,
   "deferredAcceptance": [

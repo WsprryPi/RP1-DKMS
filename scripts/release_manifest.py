@@ -29,7 +29,7 @@ def validate_source(files):
     constants = {n.targets[0].id: ast.literal_eval(n.value) for n in binding.body
                  if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Name)
                  and n.targets[0].id in ('CONTRACT', 'PRODUCT_VERSION', 'COMPATIBILITY')}
-    require(constants == {'CONTRACT': 'rp1-gpclk-runtime-binding-v3', 'PRODUCT_VERSION': VERSION,
+    require(constants == {'CONTRACT': 'rp1-gpclk-runtime-binding-v1', 'PRODUCT_VERSION': VERSION,
                           'COMPATIBILITY': {r: f'v{VERSION}-rp1-{r}' for r in ('gpio4', 'gpio20')}},
             'runtime binding identity mismatch')
     for route in ('gpio4', 'gpio20'):
@@ -101,7 +101,7 @@ def documents(files, commit, tree, timestamp, directory, release=False):
                        'sha256': sha(files['include/uapi/linux/'+name][1])}
                  for name in ('rp1_gpclk.h', 'rp1_route_admin.h')},
         'routes': routes,
-        'runtime': {'binding': 'rp1-gpclk-runtime-binding-v3',
+        'runtime': {'binding': 'rp1-gpclk-runtime-binding-v1',
                     'readiness': 'rp1-gpclk-runtime-readiness-v1',
                     'update': 'rp1-gpclk-runtime-update-v1',
                     'tools': {name: sha(data) for name, (_, data) in files.items()

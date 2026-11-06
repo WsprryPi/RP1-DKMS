@@ -4,7 +4,7 @@
 
 RP1 is the I/O controller used on Pi 5-family systems. GPCLK is a general-purpose
 clock output, used here as the signal source for the transmitter's RF interface.
-WsprryPi prepares the signal and schedules transmissions. RP1-GPCLK-DKMS
+WsprryPi prepares the signal and schedules transmissions. RP1-DKMS
 controls the Pi's RP1 GPCLK0 output using the stock Raspberry Pi clock driver.
 The module accepts finite tone and gap sequences and permits one execution
 owner at a time. Cancellation prevents further chunks and drains bounded
@@ -47,8 +47,7 @@ engineering test client. Start with [use an installed system](getting-started.md
 
 ## Software and support limits
 
-The development source version is **0.0.1**, Debian package **0.0.1-1**;
-it is not a published release.
+This is development source, not a published release.
 Neutral activation creates the route-manager group if absent, including when
 Debian package configuration has not run. Existing group membership and numeric
 identity are preserved. This source has distinct package, module, and route identities. Evidence for

@@ -26,7 +26,7 @@ class Machine(System):
 
 class Tests(unittest.TestCase):
     def request(self, machine, operation='idle', **extra):
-        return manager._dispatch(dict(schemaVersion=3, operation=operation, route='gpio20', **extra), lambda:machine)
+        return manager._dispatch(dict(schemaVersion=1, operation=operation, route='gpio20', **extra), lambda:machine)
     def test_idle_and_operation_reconcile_do_not_authorize_or_change_route(self):
         machine = Machine()
         before = copy.deepcopy(machine.value)
@@ -116,8 +116,9 @@ class Tests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 output.parse_snapshot(changed)
     def test_no_legacy_mutation_translation_or_extra_fields(self):
-        for value in (dict(schemaVersion=1,operation='idle',route='gpio20'),
-                      dict(schemaVersion=3,operation='idle',route='gpio20',execute=True)):
+        for value in (dict(schemaVersion=2,operation='idle',route='gpio20'),
+                      dict(schemaVersion=3,operation='idle',route='gpio20'),
+                      dict(schemaVersion=1,operation='idle',route='gpio20',execute=True)):
             with self.assertRaises(ValueError): manager._dispatch(value, Machine)
 
 if __name__ == '__main__': __import__("nonempty_unittest").main()

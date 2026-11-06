@@ -2,7 +2,7 @@
 
 # CI reliability and efficiency campaign
 
-This maintained phase list covers the selected RP1-GPCLK-DKMS CI work.
+This maintained phase list covers the selected RP1-DKMS CI work.
 Reliability, safety, required coverage, and defect detection take priority over
 speed and maintenance reductions. Reduction targets cannot waive assurance gates.
 

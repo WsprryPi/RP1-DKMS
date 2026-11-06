@@ -313,7 +313,7 @@ whose identity and ownership remain attributable to the package.
 
 The package also owns a versioned application-facing
 route executor, its JSON schema, and consumer documentation. The executor owns
-only the delimited RP1-GPCLK-DKMS route block and attributable journals below
+only its delimited managed route block and attributable journals below
 `/var/lib/rp1-gpclk-dkms/route-transactions`. It keeps saved/configured and
 post-boot active routes separate, rejects ambiguous ownership, and exposes no
 qualification-plan interface. Package installation remains route-neutral and
@@ -322,8 +322,8 @@ does not create runtime state.
 The [package transition contract](../operations/package-lifecycle.md) requires
 read-only preflight before the package manager, exact inactive ownership, complete
 payload identity and native DKMS/cache agreement. Same-version replacement
-rebuilds every eligible installed kernel. The maintained synthetic predecessor is
-`0.0.0-1`; its legacy boot/systemd lifecycle differs. Direct upgrade/downgrade is refused. Owning predecessor removal
+rebuilds every eligible installed kernel. The maintained synthetic predecessor has a legacy boot/systemd lifecycle.
+Direct upgrade/downgrade is refused. Owning predecessor removal
 precedes clean successor installation; rollback removes the successor before exact
 retained predecessor reinstall. No package transition restores runtime sessions,
 application state or qualification. Native kernel hooks remain distribution-owned;
@@ -401,13 +401,13 @@ authorization for their system effects. Output-inhibited administration, live
 GPIO behavior, timing, transmission, and RF are separate evidence classes and
 must not be inferred from one another.
 
-For the `0.0.1` dual-route development identity, structural compatibility also requires
+For the current dual-route development identity, structural compatibility also requires
 the route-specific endpoint node name emitted by the corresponding current
 overlay: `rp1-gpclk-dkms-gpio4` for route `1` or
 `rp1-gpclk-dkms-gpio20` for route `2`. Any other endpoint name is rejected even
 when its remaining properties are otherwise valid.
 
-The development build reports the route-specific `0.0.1` identities in the
+The development build reports the route-specific identities in the
 [development identity contract](development-identity.md). Its exact RP1
 topology, kernel, architecture, module-version, resource, and route observations
 apply together.
@@ -432,8 +432,8 @@ The current source is development software, not a published release. The
 builds, inventories, checksums, and independent reconstruction. The package owns
 both interlocked modules; neither is loaded at installation. Both route overlays
 remain inactive under `/usr/lib`. Package operations do not modify boot routes
-or operate services. Native helper compatibility remains DKMS 3.2.2 through
-3.2; unknown signing mechanisms require review and fail closed.
+or operate services. Native helper compatibility is checked against the package preflight policy;
+unknown signing mechanisms require review and fail closed.
 
 Ordinary editable GitHub releases are supported. Release immutability, tag/asset
 locks, required attestations, and equivalent permanent publication restrictions
@@ -521,7 +521,7 @@ A completed prior-boot neutral activation may be superseded only
 after its exact evidence, any coherent terminal route journal set, and the
 inactive current-boot state are validated and the application is inhibited.
 Normal reboot activation requires the full terminal chain, not the partial
-suffix permitted by explicit migration. Its version-3 digest binds prior-boot
+suffix permitted by explicit migration. Its reviewed digest binds prior-boot
 route evidence and current application intent; a durable `reboot-prepare`
 checkpoint precedes inhibition and dependency-ordered retirement. Exact retries
 retain that intent, and the new controller session must differ from the prior

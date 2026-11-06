@@ -33,6 +33,7 @@ CHECKS = (
     'check_runtime_manager.py',
     'check_runtime_provider.py',
     'check_runtime_activation.py',
+    'check_runtime_contracts.py',
     'check_runtime_output.py',
     'check_runtime_restoration.py',
     'check_runtime_inhibitor_cleanup.py',

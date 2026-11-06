@@ -10,7 +10,7 @@ provenance. An application must not reconstruct provider recovery decisions.
 ## Public interface
 
 `runtime_provider.py capabilities` advertises
-`rp1-gpclk-runtime-update-v1`. `update-plan` is read-only and returns the next
+the runtime update contract. `update-plan` is read-only and returns the next
 bounded step toward removal of the runtime deployment. `update-execute` accepts
 only its reviewed SHA-256. Both accept `--source-commit` and optional paired
 `--binding-sha256` / `--artifact-set-sha256` from application installation
@@ -55,8 +55,8 @@ to verify this distinction even during inverse deployment.
 
 ## Response contract
 
-All successful responses use integer `schemaVersion: 1`, string `contract:
-rp1-gpclk-runtime-update-v1`, and the requested `operation`.
+All successful responses identify the current integer `schemaVersion`,
+the runtime update `contract`, and the requested `operation`.
 
 - `capabilities` lists `update-plan`, `update-execute`, and
   `installation-status`; it performs no host observations or effects.
@@ -81,8 +81,8 @@ rp1-gpclk-runtime-update-v1`, and the requested `operation`.
 Consumers must reject missing required fields, unknown contracts/versions,
 identity or digest mismatch, contradictory postconditions, and nonzero exit
 status. Additional envelope fields are additive. Only the two postcondition
-booleans above are defined in version 1. A failure does not authorize a retry or
-prove absence. Current CLI failures use the readiness-v1 diagnostic envelope
+booleans above are defined by the current contract. A failure does not authorize a retry or
+prove absence. Current CLI failures use the readiness diagnostic envelope
 and a nonzero status; they are never successful update responses.
 
 ## Prepare an update or uninstall
@@ -133,7 +133,7 @@ has passed its own checks.
 
 Use the installed provider when it supports this contract. Otherwise an exact,
 reviewed provider source may supply the adapter. The adapter explicitly supports
-the binding-v3/readiness-v1 predecessor protocol, validates its complete installed
+the current binding and readiness protocol, validates its complete installed
 artifact inventory and identities, and uses existing provider-owned lifecycle
 primitives. Unknown binding versions, changed artifacts, foreign state, unsafe
 output or unproven recovery are refused before mutation.

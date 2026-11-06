@@ -112,7 +112,7 @@ def build(directory, application_companion, kernel=None):
     generate(ROOT / "build/runtime-controller")
     companion = Path(application_companion)
     companion = companion_bytes(companion)
-    values = {'schemaVersion': 3, 'contract': CONTRACT,
+    values = {'schemaVersion': 1, 'contract': CONTRACT,
               'productVersion': PRODUCT_VERSION,
               'compatibilityIdentities': COMPATIBILITY,
               'sourceCommit': source_commit(), 'kernel': kernel, 'files': {}, 'modules': {},

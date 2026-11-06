@@ -67,7 +67,7 @@ A key shared with another module is therefore intentionally retained.
 
 ## Candidate package guard
 
-The 0.0.1 package reads static DKMS framework configuration before native DKMS
+The current package reads static DKMS framework configuration before native DKMS
 effects. It refuses automatic module loading, post-transaction hooks, dynamic
 configuration and module-specific overrides. For installed signing-capable effective DKMS configurations
 (`include/config/auto.conf`, with `.config` fallback) it requires an existing secure filesystem key and public

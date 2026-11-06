@@ -41,7 +41,8 @@ class System(Machine):
             'bindingSha256': self.binding_hash, 'artifactSetSha256': 'b' * 64,
             'bootId': self.boot, 'lastDeploymentSha256': 'c' * 64,
             'application': application, 'socketWasActive': False,
-            'alreadyReady': False, 'previousActivationSha256': None}
+            'alreadyReady': False, 'previousActivationSha256': None,
+            'activationContext': 'initial', 'applicationInhibited': True}
         return {'version': 1, 'plan': plan,
             'planSha256': runtime_activation.plan_digest(plan),
             'requestId': '00000000-0000-0000-0000-000000000001',
@@ -93,7 +94,7 @@ class Files:
 
 
 def deployment_values(journals_none=False):
-    value = {'schemaVersion':3, 'contract':runtime_binding.CONTRACT,
+    value = {'schemaVersion':1, 'contract':runtime_binding.CONTRACT,
         'productVersion':runtime_binding.PRODUCT_VERSION,
         'compatibilityIdentities':runtime_binding.COMPATIBILITY,
         'sourceCommit':'a'*40, 'kernel':KERNEL,
@@ -120,8 +121,8 @@ def deployment_values(journals_none=False):
 
 class Tests(unittest.TestCase):
     def request(self, system, route='gpio4', ident='request-0001'):
-        reply = manager._dispatch({'schemaVersion':3, 'operation':'preflight', 'route':route}, lambda:system)
-        return {'schemaVersion':3, 'operation':'switch', 'route':route, 'execute':True,
+        reply = manager._dispatch({'schemaVersion':1, 'operation':'preflight', 'route':route}, lambda:system)
+        return {'schemaVersion':1, 'operation':'switch', 'route':route, 'execute':True,
                 'actor':'offline.test', 'requestId':ident,
                 'preflightToken':reply['state']['preflightToken']}
 
@@ -135,7 +136,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(len(system.events), count)
         request = self.request(system, 'gpio20', 'request-0002')
         self.assertEqual(manager._dispatch(request, lambda:system)['state']['activeRoute'], 'gpio20')
-        result = manager._dispatch({'schemaVersion':3,'operation':'recover','execute':True,
+        result = manager._dispatch({'schemaVersion':1,'operation':'recover','execute':True,
             'requestId':'recover-0001','actor':'offline.test'}, lambda:system)
         self.assertIsNone(result['state']['activeRoute'])
         self.assertEqual(result['status'], 'recovered-inhibited')
@@ -165,8 +166,8 @@ class Tests(unittest.TestCase):
     def test_legacy_effect_and_extra_fields_rejected(self):
         for operation in ('switch', 'apply-and-reboot', 'reconcile', 'recover'):
             with self.assertRaises(ValueError): manager.parse({'schemaVersion':1,'operation':operation})
-        with self.assertRaises(ValueError): manager.parse({'schemaVersion':3,'operation':'query','execute':True})
-        self.assertEqual(manager.parse({'operation':'query'})['schemaVersion'], 3)
+        with self.assertRaises(ValueError): manager.parse({'schemaVersion':1,'operation':'query','execute':True})
+        self.assertEqual(manager.parse({'operation':'query'})['schemaVersion'], 1)
 
     def test_every_deployment_crash_recovers_exact_old_bytes(self):
         values = deployment_values(journals_none=True)
@@ -259,7 +260,7 @@ class Tests(unittest.TestCase):
             with self.assertRaises(OSError): deploy.bundle_read(link)
 
     def test_binding_is_read_once_and_same_bytes_are_installed(self):
-        value = {'schemaVersion':3, 'contract':runtime_binding.CONTRACT,
+        value = {'schemaVersion':1, 'contract':runtime_binding.CONTRACT,
             'productVersion':runtime_binding.PRODUCT_VERSION,
             'compatibilityIdentities':runtime_binding.COMPATIBILITY,
             'sourceCommit':'a'*40, 'kernel':KERNEL,
@@ -530,7 +531,7 @@ class Tests(unittest.TestCase):
         system = System()
         reviewed = manager.response(system, 'query', system.call())['state']
         reviewed['bindingSha256'] = 'f' * 64
-        request = {'schemaVersion': 3, 'operation': 'recover', 'execute': True,
+        request = {'schemaVersion': 1, 'operation': 'recover', 'execute': True,
                    'requestId': 'provider-1234', 'actor': 'offline.test'}
         with patch.object(admin, 'execute') as effects:
             with self.assertRaisesRegex(ValueError, 'stale provider recovery'):

@@ -16,7 +16,7 @@ does not make their protocols or recovery records interchangeable.
 | --- | --- | --- |
 | Packaged boot-route executor | `/usr/sbin/rp1-gpclk-route-manager`; contract `rp1-gpclk-route-manager` | Owns a delimited boot block and reboot/reconciliation transactions. It is not the runtime switching protocol. |
 | Passive source-development manager | `development-route-manager`; exact source/module binding and current-boot adoption | Its socket accepts passive `query` only. Installing, adopting or rolling back that binding are separate administrator mutations. Adoption does not make firmware overlays removable. |
-| Runtime manager | `runtime_provider.py` facade and `runtime_route_client.py`; binding v3, readiness v1 and runtime socket schema v3 | Deploys and activates neutral administration separately from route selection. Switching, removal and recovery have different application outcomes. |
+| Runtime manager | `runtime_provider.py` facade and `runtime_route_client.py`; the current binding, readiness and runtime socket contracts | Deploys and activates neutral administration separately from route selection. Switching, removal and recovery have different application outcomes. |
 
 The Debian package installs source and inactive administration files. It does
 not deploy or activate the runtime profile. WsprryPi normally orchestrates that

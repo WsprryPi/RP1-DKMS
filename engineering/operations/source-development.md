@@ -154,8 +154,8 @@ sudo ./scripts/development-overlay rollback --manifest MANIFEST
 
 Enrollment records installed artifacts; it does not query or load the module.
 After a separately authorized load, query the module and require compatibility ID
-`v0.0.1-rp1-gpio4` or `v0.0.1-rp1-gpio20` for the selected route. If an existing
-`0.0.1` installation reports another identifier, keep output inhibited, remove
+the value defined for the selected route by the canonical runtime binding for the selected route. If an existing
+current-source installation reports another identifier, keep output inhibited, remove
 its enrollment using the removal command in that enrollment record, perform the
 guarded same-version replacement, and enroll the current installation. Do not
 edit an enrollment record or substitute an expected identifier for the value

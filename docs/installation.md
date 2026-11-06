@@ -23,7 +23,7 @@ You need:
 
 WsprryPi's installer requests the exact running-kernel header package and
 required build tools when RP1 installation is selected. Provider packaging
-requires **DKMS 3.2.2 through the 3.2 series**. Unsupported DKMS configurations,
+requires a DKMS installation accepted by its package preflight. Unsupported DKMS configurations,
 missing headers and unknown signing policies are refused. Do not disable
 signature enforcement to make a build load.
 

@@ -19,11 +19,11 @@ for state in ("requested", "persisted", "configured", "active-overlay",
 for boundary in ("fixture blockage", "semantic validator", "exactly one",
                  "digest-verified", "terminal-silence", "REQUIRED-BEFORE-LIVE"):
     assert boundary in plain
-for route_id in (
-    "v0.0.1-rp1-gpio4",
-    "v0.0.1-rp1-gpio20",
-):
-    assert route_id in (ROOT / "engineering/contracts/development-identity.md").read_text()
+import sys
+sys.path.insert(0, str(ROOT / "scripts"))
+import runtime_binding
+for route in ("gpio4", "gpio20"):
+    assert runtime_binding.COMPATIBILITY[route] == f"v{runtime_binding.PRODUCT_VERSION}-rp1-{route}"
 for prohibited in ("/dev/mem", "automatic fallback", "generic event"):
     assert prohibited in plain
 

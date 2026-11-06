@@ -7,7 +7,7 @@ import re
 
 from runtime_layout import INVENTORY, MODULES
 
-CONTRACT = 'rp1-gpclk-runtime-binding-v3'
+CONTRACT = 'rp1-gpclk-runtime-binding-v1'
 PRODUCT_VERSION = '0.0.1'
 COMPATIBILITY = {'gpio4': 'v0.0.1-rp1-gpio4', 'gpio20': 'v0.0.1-rp1-gpio20'}
 APPLICATION = '/usr/local/lib/wsprrypi/route_application.py'
@@ -25,7 +25,7 @@ def validate(binding):
         'externalFiles', 'uapiSha256', 'controllerNoteSha256',
         'consumerNoteSha256', 'artifactSetSha256'}
     if (not isinstance(binding, dict) or set(binding) != fields or
-            type(binding.get('schemaVersion')) is not int or binding['schemaVersion'] != 3 or
+            type(binding.get('schemaVersion')) is not int or binding['schemaVersion'] != 1 or
             binding.get('contract') != CONTRACT or binding.get('productVersion') != PRODUCT_VERSION or
             not isinstance(binding.get('kernel'), str) or
             not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._+~-]{0,127}', binding['kernel']) or

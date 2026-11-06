@@ -14,13 +14,13 @@ def parse(value):
     # Profile discovery is the only unversioned request accepted by this
     # runtime-only endpoint.
     if value == {'operation': 'query'}:
-        return {'schemaVersion': 3, 'operation': 'query'}
+        return {'schemaVersion': 1, 'operation': 'query'}
     if not isinstance(value, dict) or type(value.get('schemaVersion')) is not int:
         raise ValueError('request object/version required')
     operation = value.get('operation')
     fields = {'schemaVersion', 'operation'}
-    if value['schemaVersion'] != 3 or operation not in ('query', 'preflight', 'switch', 'remove', 'recover'):
-        raise ValueError('runtime profile requires schemaVersion=3 and an explicit runtime operation')
+    if value['schemaVersion'] != 1 or operation not in ('query', 'preflight', 'switch', 'remove', 'recover'):
+        raise ValueError('runtime profile requires schemaVersion=1 and an explicit runtime operation')
     if operation in ('preflight', 'switch', 'remove'):
         fields.add('route')
         if value.get('route') not in ('gpio4', 'gpio20'):
@@ -49,7 +49,7 @@ def token(system, state, route):
 
 def response(system, operation, state, status='ok', error=None):
     import runtime_application as app
-    result = {'schemaVersion': 3, 'contract': CONTRACT, 'operation': operation, 'status': status,
+    result = {'schemaVersion': 1, 'contract': CONTRACT, 'operation': operation, 'status': status,
               'state': {'profile': 'runtime', 'controller': state, 'bootId': system.boot,
                         'activeRoute': {1:'gpio4', 2:'gpio20'}.get(state['route']),
                         'configuredRoute': None, 'qualification': False,
@@ -158,7 +158,7 @@ def dispatch(value, factory=admin.Linux, mutation_lock=None, expected_recovery=N
             allow_activation_query=operation == 'query')
     if operation == 'application-ready':
         if (set(value) != {'schemaVersion', 'operation', 'route', 'token', 'pid', 'transmit'} or
-                type(value['schemaVersion']) is not int or value['schemaVersion'] != 3 or
+                type(value['schemaVersion']) is not int or value['schemaVersion'] != 1 or
                 value['route'] not in ('gpio4', 'gpio20') or
                 not isinstance(value['token'], str) or len(value['token']) != 36 or
                 type(value['pid']) is not int or value['pid'] <= 0 or value['transmit'] is not False):
@@ -170,7 +170,8 @@ def dispatch(value, factory=admin.Linux, mutation_lock=None, expected_recovery=N
     if operation not in ('switch', 'remove', 'recover', 'restore'):
         return _dispatch(value, factory)
     if operation == 'restore':
-        if value != {'schemaVersion':3, 'operation':'restore', 'execute':True}:
+        if (type(value.get('schemaVersion')) is not int or
+                value != {'schemaVersion':1, 'operation':'restore', 'execute':True}):
             raise ValueError('restore requires explicit execution')
     else:
         parse(value)
@@ -333,7 +334,7 @@ def main():
         operation = value.get('operation') if isinstance(value, dict) else None
         result = dispatch(value)
     except (OSError, ValueError, TypeError, KeyError, RecursionError) as error:
-        result = {'schemaVersion':3, 'contract':CONTRACT, 'operation':operation,
+        result = {'schemaVersion':1, 'contract':CONTRACT, 'operation':operation,
                   'status':'error', 'error':{'code':'fail-closed', 'message':str(error)}}
     print(json.dumps(result, sort_keys=True))
     return 0 if result['status'] != 'error' else 2

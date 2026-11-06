@@ -159,7 +159,7 @@ def _validate_snapshot(candidate, commit, release=False):
             'packagePath': package_path, 'dtboSha256': member_map[package_path]['sha256']}
     require(metadata['routes'] == routes and routes['gpio4']['dtboSha256'] != routes['gpio20']['dtboSha256'],
             'overlay/compatibility substitution')
-    require(metadata['runtime'] == {'binding': 'rp1-gpclk-runtime-binding-v3',
+    require(metadata['runtime'] == {'binding': 'rp1-gpclk-runtime-binding-v1',
         'readiness': 'rp1-gpclk-runtime-readiness-v1', 'update': 'rp1-gpclk-runtime-update-v1',
         'tools': {n: sha(data) for n, (_, data) in files.items() if n.startswith('scripts/runtime_') and n.endswith('.py')},
         'schemas': {n: sha(data) for n, (_, data) in files.items() if n.startswith('schema/') and n.endswith('.json')}},

@@ -15,7 +15,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "none",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "installed": {
@@ -30,7 +30,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "none",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "partial": {
@@ -45,7 +45,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "refused": {
@@ -75,7 +75,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "owning legacy cleanup/removal before successor install",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "one-kernel": {
@@ -90,7 +90,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "dkms autoinstall after headers for an added kernel",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "unpack-aborted": {
@@ -105,7 +105,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "retry the verified exact archive after repairing the fault",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "legacy-partial": {
@@ -120,7 +120,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then configure the exact retained predecessor",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "dependency-unconfigured": {
@@ -135,7 +135,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "restore exact dependency archive then dpkg --configure rp1-gpclk-dkms",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "failed-add": {
@@ -150,7 +150,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "failed-build": {
@@ -165,7 +165,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "failed-install": {
@@ -180,7 +180,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "failed-index": {
@@ -195,7 +195,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then dpkg --configure rp1-gpclk-dkms; or guarded purge",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "failed-remove": {
@@ -210,7 +210,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then repeat dpkg --remove rp1-gpclk-dkms; no force",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "failed-purge": {
@@ -225,7 +225,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then repeat dpkg --purge rp1-gpclk-dkms; no force",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "failed-remove-index": {
@@ -240,7 +240,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then repeat dpkg --remove rp1-gpclk-dkms; no force",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "refused-concurrent": {
@@ -255,7 +255,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "wait for the owning dpkg transaction to finish, inspect its result, then retry if needed",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "refused-downgrade": {
@@ -270,7 +270,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "owning cleanup; no force or deletion of foreign state",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "legacy-remove-failed": {
@@ -285,7 +285,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "repair prerequisite then repeat owning predecessor purge before successor installation",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     },
     "preinstall-refused": {
@@ -315,7 +315,7 @@
       "ownershipRecords": "foreign and administrator records preserved",
       "rollbackAvailability": "exact retained predecessor only",
       "operatorAction": "remove only injected inventory fault then dpkg --configure rp1-gpclk-dkms; no foreign deletion",
-      "machineResult": "rp1-gpclk-package-lifecycle-v2",
+      "machineResult": "rp1-gpclk-package-lifecycle-v1",
       "executionAuthorization": false
     }
   },

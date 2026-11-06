@@ -46,16 +46,15 @@ def plan_digest(value):
 
 
 def validate_plan(value):
-    base = {'version', 'operation', 'bindingSha256', 'artifactSetSha256',
-            'bootId', 'lastDeploymentSha256', 'application',
-            'socketWasActive', 'alreadyReady', 'previousActivationSha256'}
-    version = value.get('version') if isinstance(value, dict) else None
-    required = (base if version == 1 else
-                base | {'activationContext', 'applicationInhibited'})
-    if version == 3:
-        required |= {'rebootEvidence'}
+    required = {'version', 'operation', 'bindingSha256', 'artifactSetSha256',
+                'bootId', 'lastDeploymentSha256', 'application',
+                'socketWasActive', 'alreadyReady', 'previousActivationSha256',
+                'activationContext', 'applicationInhibited'}
+    post_reboot = isinstance(value, dict) and value.get('activationContext') == 'post-reboot'
+    if post_reboot:
+        required.add('rebootEvidence')
     if (not isinstance(value, dict) or set(value) != required or
-            type(version) is not int or version not in (1, 2, 3) or
+            type(value.get('version')) is not int or value['version'] != 1 or
             value.get('operation') != 'neutral-activation' or
             any(not isinstance(value.get(name), str) or
                 not re.fullmatch('[0-9a-f]{64}', value[name])
@@ -68,21 +67,17 @@ def validate_plan(value):
              (not isinstance(value['previousActivationSha256'], str) or
               not re.fullmatch('[0-9a-f]{64}', value['previousActivationSha256'])))):
         raise ValueError('neutral activation plan schema')
-    if version in (2, 3) and (value.get('activationContext') not in PLAN_CONTEXTS or
-                         type(value.get('applicationInhibited')) is not bool):
+    if (value.get('activationContext') not in PLAN_CONTEXTS or
+            type(value.get('applicationInhibited')) is not bool):
         raise ValueError('neutral activation plan context')
-    if version in (2, 3):
-        context = value['activationContext']
-        previous = value['previousActivationSha256']
-        if ((context == 'idempotent') != value['alreadyReady'] or
-                (context == 'initial') != (previous is None) or
-                (context in ('initial', 'recovered') and
-                 not value['applicationInhibited']) or
-                (context == 'post-reboot' and value['socketWasActive'])):
-            raise ValueError('neutral activation plan context is inconsistent')
-    if version == 3:
-        if value['activationContext'] != 'post-reboot':
-            raise ValueError('reboot evidence requires post-reboot context')
+    context = value['activationContext']
+    previous = value['previousActivationSha256']
+    if ((context == 'idempotent') != value['alreadyReady'] or
+            (context == 'initial') != (previous is None) or
+            (context in ('initial', 'recovered') and not value['applicationInhibited']) or
+            (post_reboot and value['socketWasActive'])):
+        raise ValueError('neutral activation plan context is inconsistent')
+    if post_reboot:
         validate_reboot_evidence(value['rebootEvidence'], value['bindingSha256'])
         if value['rebootEvidence']['bootId'] == value['bootId']:
             raise ValueError('reboot evidence must belong to an older boot')
@@ -358,7 +353,7 @@ class Linux:
         admin.run(('/usr/bin/systemctl', 'stop', SOCKET_UNIT))
 
     def manager_query(self):
-        return client.exchange({'schemaVersion': 3, 'operation': 'query'})
+        return client.exchange({'schemaVersion': 1, 'operation': 'query'})
 
     def restore_application(self, record):
         return application.neutral_restore(record)
@@ -564,7 +559,7 @@ def reboot_preparation_state(observed):
     if journal is None or journal['phase'] != 'reboot-prepare':
         return False
     plan = journal['plan']
-    if (plan['version'] != 3 or any(journal[name] is not None
+    if (plan['version'] != 1 or plan['activationContext'] != 'post-reboot' or any(journal[name] is not None
             for name in ('controller', 'manager', 'application', 'error')) or
             any(plan[name] != observed[name] for name in
                 ('bindingSha256', 'artifactSetSha256', 'lastDeploymentSha256', 'bootId')) or
@@ -665,7 +660,7 @@ def _validate_prior_manager(value, route, boot, binding):
     expected_status = ({'recovered-inhibited', 'complete-inhibited'}
                        if route['phase'] == 'recovered-inhibited'
                        else {'complete-inhibited'})
-    if (response.get('schemaVersion') != 3 or
+    if (type(response.get('schemaVersion')) is not int or response['schemaVersion'] != 1 or
             response.get('contract') != 'rp1-gpclk-route-manager-runtime' or
             response.get('operation') != ('switch' if route['phase'] ==
                 'complete-inhibited' else 'recover') or
@@ -736,7 +731,7 @@ def retirement_plan(system):
     if transactions is None:
         raise ValueError('no prior-boot terminal activation evidence to retire')
     journal = observed['activationJournal']
-    return {'version': 2, 'operation': 'retire-post-reboot-activation',
+    return {'version': 1, 'operation': 'retire-post-reboot-activation',
         'bindingSha256': observed['bindingSha256'],
         'artifactSetSha256': observed['artifactSetSha256'],
         'bootId': observed['bootId'],
@@ -753,7 +748,7 @@ def retire(system, reviewed, approved, lock=deployment.mutation_lock):
         'bootId', 'lastDeploymentSha256', 'activationJournalSha256',
         'applicationIdleSha256', 'transactionJournalSha256'}
     if (not isinstance(reviewed, dict) or set(reviewed) != required or
-            reviewed.get('version') != 2 or
+            type(reviewed.get('version')) is not int or reviewed['version'] != 1 or
             reviewed.get('operation') != 'retire-post-reboot-activation' or
             (reviewed.get('applicationIdleSha256') is not None and
              (not isinstance(reviewed['applicationIdleSha256'], str) or
@@ -888,7 +883,7 @@ def activation_plan(system):
         # Historical service/transmission intent never authorizes this boot.
         activation_application = system.capture_application()
         application.validate_neutral_capture(activation_application)
-    result = {'version': 3 if post_reboot else 2, 'operation': 'neutral-activation',
+    result = {'version': 1, 'operation': 'neutral-activation',
         'bindingSha256': observed['bindingSha256'],
         'artifactSetSha256': observed['artifactSetSha256'],
         'bootId': observed['bootId'],
@@ -1199,7 +1194,7 @@ def recovery_plan(system):
     if (controller and controller['generation'] != 0 and
             route_recovery is None):
         raise ValueError('nonzero neutral controller lacks exact route recovery evidence')
-    return {'version': 2, 'operation': 'neutral-activation-recovery',
+    return {'version': 1, 'operation': 'neutral-activation-recovery',
         'activationJournalSha256': admin.digest(canonical(journal)),
         'bindingSha256': observed['bindingSha256'], 'bootId': observed['bootId'],
         'controllerLoaded': observed['controller']['status'] == 'loaded',
@@ -1212,7 +1207,8 @@ def recovery_plan(system):
 
 
 def ensure_recovery(system, reviewed, approved, lock=deployment.mutation_lock):
-    if plan_digest(reviewed) != approved:
+    if (not isinstance(reviewed, dict) or type(reviewed.get('version')) is not int or
+            reviewed['version'] != 1 or plan_digest(reviewed) != approved):
         raise ValueError('reviewed neutral recovery plan digest required')
     with lock():
         if recovery_plan(system) != reviewed:

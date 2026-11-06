@@ -34,7 +34,7 @@ def captured(active=True, masked=False):
 class System:
     def __init__(self, application=None):
         self.app = application or captured()
-        self.binding_value = {'schemaVersion': 2, 'contract': runtime_binding.CONTRACT,
+        self.binding_value = {'schemaVersion': 1, 'contract': runtime_binding.CONTRACT,
             'productVersion': runtime_binding.PRODUCT_VERSION,
             'compatibilityIdentities': runtime_binding.COMPATIBILITY,
             'sourceCommit': 'a' * 40, 'kernel': KERNEL,
@@ -53,7 +53,7 @@ class System:
         records = {path: {'before': None, 'after': deployment.encode(b'x')}
                    for path in deployment.DESTINATIONS}
         records[deployment.BINDING]['after'] = deployment.encode(self.raw)
-        self.deployed = {'version': 2, 'application': copy.deepcopy(self.app),
+        self.deployed = {'version': 1, 'application': copy.deepcopy(self.app),
                          'previousDeployment': None,
                          'files': records}
         self.deployment_raw = (json.dumps(self.deployed, sort_keys=True) + '\n').encode()
@@ -289,7 +289,7 @@ class Tests(unittest.TestCase):
             phase='restored' if active else 'administrator-masked' if masked else 'stopped',
             controller=state, ready={'pid':42, 'route':'gpio'+str(gpio)} if active else None,
             previousIdle=None)
-        response = dict(schemaVersion=3, contract='rp1-gpclk-route-manager-runtime',
+        response = dict(schemaVersion=1, contract='rp1-gpclk-route-manager-runtime',
             operation='switch', status='complete-inhibited', state=dict(
                 bootId=system.boot_id, bindingSha256=binding, controller=state,
                 pendingTransaction=route, activeRoute=app['route'], outputEnabled=False,
@@ -548,7 +548,7 @@ class Tests(unittest.TestCase):
             'request': '00000000-0000-0000-0000-000000000010',
             'target': 1, 'phase': 'recovered-inhibited',
             'observation': copy.deepcopy(system.state)}
-        response = {'schemaVersion': 3,
+        response = {'schemaVersion': 1,
             'contract': 'rp1-gpclk-route-manager-runtime',
             'operation': 'recover', 'status': 'recovered-inhibited',
             'state': {'bootId': system.boot_id, 'bindingSha256': binding,
@@ -676,7 +676,7 @@ class Tests(unittest.TestCase):
         system.socket_active = False
         system.state['session'] = 8
         plan = activation.activation_plan(system)
-        self.assertEqual(plan['version'], 3)
+        self.assertEqual(plan['version'], 1)
         self.assertEqual(plan['activationContext'], 'post-reboot')
         self.assertFalse(plan['applicationInhibited'])
         self.assertEqual(plan['previousActivationSha256'],
@@ -690,10 +690,6 @@ class Tests(unittest.TestCase):
     def test_prior_boot_terminal_activation_can_be_retired_for_migration(self):
         system = System(); initial = activation.activation_plan(system)
         activation.ensure(system, initial, activation.plan_digest(initial), lock)
-        for name in ('activationContext', 'applicationInhibited'):
-            system.journal['plan'].pop(name)
-        system.journal['plan']['version'] = 1
-        system.journal['planSha256'] = activation.plan_digest(system.journal['plan'])
         prior = copy.deepcopy(system.journal)
         system.boot_id = '00000000-0000-0000-0000-000000000002'
         system.controller = False
@@ -730,7 +726,7 @@ class Tests(unittest.TestCase):
             'wasActive': True, 'administratorMasked': False,
             'phase': 'restoration-failed', 'controller': state, 'ready': None,
             'previousIdle': None, 'error': 'readiness not acknowledged'}
-        response = {'schemaVersion': 3,
+        response = {'schemaVersion': 1,
             'contract': 'rp1-gpclk-route-manager-runtime',
             'operation': 'switch', 'status': 'complete-inhibited',
             'state': {'bootId': prior_boot, 'bindingSha256': binding,
@@ -912,14 +908,14 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'evidence differs'):
             activation.activation_plan(system)
 
-    def test_version_one_activation_plan_remains_valid(self):
+    def test_incomplete_old_activation_plan_is_rejected(self):
         plan = activation.activation_plan(System())
         legacy = {name: value for name, value in plan.items()
                   if name not in ('activationContext', 'applicationInhibited')}
         legacy['version'] = 1
-        self.assertEqual(activation.validate_plan(legacy), legacy)
+        with self.assertRaises(ValueError): activation.validate_plan(legacy)
 
-    def test_version_two_activation_context_must_be_consistent(self):
+    def test_current_activation_context_must_be_consistent(self):
         plan = activation.activation_plan(System())
         for field, value in (('activationContext', 'idempotent'),
                              ('applicationInhibited', False),
@@ -1016,7 +1012,7 @@ class Tests(unittest.TestCase):
         activation.ensure(system, initial, activation.plan_digest(initial), lock)
         self.recovered_route(system)
         reviewed = activation.recovery_plan(system)
-        self.assertEqual(reviewed['version'], 2)
+        self.assertEqual(reviewed['version'], 1)
         self.assertEqual(reviewed['controllerState'], system.state)
         self.assertEqual(set(reviewed['routeRecoverySha256']),
                          set(activation.RETIREMENT_TRANSACTIONS))

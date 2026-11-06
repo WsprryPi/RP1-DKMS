@@ -24,7 +24,7 @@ mutating manager requests throughout restoration. The existing controller lock
 is released before starting WsprryPi so startup queries can acquire it.
 
 Filesystem deployment also captures the pre-inhibition service state and exact
-companion observation in its reviewed version-2 deployment plan. The neutral
+companion observation in its reviewed deployment plan. The neutral
 activation transaction reuses the same owned inhibitor, service observation,
 companion validation and administrator-mask rules. It never calls the
 route-specific configuration operation, creates an idle-route token or invents
@@ -134,7 +134,7 @@ subsequent reviewed activation or coherent deployment. Prior activation evidence
 is archived before a recovered transaction is restarted.
 
 After a clean reboot, an exact completed neutral activation and a full terminal
-route/manager/application chain may be superseded through a fresh version-3
+route/manager/application chain may be superseded through a fresh
 neutral activation plan. The plan binds the historical records and current
 application capture. A stopped or masked route that subsequently acknowledged
 an explicit start is terminal `restored` history; its original service capture

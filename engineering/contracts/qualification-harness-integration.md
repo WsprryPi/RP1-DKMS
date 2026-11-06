@@ -5,7 +5,7 @@
 ## Scope
 
 This contract defines the evidence boundary between an external WsprryPi
-Qualification Harness, WsprryPi, and the `RP1-GPCLK-DKMS` `0.0.1` development
+Qualification Harness, WsprryPi, and the `RP1-DKMS` development
 module. These are integration/evidence requirements, not a claim that every
 Harness or application version implements the complete path. Resolve actual
 version capabilities and readiness before selecting a plan. This contract does not
@@ -131,7 +131,7 @@ For each of `WSPR`, `TONE`, `QRSS`, `FSKCW`, and `DFCW`, a readiness record cove
 12. a passing hardware-free rehearsal.
 
 Harness support alone does not make a WsprryPi mode `live-plan ready`. That
-label additionally requires an exact integrated WsprryPi execution path for DKMS `0.0.1`,
+label additionally requires an exact integrated WsprryPi execution path for the selected DKMS source,
 final artifact identities, operator window, receiver configuration, physical
 path, and cleanup contract.
 

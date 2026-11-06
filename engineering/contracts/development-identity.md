@@ -2,7 +2,7 @@
 
 # Development identity and installation transitions
 
-The current source version is `0.0.1`. It includes finite
+The source supports finite
 generic events, fixed-memory DMA chunking, exact `GPIO4`/`GPIO20` selection,
 runtime switching through none, bounded cancellation/drain, and application restoration.
 WsprryPi owns present/future modes and product policy; DKMS enforces resource,
@@ -10,22 +10,21 @@ ownership, capability and cleanup contracts without a product-mode allowlist.
 
 | Identity | Current development contract |
 | --- | --- |
-| Product/upstream, consumer module, DKMS version | `0.0.1` |
-| Debian version | `0.0.1-1` |
+| Product/upstream, consumer module, DKMS identity | Canonical version header and generated manifests |
+| Debian identity and filename | Debian changelog and generated package metadata |
 | Package/DKMS name | `rp1-gpclk-dkms` |
-| Binary package filename | `rp1-gpclk-dkms_0.0.1-1_all.deb` |
 | Consumer module / endpoint | `rp1_gpclk_dkms` / `/dev/rp1-gpclk` |
-| Controller module | `rp1_route_controller`, version `0.0.1`; part of the candidate DKMS package |
-| Source destination | `/usr/src/rp1-gpclk-dkms-0.0.1` |
-| Package schema directory | `/usr/share/rp1-gpclk-dkms/0.0.1` |
-| Transmission UAPI | exact `include/uapi/linux/rp1_gpclk.h` bytes and SHA-256 |
-| Administrative UAPI | exact `include/uapi/linux/rp1_route_admin.h` bytes |
+| Controller module | `rp1_route_controller`; part of the same candidate DKMS package |
+| Source and schema destinations | Versioned paths recorded by the installation manifest |
+| Transmission UAPI | Exact `include/uapi/linux/rp1_gpclk.h` bytes and SHA-256 |
+| Administrative UAPI | Exact `include/uapi/linux/rp1_route_admin.h` bytes |
 | Development manifest | `rp1-gpclk-source-development-manifest` |
-| Route-manager protocols | packaged/source and runtime profiles |
-| `GPIO4` compatibility ID | `v0.0.1-rp1-gpio4` |
-| `GPIO20` compatibility ID | `v0.0.1-rp1-gpio20` |
+| Route-manager protocols | Packaged/source and runtime profiles |
+| Route compatibility identities | Canonical `scripts/runtime_binding.py` mapping for GPIO4 and GPIO20 |
 | Classification | `source-development` / `Experimental`; not release-qualified |
-| Release tag convention | `vMAJOR.MINOR.PATCH`; canonical `v0.0.1` |
+
+Current identity values come from machine-readable source and generated
+metadata, not duplicated version claims in documentation.
 
 Product, Debian, DKMS, UAPI, and schema identities are distinct. Current
 compatibility IDs identify the RP1 resource contract and route. `Experimental`
@@ -35,7 +34,7 @@ of the compatibility ID and is not a per-release permission list. Exact hashes
 identify each build. Canonical route overlay names and endpoint nodes are stable
 and carry no product-version suffix.
 
-An operator may build `0.0.1` through DKMS for another stock Raspberry Pi kernel
+An operator may build the selected source through DKMS for another stock Raspberry Pi kernel
 on a structurally compatible RP1 system without defining a new compatibility
 ID. The running kernel must still be identified, the module must be built for
 it, and all route, resource, ownership, signing, and cleanup checks still apply.
@@ -48,7 +47,7 @@ manager. Source-development renders the same version with separate Experimental
 identity and no release metadata. The [candidate pipeline](../operations/release-candidate.md)
 produces the unpublished package and release-shaped consumer metadata from a
 clean exact commit. Candidate preparation does not freeze or publish the provider.
-The normalized predecessor for package-upgrade validation is `0.0.0-1`;
+The package-transition tests use a normalized synthetic predecessor;
 the synthetic fixture tests legacy lifecycle effects only. No predecessor has
 a direct in-place upgrade path into this candidate. Owning removal precedes
 a clean installation; version ordering alone does not establish migration safety.
@@ -61,7 +60,7 @@ a clean installation; version ordering alone does not establish migration safety
    does not select a route, install or apply an overlay, enroll, load, edit boot
    configuration, operate a service, or enable output. Its manifest records
    `route: null` and exact installed identities. A route-specific maintainer may
-   instead render the exact `0.0.1` checkout with
+   instead render the exact selected checkout with
    `scripts/render-development-tree --source SOURCE --output NEW_TREE`.
    The renderer derives the version from the canonical source header and changes
    only the DKMS placeholder and explicit development kernel filter.
@@ -73,8 +72,7 @@ a clean installation; version ordering alone does not establish migration safety
    and original installed/compressed module files in the new evidence directory,
    with hashes and DKMS status in `ROLLBACK.json`, before removing the instance.
 3. **Package transitions:** same-version reinstall is supported only for exact
-   attributable inactive package state. The synthetic `0.0.0`
-   predecessor exercises legacy effects without original Git history. Direct upgrades
+   attributable inactive package state. The synthetic predecessor exercises legacy effects without original Git history. Direct upgrades
    from it and in-place downgrades are refused. Use owning predecessor cleanup
    and removal before successor installation. Exact rollback removes the
    successor before reinstalling retained predecessor bytes; it does not restore
@@ -104,13 +102,11 @@ also have narrower ownership checks than the runtime/package workflows; review
 their [explicit limits](../operations/source-development.md#firmware-helper-limits)
 before including them in a target plan.
 
-## Development version ordering
+## Identity and transitions
 
-The current product, module, controller, and DKMS version is `0.0.1`; Debian
-uses `0.0.1-1`. Route identities are `v0.0.1-rp1-gpio4` and
-`v0.0.1-rp1-gpio20`. These are development identities, not a published tag.
-They follow the synthetic `0.0.0` fixture numerically and precede future stable
-`1.0.0`. Existing `1.0.0`, `1.0.1`, and `1.0.2` installations belong to the
-predecessor repository and require owning cleanup/removal; version comparison
-cannot authorize adopting their state. UAPI/protocol versions and names remain
-independent. Candidate/publication metadata stays unpublished and unqualified.
+Product, package, module, route and interface identities are defined by their
+canonical machine-readable sources. Development identity does not establish
+publication. Installation from another repository requires manual removal
+before the current source is installed; version comparison cannot authorize
+adopting that state. Candidate/publication metadata stays unpublished and
+unqualified until separately accepted publication and qualification decisions.

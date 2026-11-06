@@ -7,7 +7,7 @@
 Prepare coherent development source, ordinary release tooling, package lifecycle
 regressions, and independent WsprryPi consumer support. Validate exact source,
 UAPI, package, and runtime identities without inheriting another repository's
-publication or qualification claims. The first stable release is `v1.0.0` and
+publication or qualification claims. The first stable release
 requires an explicit user readiness decision.
 
 ## Provider maintenance

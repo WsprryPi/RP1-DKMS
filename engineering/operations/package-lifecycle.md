@@ -9,7 +9,7 @@ not a target or application qualification record.
 
 ## Identities and ownership
 
-The maintained predecessor is a synthetic `0.0.0-1` lifecycle fixture. Its
+The maintained predecessor is a synthetic lifecycle fixture. Its
 [record](../../release/lifecycle-predecessor-v1.json) binds licensed legacy
 packaging templates and their exact checksums. The builder uses current module
 source with a fixture version and an ordinary single-consumer DKMS profile.
@@ -50,7 +50,7 @@ guard **before** invoking dpkg or APT:
 
 ```sh
 sudo python3 -I /absolute/reviewed/source/scripts/package_preflight.py unpack
-sudo dpkg -i /absolute/candidate/rp1-gpclk-dkms_0.0.1-1_all.deb
+sudo dpkg -i /absolute/candidate/PACKAGE.deb
 ```
 
 Run those as separate reviewed steps. Proceed to dpkg only after a `permitted`
@@ -58,15 +58,14 @@ result and exit 0 from the guard, with the authorized inactive state unchanged.
 Do not paste an effect after a refused preflight and rely on the shell to stop.
 The guard does not reserve the host against another privileged actor.
 
-The guard emits `rp1-gpclk-package-preflight-v1` JSON, exits 0 for `permitted`,
+The guard emits the package-preflight JSON contract, exits 0 for `permitted`,
 and exits 1 for `refused`, retaining the underlying diagnostic. It does not open
 either endpoint. The incoming preinst embeds those exact guard bytes and runs
 Python in isolated mode. It does not trust an older installed helper. Configure and removal repeat the
 appropriate checks before native DKMS effects.
 
 Debian invokes the outgoing prerm before the incoming preinst. Consequently a
-new package cannot prevent an old script's earlier effects. Direct synthetic `0.0.0` to
-`0.0.1` replacement is unsupported and refused; do not bypass the external
+new package cannot prevent an old script's earlier effects. Direct predecessor-to-successor replacement is unsupported and refused; do not bypass the external
 preflight by running dpkg first. The approved path is owning runtime/development
 cleanup, owning predecessor removal, then a clean successor installation.
 The old scripts copy inactive overlays into `/boot` and contain debhelper
@@ -75,7 +74,7 @@ its own authorization on an actual host. It is not covered by the current
 package's passive guarantees. Never delete their evidence to admit the successor.
 
 Packages from the predecessor repository are different software identities,
-including versions `1.0.0-1`, `1.0.1-1`, and `1.0.2-1`. Direct replacement is
+and require manual removal. Direct replacement is
 refused: use owning cleanup and removal before a clean installation. No fixture
 result establishes target acceptance for those original packages.
 
@@ -152,7 +151,7 @@ not establish success: missing, corrupt or wrong-certificate signatures refuse
 configuration. This never reads private key bytes or establishes kernel trust.
 
 The package explicitly checks the installed module set and runs `depmod` after
-native DKMS configure/removal. Its `rp1-gpclk-package-indices-v1` result preserves
+native DKMS configure/removal. Its module-index verification result preserves
 the command, stage, underlying exit status, signature results and diagnostic; it does not trust
 DKMS's `do_depmod` success message, which can mask an index-command failure.
 If removal fails, repair its prerequisite and repeat removal. Never force-remove
@@ -235,7 +234,7 @@ regressions do not establish target rollback qualification.
 
 The disposable runner requires a nonempty explicit scenario selection and one
 accepted result per requested scenario. Single-scenario execution is not full
-lifecycle acceptance. The `rp1-gpclk-package-lifecycle-v2` result binds a fresh
+lifecycle acceptance. The lifecycle result binds a fresh
 host run ID, scenario, source commit, candidate and predecessor package SHA-256,
 and immutable container image ID. The container verifies source/package inputs
 before and after scenario execution; the host rechecks them before final success.

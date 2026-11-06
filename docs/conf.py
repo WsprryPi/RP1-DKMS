@@ -10,7 +10,7 @@ import sys
 SOURCE = Path(__file__).resolve().parent
 sys.path.insert(0, str(SOURCE / "_ext"))
 
-project = "RP1 GPCLK DKMS"
+project = "RP1-DKMS"
 author = "Lee C. Bussy"
 copyright = "2026, Lee Bussy; scaffold copyright 2024 Lee Bussy"
 
@@ -50,7 +50,7 @@ nitpicky = True
 pygments_style = None
 
 html_theme = "sphinx_rtd_theme"
-html_title = "RP1 GPCLK DKMS operator handbook"
+html_title = "RP1-DKMS operator handbook"
 html_theme_options = {
     "logo_only": False,
     "prev_next_buttons_location": "both",
@@ -75,17 +75,17 @@ html_context = {
     "conf_py_path": "/docs/",
 }
 
-htmlhelp_basename = "RP1GPCLKDKMSdoc"
+htmlhelp_basename = "RP1DKMSdoc"
 latex_documents = [
-    ("index", "RP1-GPCLK-DKMS.tex", "RP1 GPCLK DKMS Operator Handbook",
+    ("index", "RP1-DKMS.tex", "RP1-DKMS Operator Handbook",
      author, "manual"),
 ]
 man_pages = [
-    ("index", "rp1-gpclk-dkms", "RP1 GPCLK DKMS Operator Handbook", [author], 7),
+    ("index", "rp1-gpclk-dkms", "RP1-DKMS Operator Handbook", [author], 7),
 ]
 texinfo_documents = [
-    ("index", "RP1-GPCLK-DKMS", "RP1 GPCLK DKMS Operator Handbook", author,
-     "RP1-GPCLK-DKMS", "WsprryPi-managed RP1 clock output and route administration.",
+    ("index", "RP1-DKMS", "RP1-DKMS Operator Handbook", author,
+     "RP1-DKMS", "WsprryPi-managed RP1 clock output and route administration.",
      "System administration"),
 ]
 epub_title = html_title

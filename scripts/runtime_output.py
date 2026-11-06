@@ -128,7 +128,7 @@ def dispatch(system, request, state):
 
 
 def parse(value):
-    if not isinstance(value, dict) or value.get('schemaVersion') != 3 or type(value.get('schemaVersion')) is not int:
+    if not isinstance(value, dict) or value.get('schemaVersion') != 1 or type(value.get('schemaVersion')) is not int:
         raise ValueError('runtime output request schema')
     operation = value.get('operation')
     fields = {'schemaVersion','operation','route'}

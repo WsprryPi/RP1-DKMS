@@ -389,7 +389,7 @@ def plan(files, values):
     if set(values) != DESTINATIONS:
         raise ValueError('fixed deployment inventory required')
     application = files.application_state()
-    return {'version': 2, 'application': application,
+    return {'version': 1, 'application': application,
         'previousDeployment': encode(files.read(LAST_DEPLOYMENT)),
         'files': {path: {'before': encode(files.read(path)),
         'after': encode(values[path])} for path in sorted(values)}}
@@ -402,7 +402,7 @@ def plan_hash(value):
 def journal_bytes(value):
     if (not isinstance(value, dict) or
             set(value) != {'version', 'application', 'previousDeployment', 'files'} or
-            type(value['version']) is not int or value['version'] != 2 or
+            type(value['version']) is not int or value['version'] != 1 or
             not isinstance(value['files'], dict) or set(value['files']) != DESTINATIONS):
         raise ValueError('fixed deployment plan schema required')
     import runtime_application as application
@@ -423,7 +423,7 @@ def journal_bytes(value):
 
 def apply(files, value, approved, recover=False, retain_barrier=False):
     encoded = journal_bytes(value)
-    if plan_hash(value) != approved or value.get('version') != 2 or set(value['files']) != DESTINATIONS:
+    if plan_hash(value) != approved or value.get('version') != 1 or set(value['files']) != DESTINATIONS:
         raise ValueError('reviewed plan digest/inventory required')
     # Check ALL ownership before any restoration; preserve foreign changes.
     for path, record in value['files'].items():

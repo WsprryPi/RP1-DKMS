@@ -120,7 +120,7 @@ plan can accompany a nonzero readiness classification, as described below.
    and the socket inactive. Interrupted, partial, conflicting or failed prior
    transactions still require explicit recovery or investigation.
 
-   A fresh version-3 `activation-plan` identifies `post-reboot` and binds the
+   A fresh `activation-plan` identifies `post-reboot` and binds the
    prior boot/controller, complete historical journal set and owned idle override.
    `activation-ensure` archives the old activation and durably captures the
    **current** disabled application/service intent in `reboot-prepare` before
@@ -210,7 +210,7 @@ controller observations for investigation; never delete them to bypass a check.
 diagnostic failures to stderr. The schema is installed at
 `/usr/lib/rp1-gpclk-dkms/schema/rp1-gpclk-runtime-readiness-v1.schema.json`.
 The JSON document identifies the contract as
-`rp1-gpclk-runtime-readiness-v1`.
+the runtime readiness contract.
 Stable classifications and exit statuses are:
 
 | Result | Exit | Meaning |
@@ -347,9 +347,9 @@ then explicitly switch. `restore` retries only application completion for a
 successfully selected current route; it does not repeat overlay effects.
 Previously stopped services remain stopped and administrator masks are preserved.
 
-The client prints a runtime-schema-v3 response and exits 2 for a reported
+The client prints a runtime response and exits 2 for a reported
 service error. Connection/profile failures can produce stderr without JSON.
-Neither is a readiness-v1 10–14 exit classification. A 30-second socket timeout
+Neither is a readiness 10–14 exit classification. A 30-second socket timeout
 or browser disconnect does not cancel the independently running manager; query
 its durable result before deciding whether any recovery is needed. The response's
 administrative `outputEnabled: false` alone is not a physical RF-off proof.

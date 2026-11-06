@@ -420,7 +420,7 @@ def result_inputs(root):
 def result_value(expected):
     # Independent wire fixture: do not derive its contract/keys from the producer.
     observed = {'endpointsAbsent': True, 'modulesUnloaded': True}
-    return {'contract': 'rp1-gpclk-package-lifecycle-v2', 'schemaVersion': 2,
+    return {'contract': 'rp1-gpclk-package-lifecycle-v1', 'schemaVersion': 1,
         **expected, 'status': 'PASS', 'error': None,
         'steps': [{'stage': 'checked-boundary', 'command': ['fixture'], 'exitStatus': 0,
                    'before': observed.copy(), 'after': observed.copy(), 'diagnosticTail': ''}],
@@ -450,7 +450,8 @@ class ResultTests(unittest.TestCase):
         import copy
         base = result_value(self.expected)
         mutations = [lambda v: v.update(schemaVersion=True),
-            lambda v: v.update(schemaVersion=1), lambda v: v.update(contract='old'),
+            lambda v: v.update(schemaVersion=2), lambda v: v.update(schemaVersion=3),
+            lambda v: v.update(contract='old'),
             lambda v: v.update(runId='f'*32), lambda v: v.update(scenario='foreign-state'),
             lambda v: v['identity'].update(sourceCommit='f'*40),
             lambda v: v['identity'].update(imageId='sha256:'+'f'*64),

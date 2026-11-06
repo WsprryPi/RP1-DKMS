@@ -16,7 +16,8 @@ Keep dependency identities and compiler/header configuration with temporary
 build results. No physical target or host module installation is part of a build.
 
 ```sh
-./scripts/build-release-candidate --version 0.0.1 --source-commit "$(git rev-parse HEAD)" --output /absolute/new-candidate
+module_version=$(sed -n 's/^#define RP1_GPCLK_MODULE_VERSION "\(.*\)"/\1/p' include/rp1_gpclk/version.h)
+./scripts/build-release-candidate --version "$module_version" --source-commit "$(git rev-parse HEAD)" --output /absolute/new-candidate
 ./scripts/validate-release-candidate --candidate /absolute/new-candidate --source-commit "$(git rev-parse HEAD)"
 ```
 
@@ -40,5 +41,5 @@ or provenance enrollment as release gates. Preserve checksums and exact source
 identities; verify downloaded assets against the reviewed package and metadata.
 No GitHub settings changes are part of local release preparation.
 
-The first stable tag is reserved for the user's `v1.0.0` readiness decision.
+The first stable release requires the user's readiness decision.
 WsprryPi consumer acceptance and release decisions remain independently owned.

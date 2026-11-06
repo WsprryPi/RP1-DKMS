@@ -2,7 +2,7 @@
 
 # Debian DKMS packaging
 
-The canonical package is `rp1-gpclk-dkms_0.0.1-1_all.deb`. Use the
+The canonical package is `rp1-gpclk-dkms`; its generated filename is recorded in the candidate manifest. Use the
 [complete candidate procedure](release-candidate.md) to build and independently
 validate its exact source, package, inventory, checksums and provenance.
 `dpkg-buildpackage --no-sign -b` builds only a local package, without candidate
@@ -10,9 +10,9 @@ identity or publication status.
 
 ## Package contents
 
-One DKMS instance, `rp1-gpclk-dkms/0.0.1`, owns `rp1_gpclk_dkms` and
+One DKMS instance, the exact instance recorded by DKMS, owns `rp1_gpclk_dkms` and
 `rp1_route_controller`. The package stages their complete source closure below
-`/usr/src/rp1-gpclk-dkms-0.0.1`: Kbuild, Makefile, rendered DKMS configuration,
+the versioned `/usr/src` destination recorded by its installation manifest: Kbuild, Makefile, rendered DKMS configuration,
 consumer/controller sources, internal headers, both canonical UAPIs, both DTS
 sources and the deterministic embedded-overlay generator. DKMS uses the explicit
 runtime-controller profile; the consumer has its controller dependency/interlock
@@ -43,7 +43,7 @@ No application source or qualification harness is packaged.
 
 ## Prerequisites and passive lifecycle
 
-The package requires DKMS 3.2.2 through the 3.2 series, Python, OpenSSL,
+The package requires a supported DKMS installation, Python, OpenSSL,
 device-tree-compiler, zstd and adduser. The DKMS bound limits native helper behavior
 to the reviewed lifecycle family; older or newer families require explicit
 compatibility review rather than silently inheriting passive-install claims. Before
@@ -76,11 +76,11 @@ is selected. This does not change the immutable production load-time default.
 ## Transitions, removal and rollback
 
 The supported transition policy is [package lifecycle and recovery](package-lifecycle.md).
-The maintained synthetic `0.0.0` predecessor exercises an ordinary consumer
+The maintained synthetic predecessor exercises an ordinary consumer
 with legacy boot-overlay/systemd lifecycle effects. It is not the original
 package from the predecessor repository. Direct upgrade
 and downgrade are refused. Use owning predecessor cleanup/removal before clean
-`0.0.1` installation; rollback likewise removes the successor before reinstalling
+current-source installation; rollback likewise removes the successor before reinstalling
 the exact retained predecessor. Never submit an old archive over an installed
 successor. Debian runs an outgoing prerm before an incoming preinst, so the
 read-only transition preflight must precede dpkg/APT.

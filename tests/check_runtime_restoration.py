@@ -84,11 +84,11 @@ class System(Machine):
             # An independent startup connection exercises public dispatch while
             # the mutation workflow is alive but its controller lock is released.
             self.pre_ack = manager.dispatch(
-                dict(schemaVersion=3, operation='idle', route=self.configured),
+                dict(schemaVersion=1, operation='idle', route=self.configured),
                 lambda:self)
             assert self.read_record('application.json')['phase'] == 'start-intent'
             assert self.pre_ack['state']['outputLifecycle']['executionAuthorized'] is False
-            manager.dispatch(dict(schemaVersion=3, operation='application-ready', route=self.configured,
+            manager.dispatch(dict(schemaVersion=1, operation='application-ready', route=self.configured,
                 token=record['token'], pid=self.pid, transmit=False), lambda:self)
         return ''
 
@@ -109,7 +109,8 @@ class Tests(unittest.TestCase):
             'bindingSha256': self.system.binding_hash, 'artifactSetSha256': 'b' * 64,
             'bootId': self.system.boot, 'lastDeploymentSha256': 'c' * 64,
             'application': capture, 'socketWasActive': False,
-            'alreadyReady': False, 'previousActivationSha256': None}
+            'alreadyReady': False, 'previousActivationSha256': None,
+            'activationContext': 'initial', 'applicationInhibited': True}
         activation_record = {'version': 1, 'plan': plan,
             'planSha256': runtime_activation.plan_digest(plan),
             'requestId': '00000000-0000-0000-0000-000000000001',
@@ -129,8 +130,8 @@ class Tests(unittest.TestCase):
         self.tmp.cleanup()
     def dispatch(self, value): return manager.dispatch(value, lambda:self.system)
     def switch(self, route='gpio20', ident='request-0001'):
-        checked = self.dispatch(dict(schemaVersion=3, operation='preflight', route=route))
-        return self.dispatch(dict(schemaVersion=3, operation='switch', route=route,
+        checked = self.dispatch(dict(schemaVersion=1, operation='preflight', route=route))
+        return self.dispatch(dict(schemaVersion=1, operation='switch', route=route,
             requestId=ident, actor='offline.test', execute=True, preflightToken=checked['state']['preflightToken']))
     def test_running_application_restored_and_requester_not_required(self):
         result = self.switch()
@@ -142,10 +143,10 @@ class Tests(unittest.TestCase):
         self.assertIs(self.system.pre_ack['state']['outputLifecycle']['executionAuthorized'], False)
         self.assertFalse(app.unit_file(app.DROPIN).exists())
         self.assertFalse(app.unit_file(app.IDLE_DROPIN).exists())
-        self.assertEqual(self.dispatch(dict(schemaVersion=3,operation='query'))['state']['application']['phase'], 'restored')
+        self.assertEqual(self.dispatch(dict(schemaVersion=1,operation='query'))['state']['application']['phase'], 'restored')
 
     def remove(self, route='gpio4', ident='remove-0001'):
-        return self.dispatch(dict(schemaVersion=3, operation='remove', route=route,
+        return self.dispatch(dict(schemaVersion=1, operation='remove', route=route,
             requestId=ident, actor='offline.test', execute=True))
 
     def test_remove_restores_running_application_after_exact_neutral_proof(self):
@@ -237,7 +238,7 @@ class Tests(unittest.TestCase):
         self.system.active = False
         before = list(self.system.events)
         with self.assertRaisesRegex(ValueError, 'service state changed'):
-            self.dispatch(dict(schemaVersion=3, operation='preflight', route='gpio20'))
+            self.dispatch(dict(schemaVersion=1, operation='preflight', route='gpio20'))
         self.assertEqual(before, self.system.events)
 
     def test_removal_ancestry_rejects_changed_capture_and_accepts_only_diagnostics(self):
@@ -294,7 +295,7 @@ class Tests(unittest.TestCase):
 
     def test_remove_completes_a_matching_prior_recovered_route(self):
         self.switch('gpio4', 'setup-route-0001')
-        recovered = self.dispatch(dict(schemaVersion=3, operation='recover', execute=True,
+        recovered = self.dispatch(dict(schemaVersion=1, operation='recover', execute=True,
             requestId='recovery-0001', actor='offline.test'))
         self.assertEqual(recovered['status'], 'recovered-inhibited')
         self.assertFalse(self.system.active)
@@ -373,7 +374,7 @@ class Tests(unittest.TestCase):
                 before = copy.deepcopy(self.system.value)
                 self.assertFalse(self.system.active)
                 self.system.fail = None
-                result = self.dispatch(dict(schemaVersion=3, operation='restore', execute=True))
+                result = self.dispatch(dict(schemaVersion=1, operation='restore', execute=True))
                 self.assertEqual(result['status'], 'restored')
                 self.assertEqual(self.system.value, before)
     def test_foreign_dropin_survives(self):
@@ -387,15 +388,15 @@ class Tests(unittest.TestCase):
         self.system.fail = 'start'
         self.switch()
         with self.assertRaises(ValueError):
-            self.dispatch(dict(schemaVersion=3,operation='reconcile-output',route='gpio20'))
+            self.dispatch(dict(schemaVersion=1,operation='reconcile-output',route='gpio20'))
         with self.assertRaises(ValueError):
-            self.dispatch(dict(schemaVersion=3,operation='application-ready',route='gpio20',token='a'*36,pid=321,transmit=False))
+            self.dispatch(dict(schemaVersion=1,operation='application-ready',route='gpio20',token='a'*36,pid=321,transmit=False))
     def test_prior_boot_restoration_does_not_start(self):
         self.system.fail = 'start'
         self.switch()
         self.system.boot = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
         with self.assertRaises(ValueError):
-            self.dispatch(dict(schemaVersion=3,operation='restore',execute=True))
+            self.dispatch(dict(schemaVersion=1,operation='restore',execute=True))
         self.assertFalse(self.system.active)
 
     def test_every_durable_journal_boundary_has_a_recovery_path(self):
@@ -423,9 +424,9 @@ class Tests(unittest.TestCase):
                 record = self.system.read_record('application.json')
                 journal = self.system.read_journal()
                 if journal and journal['phase'] == 'complete-inhibited' and self.system.value['route'] == 2:
-                    result = self.dispatch(dict(schemaVersion=3, operation='restore', execute=True))
+                    result = self.dispatch(dict(schemaVersion=1, operation='restore', execute=True))
                 else:
-                    result = self.dispatch(dict(schemaVersion=3, operation='recover', execute=True,
+                    result = self.dispatch(dict(schemaVersion=1, operation='recover', execute=True,
                         requestId='recovery-0001', actor='offline.test'))
                     self.assertNotEqual(result['status'], 'error')
                     result = self.switch(ident='request-0002')
@@ -438,7 +439,7 @@ class Tests(unittest.TestCase):
         self.switch()
         self.system.active = True
         record = self.system.read_record('application.json')
-        self.dispatch(dict(schemaVersion=3,operation='application-ready',route='gpio20',
+        self.dispatch(dict(schemaVersion=1,operation='application-ready',route='gpio20',
             token=record['token'],pid=self.system.pid,transmit=False))
         self.assertFalse(app.unit_file(app.IDLE_DROPIN).exists())
         self.assertEqual(self.system.read_record('application.json')['phase'], 'restored')
@@ -461,7 +462,7 @@ class Tests(unittest.TestCase):
         self.switch()
         self.system.fail = 'configure'
         self.assertEqual(self.switch('gpio4', 'request-0002')['status'], 'error')
-        result = self.dispatch(dict(schemaVersion=3,operation='recover',execute=True,
+        result = self.dispatch(dict(schemaVersion=1,operation='recover',execute=True,
             requestId='recover-0001',actor='offline.test'))
         self.assertNotEqual(result['status'], 'error')
         self.system.fail = None
@@ -474,7 +475,7 @@ class Tests(unittest.TestCase):
         self.system.write_record('application.json', record)
         before = list(self.system.events)
         with self.assertRaises(ValueError):
-            self.dispatch(dict(schemaVersion=3,operation='restore',execute=True))
+            self.dispatch(dict(schemaVersion=1,operation='restore',execute=True))
         self.assertEqual(self.system.events, before)
 
     def test_unbound_application_operation_is_not_used_for_removal(self):

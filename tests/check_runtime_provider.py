@@ -29,7 +29,7 @@ KERNEL = '6.18.34+rpt-rpi-2712'
 
 
 def exact_binding():
-    value = {'schemaVersion': 3, 'contract': binding.CONTRACT,
+    value = {'schemaVersion': 1, 'contract': binding.CONTRACT,
         'productVersion': binding.PRODUCT_VERSION,
         'compatibilityIdentities': binding.COMPATIBILITY,
         'sourceCommit': 'a'*40, 'kernel': KERNEL,
@@ -68,7 +68,7 @@ def manager_ready(route='gpio4'):
     transaction = {'version': 1, 'boot': 'boot', 'session': state['session'],
         'binding': 'e'*64, 'request': '00000000-0000-0000-0000-000000000001',
         'target': number, 'phase': 'complete-inhibited', 'observation': state}
-    query = {'schemaVersion': 3, 'contract': 'rp1-gpclk-route-manager-runtime',
+    query = {'schemaVersion': 1, 'contract': 'rp1-gpclk-route-manager-runtime',
         'operation': 'query', 'status': 'ok', 'state': {'profile': 'runtime',
         'activeRoute': route, 'controller': state,
         'bootId': 'boot', 'bindingSha256': 'e'*64,
@@ -79,7 +79,7 @@ def manager_ready(route='gpio4'):
         'terminal': 0, 'fault': 1, 'owner': 1,
         'lease': 1, 'outputInhibited': 1, 'operationalReady': 2,
         'gpio': 2, 'clock': 2, 'dma': 2, 'stable': 2}
-    idle = {'schemaVersion': 3, 'contract': 'rp1-gpclk-route-manager-runtime',
+    idle = {'schemaVersion': 1, 'contract': 'rp1-gpclk-route-manager-runtime',
         'operation': 'idle', 'status': 'ok', 'state': {'outputLifecycle': {
         'ready': True, 'executionAuthorized': False,
         'productionAuthority': 'root-owned-endpoint',
@@ -114,10 +114,10 @@ class Host:
         self._manager = manager_ready()
         self._activation = {'status': 'absent'}
         self.files = None
-        self.removal = {'version': 2, 'files': {'/fixed': {
+        self.removal = {'version': 1, 'files': {'/fixed': {
             'before': None, 'after': provider.deployment.encode(b'exact')}}}
         self.removed = False
-        self.retirement = {'version': 2,
+        self.retirement = {'version': 1,
             'operation': 'retire-post-reboot-activation',
             'bindingSha256': 'a' * 64, 'artifactSetSha256': 'b' * 64,
             'bootId': '00000000-0000-0000-0000-000000000002',
@@ -485,7 +485,7 @@ class Tests(unittest.TestCase):
     def test_real_host_retires_exact_recovered_activation_before_removal(self):
         journal = {'version': 1, 'phase': 'recovered-inhibited'}
         activation_path = str(provider.activation.JOURNAL)
-        value = {'version': 2, 'files': {activation_path: {
+        value = {'version': 1, 'files': {activation_path: {
             'before': None, 'after': None}}}
         digest = provider.deployment.plan_hash(value)
         events = []
@@ -516,7 +516,7 @@ class Tests(unittest.TestCase):
     def test_real_host_retires_orphaned_exact_route_journals_before_removal(self):
         transactions = {name: {'name': name}
                         for name in provider.activation.RETIREMENT_TRANSACTIONS}
-        value = {'version': 2, 'files': {}}
+        value = {'version': 1, 'files': {}}
         digest = provider.deployment.plan_hash(value)
         events = []
         system = SimpleNamespace(
@@ -551,7 +551,7 @@ class Tests(unittest.TestCase):
             retire_journal=lambda current: events.append('retire'))
         host = provider.Host.__new__(provider.Host)
         host.files = SimpleNamespace()
-        value = {'version': 2, 'files': {}}
+        value = {'version': 1, 'files': {}}
         with patch.object(provider.deployment, 'mutation_lock',
                           return_value=contextlib.nullcontext()), \
              patch.object(provider.deployment, 'removal_plan', return_value=value), \
@@ -920,14 +920,14 @@ class Tests(unittest.TestCase):
         replies = []
         def exchange(request):
             replies.append(request)
-            return {'schemaVersion': 3, 'contract': provider.client.CONTRACT,
+            return {'schemaVersion': 1, 'contract': provider.client.CONTRACT,
                     'status': 'ok', 'state': {}}
         with patch.object(sys, 'argv', ['runtime_route_client.py',
                 'reconcile-output', 'gpio4']), \
              patch.object(provider.client, 'exchange', exchange), \
              contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(provider.client.main(), 0)
-        self.assertEqual(replies, [{'schemaVersion': 3,
+        self.assertEqual(replies, [{'schemaVersion': 1,
             'operation': 'reconcile-output', 'route': 'gpio4'}])
 
     def test_schema_and_exit_status_contract(self):
@@ -994,7 +994,7 @@ class UpdateHost(Host):
             'applicationInhibited': self.system.inhibited, 'applicationRestoration': True,
             'pendingTransaction': self.system.read_record('transaction.json'),
             'application': self.system.read_record('application.json')}
-        value = {'status': 'observed', 'query': {'schemaVersion': 3,
+        value = {'status': 'observed', 'query': {'schemaVersion': 1,
             'contract': provider.client.CONTRACT, 'operation': 'query', 'status': 'ok', 'state': state}}
         if self.system.consumer:
             value['idle'] = manager_ready(state['activeRoute'])['idle']

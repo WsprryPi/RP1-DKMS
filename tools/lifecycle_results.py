@@ -8,7 +8,7 @@ import re
 import stat
 import subprocess
 
-CONTRACT = 'rp1-gpclk-package-lifecycle-v2'
+CONTRACT = 'rp1-gpclk-package-lifecycle-v1'
 LIMIT = 16 * 1024 * 1024
 SCENARIOS = ('packaged-runtime-baseline', 'clean-cycle', 'missing-payload',
              'package-lock', 'dependency-recovery', 'header-profiles',
@@ -136,7 +136,7 @@ def context(run_id, scenario, identity):
 
 
 def envelope(expected, status, error, steps):
-    return {'contract': CONTRACT, 'schemaVersion': 2, **expected,
+    return {'contract': CONTRACT, 'schemaVersion': 1, **expected,
             'status': status, 'error': error, 'steps': steps,
             'realPackageManager': True, 'hardwareQualification': False,
             'rfQualification': False}
@@ -148,7 +148,7 @@ def accept(path, expected, exit_status):
             'error', 'steps', 'realPackageManager', 'hardwareQualification', 'rfQualification'}
     require(isinstance(value, dict) and set(value) == keys, 'result fields differ')
     require(value['contract'] == CONTRACT and type(value['schemaVersion']) is int
-            and value['schemaVersion'] == 2, 'result version differs')
+            and value['schemaVersion'] == 1, 'result version differs')
     for key in ('runId', 'scenario', 'identity'):
         require(value[key] == expected[key], 'result attribution differs: ' + key)
     validate_identity(value['identity'])

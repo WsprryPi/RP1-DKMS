@@ -35,7 +35,8 @@ def exchange(request):
     result = admin.strict_json(chunks)
     if not isinstance(result, dict):
         raise ValueError('runtime response object required')
-    if result.get('schemaVersion') != 3 or result.get('contract') != CONTRACT:
+    if (type(result.get('schemaVersion')) is not int or result['schemaVersion'] != 1 or
+            result.get('contract') != CONTRACT):
         raise ValueError('runtime profile is not deployed')
     return result
 
@@ -50,10 +51,10 @@ def main():
                     ['resume','gpio4','--execute'], ['resume','gpio20','--execute']):
         raise SystemExit('usage: runtime_route_client.py query | restore --execute | preflight gpio4|gpio20 | switch gpio4|gpio20 --execute | remove gpio4|gpio20 --execute | recover --execute | idle gpio4|gpio20 | reconcile-output gpio4|gpio20 | resume gpio4|gpio20 --execute')
     operation = args[0]
-    request = {'schemaVersion':3, 'operation':operation}
+    request = {'schemaVersion':1, 'operation':operation}
     if operation in ('switch','remove','preflight','idle','reconcile-output','resume'): request['route'] = args[1]
     if operation == 'switch':
-        checked = exchange({'schemaVersion':3,'operation':'preflight','route':args[1]})
+        checked = exchange({'schemaVersion':1,'operation':'preflight','route':args[1]})
         if checked['status'] != 'ok': print(json.dumps(checked)); return 2
         request['preflightToken'] = checked['state']['preflightToken']
     if operation in ('resume', 'restore'): request['execute'] = True

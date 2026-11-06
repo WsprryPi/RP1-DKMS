@@ -34,7 +34,7 @@ retains the OF match table for explicit binding. The default build retains its
 autoload alias. The consumer version follows the same development identity contract;
 changed bytes do not inherit qualification. The interlock constrains overlay
 ownership and consumer lifetime, not output policy. Ordinary direct builds do not link
-the controller or change their administration interface. The canonical 0.0.1 package selects this interlocked profile for both modules.
+the controller or change their administration interface. The canonical package selects this interlocked profile for both modules.
 Direct source builds retain the explicit opt-in flag and ordinary one-module default. Exact-source orchestration may explicitly select
 the `runtime-controller` DKMS profile; that one DKMS instance builds, installs,
 tracks, and rolls back both modules. The runtime bundle binds those installed
@@ -112,7 +112,7 @@ execution begins. Read-only inspection and planning do not create it. The local-
 the exact installed WsprryPi application companion;
 it is not an installer or a claim about loaded target memory.
 
-The version-3 binding fixes the source commit, product and route compatibility
+The runtime binding fixes the source commit, product and route compatibility
 identities, kernel, and the unique DKMS-installed path for each module. Each module
 record includes its installed-file digest, decompressed-ELF digest, compression,
 version, kernel, and build-note digest. `.ko`, `.ko.xz`, `.ko.gz`, `.ko.zst`, and
@@ -229,7 +229,7 @@ controller, changed boot, substituted endpoint or failed unload remains a durabl
 recovery fault. A neutral controller with a nonzero generation is unloadable
 only when the same-boot terminal route, manager, and optional application
 journals form an exact recovery chain to that controller observation. The
-version-2 recovery plan binds the controller state and every retained
+recovery plan binds the controller state and every retained
 route-recovery journal digest; missing or changed evidence remains a fault.
 
 A terminal `complete-neutral` journal may seed a new current-boot activation
@@ -240,16 +240,17 @@ terminal route/manager/application chain, including an attributable idle overrid
 when present. Partial, failed, same-boot divergent or identity-drifted history
 does not admit reboot activation.
 
-New initial, recovered and idempotent activation plans use version 2;
-post-reboot plans use **version 3**. The latter bind the full historical chain,
-current disabled application capture and current boot. `reboot-prepare` durably
-records that current intent before establishing the inhibitor and retiring
-dependent journals in order. An exact interrupted suffix can be retried without
-reusing the old boot's service or transmission intent. A fresh controller session
-then establishes route zero and restores the captured current service intent.
-Version-1 and version-2 plans remain valid historical journal formats; they do
-not substitute for a newly reviewed version-3 reboot plan. WsprryPi separately
-orchestrates its saved route through the public facade.
+All activation plans use one current format. The explicit `activationContext`
+distinguishes initial, recovered, idempotent and post-reboot operations.
+Post-reboot plans additionally require the full historical chain, current
+disabled application capture and current boot. Reboot evidence is rejected in
+other contexts. `reboot-prepare` durably records current intent before
+establishing the inhibitor and retiring dependent journals in order. An exact
+interrupted suffix can be retried without reusing the old boot's service or
+transmission intent. A fresh controller session establishes route zero and
+restores the captured current service intent. Retired formats are rejected;
+there is no historical-format fallback. WsprryPi separately orchestrates its
+saved route through the public facade.
 
 For replacement of an exact owned deployment, current candidate code may retire
 that same prior-boot terminal journal without first reactivating the controller.
