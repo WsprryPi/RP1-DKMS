@@ -39,7 +39,7 @@ import urllib.request
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 from provider_identity import describe, validate as validate_identity
-from version_identity import compare as compare_versions, package_filename
+from version_identity import compare as compare_versions, package_filename, parse as parse_version, SEMVER as PRODUCT_SEMVER
 
 
 LEGACY_REPOSITORY = "WsprryPi/RP1-GPCLK-DKMS"
@@ -69,7 +69,7 @@ RUNTIME_ROUTE_CLIENT = pathlib.Path("/usr/lib/rp1-gpclk-dkms/runtime_route_clien
 RUNTIME_COMPANION = pathlib.Path("/usr/local/lib/wsprrypi/route_application.py")
 SHA40 = re.compile(r"^[0-9a-f]{40}$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
-SEMVER = re.compile(r"^v?(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$")
+SEMVER = re.compile(r"v?" + PRODUCT_SEMVER.pattern)
 SAFE_VERSION = re.compile(r"^[0-9A-Za-z.+:~-]+$")
 MAX_API_BYTES = 16 * 1024 * 1024
 MAX_METADATA_BYTES = 2 * 1024 * 1024
@@ -159,11 +159,12 @@ def json_result(result: CommandResult, operation: str) -> dict[str, Any]:
     return value
 
 
-def parse_semver(tag: str) -> tuple[int, int, int]:
-    match = SEMVER.fullmatch(tag)
-    if not match:
-        raise ContractError(f"release tag is not a semantic version: {tag!r}")
-    return tuple(int(match.group(index)) for index in range(1, 4))
+def parse_semver(tag: str) -> tuple:
+    try:
+        core, prerelease, _ = parse_version(tag.removeprefix('v'))
+    except (ValueError, AttributeError) as error:
+        raise ContractError(f"release tag is not a semantic version: {tag!r}") from error
+    return core, not prerelease, tuple((0, int(item)) if item.isdigit() else (1, item) for item in prerelease)
 
 
 def configure_provider_repository(repository: str) -> None:
@@ -305,11 +306,13 @@ def installation_decision(requested: str, detected: Mapping[str, Any]) -> dict[s
 
 def source_selector(requested: str, channel: str) -> tuple[str, str | None]:
     if requested == "auto":
-        if REPOSITORY == MIGRATION_REPOSITORY and channel == "development":
-            return "devel", None
         return "release", None
     if requested in {"release", "devel"}:
         return requested, None
+    if requested.startswith("release:"):
+        tag = requested.removeprefix("release:")
+        parse_semver(tag)
+        return "release", tag
     if requested.startswith("commit:"):
         commit = requested.removeprefix("commit:")
         require(SHA40.fullmatch(commit) is not None, "commit source requires a full lowercase 40-character SHA")
@@ -318,7 +321,7 @@ def source_selector(requested: str, channel: str) -> tuple[str, str | None]:
         path = requested.removeprefix("checkout:")
         require(pathlib.Path(path).is_absolute(), "checkout source requires an absolute path")
         return "checkout", path
-    raise ContractError("RP1_GPCLK_DKMS_SOURCE must be auto, release, devel, commit:FULL_SHA, or checkout:/absolute/path")
+    raise ContractError("RP1_GPCLK_DKMS_SOURCE must be auto, release, release:TAG, devel, commit:FULL_SHA, or checkout:/absolute/path")
 
 
 def release_assets(release: Mapping[str, Any]) -> dict[str, str]:
@@ -334,12 +337,16 @@ def release_assets(release: Mapping[str, Any]) -> dict[str, str]:
 
 
 def release_candidate(release: Mapping[str, Any]) -> bool:
-    if release.get("draft") is not False or release.get("prerelease") is not False:
+    if release.get("draft") is not False:
         return False
     if not isinstance(release.get("published_at"), str) or not release.get("published_at"):
         return False
     tag = release.get("tag_name")
     if not isinstance(tag, str) or SEMVER.fullmatch(tag) is None:
+        return False
+    try:
+        parse_semver(tag)
+    except ContractError:
         return False
     assets = release_assets(release)
     return MANIFEST_NAME in assets and CHECKSUMS_NAME in assets and any(
@@ -1225,8 +1232,13 @@ def prepare(args: argparse.Namespace, runner: Runner) -> dict[str, Any]:
             )
         selector, value = source_selector(args.source, channel)
         if selector == "release":
+            client = GitHubClient(os.environ.get("GITHUB_TOKEN"))
+            release = client.json(API_BASE + '/releases/tags/' + urllib.parse.quote(value, safe='')) if value else None
+            if value:
+                require(isinstance(release, dict) and release.get('tag_name') == value,
+                        'published release tag differs from selected release')
             plan["resolved"] = download_release(
-                state_dir, GitHubClient(os.environ.get("GITHUB_TOKEN")), runner
+                state_dir, client, runner, **({'release': release} if value else {})
             )
         else:
             plan["resolved"] = prepare_development(state_dir, selector, value, runner)

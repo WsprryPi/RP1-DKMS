@@ -116,7 +116,8 @@ neutral administration, native lifecycle tests, and RF qualification are separat
 `verify-release --state-dir PRIVATE_DIRECTORY --requirements REQUIREMENTS_JSON`
 verifies a published release through the provider's artifact/source parser. The
 optional `--tag TAG` selects one eligible published release; otherwise selection
-uses the latest eligible stable release. `--compare-candidate DIRECTORY` requires
+uses the latest eligible published release, including prereleases, by SemVer
+precedence. `--compare-candidate DIRECTORY` requires
 the independent local candidate's complete asset inventory and hashes to match
 the publication. The `release-audit` capability advertises this interface.
 

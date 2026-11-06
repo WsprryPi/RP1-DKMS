@@ -227,7 +227,8 @@ class MigrationRepositoryTests(RunnerFixtures, unittest.TestCase):
             if value is None: item.pop("immutable")
             else: item["immutable"] = value
             self.assertTrue(MOD.release_candidate(item))
-        for item in (release("v1.0.0", draft=True), release("v1.0.0", prerelease=True),
+        self.assertTrue(MOD.release_candidate(release("v1.0.0-rc.1", prerelease=True)))
+        for item in (release("v1.0.0", draft=True),
                      release("v1.0.0", complete=False)):
             self.assertFalse(MOD.release_candidate(item))
         with self.assertRaises(MOD.ContractError): MOD.select_release([])
@@ -285,6 +286,26 @@ class MigrationRepositoryTests(RunnerFixtures, unittest.TestCase):
 
 
 class CurrentDefaultTests(unittest.TestCase):
+    def test_exact_prerelease_plan_downloads_the_requested_publication(self):
+        with tempfile.TemporaryDirectory() as raw:
+            state=pathlib.Path(raw).resolve();state.chmod(0o700)
+            publication=release('v1.0.0-rc.1',prerelease=True)
+            selected={'channel':'release','tag':'v1.0.0-rc.1','commit':'a'*40,
+                      'manifest':{'productVersion':'1.0.0-rc.1'},'checkout':{'path':str(ROOT)}}
+            client=mock.Mock();client.json.return_value=publication
+            with mock.patch.object(MOD,'detect_platform',return_value={'automaticEligible':True}), \
+                 mock.patch.object(MOD,'runtime_residue_inventory',return_value=[]), \
+                 mock.patch.object(MOD,'GitHubClient',return_value=client), \
+                 mock.patch.object(MOD,'download_release',return_value=selected) as download, \
+                 mock.patch.object(MOD,'prepare_development') as development, \
+                 mock.patch.object(MOD,'record_digest',return_value=None),mock.patch.object(MOD,'render_plan'):
+                self.assertEqual(MOD.main(['prepare','--state-dir',str(state),'--record',str(state/'record.json'),
+                    '--source-policy','production','--install','true','--source','release:v1.0.0-rc.1']),0)
+            client.json.assert_called_once_with(MOD.API_BASE+'/releases/tags/v1.0.0-rc.1')
+            self.assertEqual(download.call_args.kwargs,{'release':publication})
+            development.assert_not_called()
+            self.assertEqual(MOD.load_plan(state)['resolved']['tag'],'v1.0.0-rc.1')
+
     def test_operational_cli_refuses_old_repository(self):
         with mock.patch.object(MOD.sys, 'stderr', io.StringIO()), self.assertRaises(SystemExit) as stopped:
             fixture_args(['--provider-repository', MOD.LEGACY_REPOSITORY, 'remove'])
@@ -294,18 +315,18 @@ class CurrentDefaultTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as raw:
             state = pathlib.Path(raw).resolve()
             state.chmod(0o700)
-            selected = {'channel': 'development', 'commit': 'a'*40, 'version': '0.0.1', 'checkout': {'path': str(ROOT)}}
+            selected = {'channel': 'release', 'commit': 'a'*40,
+                        'manifest': {'productVersion': '1.0.0-rc.1'}, 'checkout': {'path': str(ROOT)}}
             with mock.patch.object(MOD, 'detect_platform', return_value={'automaticEligible': True}), \
                  mock.patch.object(MOD, 'runtime_residue_inventory', return_value=[]), \
                  mock.patch.object(MOD, 'prepare_development', return_value=selected) as source, \
-                 mock.patch.object(MOD, 'download_release') as release_download, \
+                 mock.patch.object(MOD, 'download_release', return_value=selected) as release_download, \
                  mock.patch.object(MOD, 'record_digest', return_value=None), \
                  mock.patch.object(MOD, 'render_plan'):
                 self.assertEqual(MOD.main(['prepare', '--state-dir', str(state), '--record', str(state/'installation.json'),
                     '--source-policy', 'development', '--install', 'true']), 0)
-            source.assert_called_once()
-            self.assertEqual(source.call_args.args[1:3], ('devel', None))
-            release_download.assert_not_called()
+            source.assert_not_called()
+            release_download.assert_called_once()
             plan = MOD.load_plan(state)
             self.assertEqual(plan['providerRepository'], MOD.MIGRATION_REPOSITORY)
             self.assertEqual(plan['resolved'], selected)
@@ -398,9 +419,18 @@ class ReleaseTests(RunnerFixtures, unittest.TestCase):
     def test_semantic_ordering_and_exclusions(self):
         selected = MOD.select_release([
             release("v1.9.9"), release("v1.10.0"), release("v9.0.0", draft=True),
-            release("v8.0.0", prerelease=True), release("latest"), release("v7.0.0", complete=False),
+            release("v1.10.0-rc.1", prerelease=True), release("latest"), release("v7.0.0", complete=False),
         ])
         self.assertEqual(selected["tag_name"], "v1.10.0")
+
+    def test_prereleases_use_semver_precedence_and_auto_selects_releases(self):
+        selected = MOD.select_release([release('v0.9.0'),release('v1.0.0-rc.2',prerelease=True),
+            release('v1.0.0-rc.10',prerelease=True),release('v1.0.0-rc.01',prerelease=True)])
+        self.assertEqual(selected['tag_name'],'v1.0.0-rc.10')
+        self.assertEqual(MOD.select_release([selected,release('v1.0.0')])['tag_name'],'v1.0.0')
+        for channel in ('development','production'):
+            self.assertEqual(MOD.source_selector('auto',channel),('release',None))
+        self.assertEqual(MOD.source_selector('release:v1.0.0-rc.1','production'),('release','v1.0.0-rc.1'))
 
     def test_release_without_required_manifest_is_not_eligible(self):
         with self.assertRaisesRegex(MOD.ContractError, "no eligible"):

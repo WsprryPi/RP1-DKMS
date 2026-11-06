@@ -455,6 +455,8 @@ stable `v1.0.0` release remains a separate readiness decision.
 
 WsprryPi consumes only explicitly selected, compatible, verified provider source
 or a separately published release, never the moving default branch for production.
+Automatic release selection includes published prereleases and uses SemVer
+precedence; a final version sorts above prereleases of the same version.
 Module and application reviews, commits, releases, and acceptance remain separate.
 No old release or externally owned qualification bundle qualifies changed source.
 See [qualification boundaries](../operations/qualification-metadata.md).

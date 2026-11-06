@@ -170,7 +170,7 @@ class Tests(unittest.TestCase):
             else: ordinary['immutable'] = flag
             client.json.return_value = ordinary
             self.assertTrue(A.validate_publication(client, self.lock)['publicationVerified'])
-        mutations = [lambda x: x.update(draft=True), lambda x: x.update(prerelease=True),
+        mutations = [lambda x: x.update(draft=True),
             lambda x: x.update(published_at=None),
             lambda x: x.update(tag_name='v1.0.0'), lambda x: x.update(html_url='https://example.invalid'),
             lambda x: x['assets'].pop(),

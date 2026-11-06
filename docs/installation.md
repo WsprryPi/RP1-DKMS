@@ -65,10 +65,12 @@ alone does not mean that the manager or an execution endpoint is ready.
 
 ## Release and development selection
 
-WsprryPi owns provider selection. Its `auto` policy uses an eligible published
-provider for production/main application installations and an exact resolved
-development source for named development branches. Explicit release selection
-is available to administrators through `RP1_GPCLK_DKMS_SOURCE=release`.
+WsprryPi owns provider selection. Its default selects published `v1.0.0-rc.1`
+on all application branches. Explicit `RP1_GPCLK_DKMS_SOURCE=release` selects the
+latest eligible published release, including prereleases; `release:TAG` selects
+an exact publication. Installer tooling is resolved independently from its
+maintained `devel` branch while package and runtime source retain their exact
+release identity.
 `INSTALL_RP1_GPCLK_DKMS=false` deliberately skips provider installation.
 
 These are administrator installer settings, not Read the Docs version-selector
