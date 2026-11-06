@@ -1374,11 +1374,13 @@ class ApplyPolicyTests(RunnerFixtures, unittest.TestCase):
         final = self.public_update(record, prepared=True, marker=2)
         with mock.patch.object(MOD, "runtime_update_provider", return_value=pathlib.Path("/provider")), \
              mock.patch.object(MOD, "runtime_call", side_effect=[first, executed, final]) as calls, \
-             mock.patch.object(MOD, "require_unchanged_ownership") as unchanged:
+             mock.patch.object(MOD, "require_unchanged_ownership") as unchanged, \
+             mock.patch.object(MOD, "remove_empty_runtime_dropin") as cleanup:
             MOD.recover_and_remove_owned_runtime(self.record, record, identity, self.runner())
         self.assertEqual([call.args[2] for call in calls.call_args_list],
                          ["update-plan", "update-execute", "update-plan"])
         self.assertEqual(unchanged.call_count, 3)
+        cleanup.assert_called_once_with()
         self.assertIn(record["runtime"]["bindingSha256"], calls.call_args_list[0].args[3])
 
 
