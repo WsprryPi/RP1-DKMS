@@ -42,8 +42,11 @@
   "runtimeUpdate": "rp1-gpclk-runtime-update-v1",
   "qualificationClaim": false,
   "deferredAcceptance": [
-    "WsprryPi consumer acceptance, installation, migration, runtime, removal, rollback, and recovery for the independently identified provider"
+    "Physical execution and RF qualification remain separate from lifecycle/interface acceptance"
   ],
   "providerRepository": "WsprryPi/RP1-DKMS",
-  "runtimeReadiness": "rp1-gpclk-runtime-readiness-v1"
+  "runtimeReadiness": "rp1-gpclk-runtime-readiness-v1",
+  "providerLifecycle": "rp1-gpclk-provider-lifecycle-v1",
+  "providerIdentity": "rp1-gpclk-provider-identity-v1",
+  "providerInstallerPath": "scripts/provider_lifecycle.py"
 }

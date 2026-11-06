@@ -276,7 +276,7 @@ when the entire descriptor completes. A DMA deadline remains a failure even when
 
 ## Compatibility
 
-Compatibility is deny-by-default for unknown module versions, architectures,
+Compatibility is deny-by-default for unsupported UAPI/resource contracts, architectures,
 routes, UAPI contracts, resources, ownership, and cleanup state. Hardware
 eligibility is structural rather than a marketing-model allowlist: the active
 endpoint, clock provider, DMA provider, and their ancestry must identify one RP1
@@ -305,6 +305,13 @@ Hostname, board model, and kernel release are retained in evidence and are not
 compatibility-ID components.
 
 ## Packaging and administration
+
+The [public provider lifecycle](provider-lifecycle.md) owns provider identity,
+installation transitions, native lifecycle orchestration, recovery, and removal.
+Applications select authenticated inputs, declare consumer interfaces, invoke
+opaque provider plans, and retain their own application policy and file ownership.
+Product SemVer is data derived from the canonical header; accepted UAPI hashes,
+capabilities, limits, and authenticated provenance govern consumer compatibility.
 
 The Debian package owns its declared source for both modules, inactive overlay
 files, passive package guard, packaged route executor, schema and disabled units. Standard `dpkg`, `dh-dkms`, and DKMS mechanisms own package lifecycle.

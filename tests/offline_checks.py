@@ -8,6 +8,9 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 CHECKS = (
     'check_versioning.py',
+    'check_provider_lifecycle.py',
+    'check_provider_facade.py',
+    'check_provider_update_integration.py',
     'check_development_workflow.py',
     'check_development_identity.py',
     'check_spdx.py',

@@ -9,6 +9,8 @@ INVENTORY = {LIB+name: 'scripts/'+name for name in (
     'runtime_binding.py', 'version_identity.py')}
 INVENTORY[LIB+'version.h'] = 'include/rp1_gpclk/version.h'
 INVENTORY[LIB+'package_preflight.py'] = 'scripts/package_preflight.py'
+BOOTSTRAP = {destination.removeprefix(LIB): source
+             for destination, source in INVENTORY.items() if destination.startswith(LIB)}
 INVENTORY['/usr/lib/systemd/system/rp1-gpclk-route-manager.socket'] = 'systemd/rp1-gpclk-route-manager.socket'
 INVENTORY['/usr/lib/systemd/system/rp1-gpclk-route-manager@.service'] = 'systemd/rp1-gpclk-route-manager@.service'
 INVENTORY['/etc/systemd/system/rp1-gpclk-route-manager@.service.d/95-runtime-controller.conf'] = 'systemd/95-runtime-controller.conf'

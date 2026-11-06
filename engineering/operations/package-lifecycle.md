@@ -37,7 +37,8 @@ no runtime/development/application ownership record. Signing keys, certificates,
 trust enrollment, DKMS-global configuration, boot configuration, foreign overlay
 files, unrelated DKMS instances and application state remain outside package
 ownership. Runtime state, source-development installations, manager drop-ins and
-WsprryPi's default `/var/lib/wsprrypi/rp1-gpclk-dkms-installation.json` record block
+The provider's `/var/lib/rp1-gpclk-dkms/provider-installation.json` receipt and
+legacy client `/var/lib/wsprrypi/rp1-gpclk-dkms-installation.json` record block
 replacement/removal until their owning workflow retires them. A nonstandard
 application record path must also be checked by its owning orchestrator; the
 package does not search arbitrary application files or infer their ownership.

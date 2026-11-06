@@ -4,8 +4,10 @@
 
 The provider owns interpretation of controller sessions, generations, activation
 ancestry, route journals, deployment recovery and provider service state.
-Applications own version selection, their configuration and installation
-provenance. An application must not reconstruct provider recovery decisions.
+Applications own provider selection, their configuration and application
+provenance. The [provider lifecycle facade](provider-lifecycle.md) owns provider
+installation receipts and package/source migration; its public client receipt
+identifies the invoking application separately from provider ownership. An application must not reconstruct provider recovery decisions.
 
 ## Public interface
 

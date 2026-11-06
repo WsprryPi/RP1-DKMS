@@ -456,6 +456,7 @@ def check(root=Path('/'), operation='configure'):
                  'etc/rp1-gpclk-dkms/development',
                  'etc/rp1-gpclk-dkms/enrollment.json',
                  'var/lib/wsprrypi/rp1-gpclk-dkms-installation.json',
+                 'var/lib/rp1-gpclk-dkms/provider-installation.json',
                  'etc/systemd/system/rp1-gpclk-route-manager@.service.d',
                  'etc/systemd/system/sockets.target.wants/rp1-gpclk-route-manager.socket',
                  'opt/rp1-gpclk-dkms-development',

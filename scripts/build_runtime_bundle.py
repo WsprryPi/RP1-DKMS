@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from build_runtime_binding import build, module_payload, ROOT
 from runtime_controller_admin import digest
-from runtime_layout import INVENTORY
+from runtime_layout import INVENTORY, BOOTSTRAP
 from build_runtime_controller import generate
 
 
@@ -37,12 +37,8 @@ def bundle(modules, output, application_companion, kernel=None):
         (output / (digest(destination.encode())+'.bin')).write_bytes(data)
     (output / 'binding.json').write_text(json.dumps(binding, sort_keys=True, indent=2)+'\n')
     # Standalone bootstrap tool, with its dependencies, for review before running.
-    for name in ('runtime_deployment.py', 'runtime_controller_admin.py', 'runtime_layout.py',
-                 'runtime_application.py', 'runtime_output.py', 'runtime_provider.py',
-                 'runtime_binding.py', 'runtime_activation.py', 'runtime_route_client.py',
-                 'runtime_manager.py', 'package_preflight.py', 'version_identity.py'):
-        (output / name).write_bytes((ROOT / 'scripts' / name).read_bytes())
-    (output/'version.h').write_bytes((ROOT/'include/rp1_gpclk/version.h').read_bytes())
+    for name, source in BOOTSTRAP.items():
+        (output / name).write_bytes((ROOT / source).read_bytes())
     return binding
 
 
