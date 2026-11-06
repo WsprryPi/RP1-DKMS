@@ -3,6 +3,10 @@
 """Deterministic offline checks for the diagnostics contract."""
 
 from __future__ import annotations
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import importlib.util, json, pathlib, struct, tempfile
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -66,7 +70,7 @@ with tempfile.TemporaryDirectory() as temporary:
     assert set(report) >= set(contract["requiredSections"])
 
     development=root/"development.json"
-    write(root,"/development.json",{"schema":"rp1-gpclk-source-development-manifest","classification":"source-development","qualification":False,"moduleName":module.MODULE,"sourceCommit":"a"*40,"renderedVersion":"0.0.1","targetKernel":kernel,"route":"gpio4"})
+    write(root,"/development.json",{"schema":"rp1-gpclk-source-development-manifest","classification":"source-development","qualification":False,"moduleName":module.MODULE,"sourceCommit":"a"*40,"renderedVersion":VERSION,"targetKernel":kernel,"route":"gpio4"})
     development_report=module.Collector(root,runner,kernel,"aarch64").collect(None,development)
     assert development_report["development"]["status"]=="ok"
     assert development_report["summary"]["compatibilityState"]=="Experimental"

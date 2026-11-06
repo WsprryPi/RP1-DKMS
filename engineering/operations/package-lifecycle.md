@@ -49,7 +49,7 @@ package before any change. From the incoming reviewed source, run the read-only
 guard **before** invoking dpkg or APT:
 
 ```sh
-sudo python3 -I /absolute/reviewed/source/scripts/package_preflight.py unpack
+sudo python3 -I /absolute/reviewed/source/scripts/package_preflight.py unpack --package /absolute/candidate/PACKAGE.deb
 sudo dpkg -i /absolute/candidate/PACKAGE.deb
 ```
 
@@ -85,9 +85,10 @@ prerm. Verify successor absence before submitting the retained old archive.
 
 ## Repeat, kernels, compression and signing
 
-Exact repeated dpkg installation and APT reinstall replace the attributable
-same-version DKMS instance and rebuild all eligible installed header trees.
-They do not promise a build-free no-op. Dpkg's database lock refuses a concurrent
+Exact repeated dpkg installation and APT reinstall verify the same payload and
+retain intact installed modules. Missing attributable data may be restored.
+Compatible newer passive packages upgrade through native dpkg/DKMS; their old
+versioned artifacts must be absent afterward. See [versioning](../contracts/versioning.md). Dpkg's database lock refuses a concurrent
 same-version request; independent privileged DKMS work must be excluded by its
 owning orchestrator. A native `dkms install` or `autoinstall`
 for an already installed exact kernel may be a no-op. Guard and audit those

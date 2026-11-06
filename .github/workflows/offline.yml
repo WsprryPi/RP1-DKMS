@@ -20,27 +20,16 @@ jobs:
         run: |
           ./scripts/render-development-tree --source . --output /tmp/rp1-development-render
           python3 -c 'import json,jsonschema; jsonschema.Draft202012Validator(json.load(open("schema/rp1-gpclk-source-development-manifest.schema.json"))).validate(json.load(open("/tmp/rp1-development-render/DEVELOPMENT_MANIFEST.json")))'
-      - name: Reject direct predecessor upgrade and silent downgrade
-        run: |
-          if sh debian/rp1-gpclk-dkms.preinst upgrade 9.9.9-1 > /tmp/downgrade-result 2>&1; then exit 1; fi
-          grep -q downgrade /tmp/downgrade-result
-          if sh debian/rp1-gpclk-dkms.preinst upgrade 0.0.0-1; then exit 1; fi
-          if sh debian/rp1-gpclk-dkms.preinst upgrade 0.99.0-1; then exit 1; fi
-          if sh debian/rp1-gpclk-dkms.preinst upgrade 0.9.0-1; then exit 1; fi
-          if sh debian/rp1-gpclk-dkms.preinst upgrade 1.0.0-1; then exit 1; fi
-          if sh debian/rp1-gpclk-dkms.preinst upgrade 1.0.1-1; then exit 1; fi
-          if sh debian/rp1-gpclk-dkms.preinst upgrade 1.0.2-1; then exit 1; fi
-          sh debian/rp1-gpclk-dkms.preinst upgrade 0.0.1-1
       - name: Build and independently validate the unpublished candidate
         run: |
-          ./scripts/build-release-candidate --version 0.0.1 --source-commit "$(git rev-parse HEAD)" --output /tmp/rp1-candidate
+          ./scripts/build-release-candidate --version "$(python3 scripts/version_identity.py version)" --source-commit "$(git rev-parse HEAD)" --output /tmp/rp1-candidate
           ./scripts/validate-release-candidate --candidate /tmp/rp1-candidate --source-commit "$(git rev-parse HEAD)"
       - name: Validate package version and ordering
         run: |
-          test "$(dpkg-deb -f /tmp/rp1-candidate/rp1-gpclk-dkms_0.0.1-1_all.deb Version)" = 0.0.1-1
-          dpkg --compare-versions 0.0.0-1 lt 0.0.1-1
-          dpkg --compare-versions 0.0.1-1 lt 0.9.0-1
-          dpkg --compare-versions 9.9.9-1 gt 0.0.1-1
+          package=$(python3 scripts/version_identity.py package)
+          version=$(python3 scripts/version_identity.py debian)
+          test "$(dpkg-deb -f "/tmp/rp1-candidate/$package" Version)" = "$version"
+
   lifecycle:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 105
@@ -60,7 +49,7 @@ jobs:
             -e SOURCE_COMMIT="$(git rev-parse HEAD)" \
             -v "$PWD:/source:ro" -v /tmp/rp1-lifecycle-inputs:/output \
             -w /source rp1-lifecycle sh -eu -c '
-              ./scripts/build-release-candidate --version 0.0.1 --source-commit "$SOURCE_COMMIT" --output /output/candidate
+              ./scripts/build-release-candidate --version "$(python3 scripts/version_identity.py version)" --source-commit "$SOURCE_COMMIT" --output /output/candidate
               ./scripts/validate-release-candidate --candidate /output/candidate --source-commit "$SOURCE_COMMIT"
               ./scripts/build-lifecycle-predecessor --source-commit "$SOURCE_COMMIT" --output /output/predecessor'
       - name: Real package and DKMS lifecycle with controlled faults
@@ -74,3 +63,12 @@ jobs:
         if: always()
         timeout-minutes: 1
         run: python3 tools/summarize-lifecycle.py /tmp/rp1-lifecycle-results/result.json
+      - name: Native version upgrade and clean uninstall
+        timeout-minutes: 20
+        run: |
+          mkdir -m 0777 /tmp/rp1-upgrade-results
+          docker run --rm --network none --cap-drop ALL \
+            --cap-add CHOWN --cap-add FOWNER --cap-add SETUID --cap-add SETGID \
+            --security-opt no-new-privileges -e PYTHONDONTWRITEBYTECODE=1 \
+            -v "$PWD:/source:ro" -v /tmp/rp1-upgrade-results:/results \
+            -w /source rp1-lifecycle python3 tests/package_upgrade_linux.py

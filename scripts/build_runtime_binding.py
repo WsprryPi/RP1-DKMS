@@ -26,7 +26,7 @@ def validate_module_version(payload):
     """Do not bind predecessor modules to current userspace/overlay source."""
     versions = re.findall(rb'(?:^|\x00)version=([^\x00]+)\x00', payload)
     if versions != [PRODUCT_VERSION.encode()]:
-        raise ValueError('runtime module version differs from 0.0.1 development source')
+        raise ValueError('runtime module version differs from selected source')
 
 
 def source_commit():

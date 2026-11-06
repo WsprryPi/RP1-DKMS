@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Canonical candidate metadata, derived from actual package bytes."""
-import ast
+from version_identity import expand
 from datetime import datetime, timezone
 import re
 from release_contract import (BEHAVIOR, COMPATIBILITY, DEB, DEBIAN,
@@ -16,29 +16,24 @@ def validate_source(files):
             'canonical module version mismatch')
     require('MODULE_VERSION(RP1_GPCLK_MODULE_VERSION);' in text('controller/main.c'),
             'controller version mismatch')
-    for token, name in [(f'MODULE_VERSION := {VERSION}', 'debian/rules'),
-                        (f'({DEBIAN}) UNRELEASED;', 'debian/changelog'),
-                        (f'VERSION="{VERSION}"; DEBIAN_VERSION="{DEBIAN}"', 'scripts/rp1-gpclk-route-manager.py')]:
-        require(token in text(name), 'package version mismatch: '+name)
+    from version_identity import from_header, expand
+    require(from_header(text('include/rp1_gpclk/version.h')) == (VERSION, DEBIAN),
+            'canonical version declaration mismatch')
     for name, token in (
-        ('include/rp1_gpclk/compatibility.h', '#define RP1_GPCLK_COMPATIBILITY_VERSION "0.0.1"'),
-        ('scripts/development_route_manager.py', 'value.get("renderedVersion")!="0.0.1"'),
-        ('scripts/rp1-gpclk-diagnostics.py', '"rp1_gpclk_dkms", "0.0.1"')):
-        require(token in text(name), 'current version source mismatch: '+name)
-    binding = ast.parse(text('scripts/runtime_binding.py'))
-    constants = {n.targets[0].id: ast.literal_eval(n.value) for n in binding.body
-                 if isinstance(n, ast.Assign) and isinstance(n.targets[0], ast.Name)
-                 and n.targets[0].id in ('CONTRACT', 'PRODUCT_VERSION', 'COMPATIBILITY')}
-    require(constants == {'CONTRACT': 'rp1-gpclk-runtime-binding-v1', 'PRODUCT_VERSION': VERSION,
-                          'COMPATIBILITY': {r: f'v{VERSION}-rp1-{r}' for r in ('gpio4', 'gpio20')}},
-            'runtime binding identity mismatch')
+        ('debian/rules', 'python3 scripts/version_identity.py version'),
+        ('debian/changelog', '(@DEBIAN_VERSION@) UNRELEASED;'),
+        ('include/rp1_gpclk/compatibility.h', '#define RP1_GPCLK_COMPATIBILITY_VERSION RP1_GPCLK_MODULE_VERSION'),
+        ('scripts/runtime_binding.py', 'from version_identity import VERSION as PRODUCT_VERSION, COMPATIBILITY'),
+        ('scripts/development_route_manager.py', 'value.get("renderedVersion")!=VERSION'),
+        ('scripts/rp1-gpclk-diagnostics.py', 'from version_identity import VERSION')):
+        require(token in text(name), 'derived version source mismatch: '+name)
     for route in ('gpio4', 'gpio20'):
-        require(f'"v{VERSION}-rp1-{route}"' in text('include/rp1_gpclk/compatibility.h'),
-                'compatibility identity mismatch')
+        require('"v" RP1_GPCLK_MODULE_VERSION "-rp1-'+route+'"' in text('include/rp1_gpclk/compatibility.h'),
+                'compatibility identity derivation mismatch')
         overlay = text('overlays/rp1-gpclk-'+route+'.dts')
         require(f'pins = "{route}"' in overlay and f'rp1-gpclk-dkms-{route}' in overlay,
                 'overlay route substitution')
-    consumer = read_json(files['release/wsprrypi-consumer-contract.json'][1])
+    consumer = expand(read_json(files['release/wsprrypi-consumer-contract.json'][1]))
     require(consumer['requiredAssets'] == ['SHA256SUMS', MANIFEST, DEB],
             'consumer required assets differ from current package identity')
     uapi = read_json(files['uapi-identity.json'][1])
@@ -116,7 +111,7 @@ def documents(files, commit, tree, timestamp, directory, release=False):
                   'tools': tools()},
         'qualification': {'hardware': False, 'rf': False, 'product': False,
                           'wsprrypiAcceptance': False, 'lifecycle': False},
-        'consumerContract': read_json(files['release/wsprrypi-consumer-contract.json'][1])}
+        'consumerContract': expand(read_json(files['release/wsprrypi-consumer-contract.json'][1]))}
     compatibility = {'SPDX-License-Identifier': 'MIT', 'schemaVersion': 1,
         'manifestId': f'v{VERSION}-'+('' if release else 'candidate-')+commit,
         'generatedAt': datetime.fromtimestamp(timestamp, timezone.utc).isoformat().replace('+00:00', 'Z'),

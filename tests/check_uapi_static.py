@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 from pathlib import Path
 R=Path(__file__).resolve().parents[1]
 u=(R/'include/uapi/linux/rp1_gpclk.h').read_text()
@@ -85,7 +89,7 @@ assert 'events[index].duration_ns > RP1_GPCLK_EVENT_DURATION_NS_MAX' in c
 for product_token in ('WSPR', 'QRSS', 'FSKCW', 'DFCW', 'rp1_gpclk_mode',
                       'SUBMIT_TONE'):
     assert product_token not in u
-assert '#define RP1_GPCLK_MODULE_VERSION "0.0.1"' in (R/'include/rp1_gpclk/version.h').read_text()
+assert ('#define RP1_GPCLK_MODULE_VERSION "' + VERSION + '"') in (R/'include/rp1_gpclk/version.h').read_text()
 assert '#define RP1_GPCLK_DMA_CHUNK_DURATION_NS 1000000000ULL' in u
 assert '#define RP1_GPCLK_REQUEST_DURATION_NS_MAX 9223372036854775807ULL' in u
 assert 'dma_alloc_coherent(dma_device, maximum * sizeof(*words)' in e

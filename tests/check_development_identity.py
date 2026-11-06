@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Current identity and fail-before-mutation installation boundary tests."""
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import importlib.util
 import json
 import os
@@ -24,31 +28,28 @@ def rejected(action, message):
         raise AssertionError("unsafe transition accepted")
 
 
-assert '#define RP1_GPCLK_MODULE_VERSION "0.0.1"' in (ROOT / 'include/rp1_gpclk/version.h').read_text()
-assert 'MODULE_VERSION(RP1_GPCLK_MODULE_VERSION)' in (ROOT / 'controller/main.c').read_text()
-assert (ROOT / 'debian/changelog').read_text().startswith('rp1-gpclk-dkms (0.0.1-1) UNRELEASED;')
-assert dev.sha256(ROOT / 'include/uapi/linux/rp1_gpclk.h') == '4af14cdf60471ac4b318b10d7d70824a63c74029c2934e86bbdcd1b7f06cf633'
-assert json.loads((ROOT / 'uapi-identity.json').read_text())['sha256'] == \
-       dev.sha256(ROOT / 'include/uapi/linux/rp1_gpclk.h')
+assert dev.canonical_module_version(ROOT) == VERSION
+assert 'MODULE_VERSION(RP1_GPCLK_MODULE_VERSION)' in (ROOT/'controller/main.c').read_text()
+assert '(@DEBIAN_VERSION@) UNRELEASED;' in (ROOT/'debian/changelog').read_text()
+assert json.loads((ROOT/'uapi-identity.json').read_text())['sha256'] == dev.sha256(ROOT/'include/uapi/linux/rp1_gpclk.h')
 for route in ('gpio4', 'gpio20'):
-    identifier = f'v0.0.1-rp1-{route}'
-    assert identifier in (ROOT / 'include/rp1_gpclk/compatibility.h').read_text()
-    assert identifier in (ROOT / 'scripts/development_route_manager.py').read_text()
+    assert '"v" RP1_GPCLK_MODULE_VERSION "-rp1-'+route+'"' in (ROOT/'include/rp1_gpclk/compatibility.h').read_text()
 assert 'RP1_GPCLK_ROUTE_CANDIDATE' not in (ROOT / 'include/rp1_gpclk/compatibility.h').read_text()
 
 with tempfile.TemporaryDirectory() as directory:
     root = Path(directory)
     rejected(lambda: dev.canonical_module_version(root), 'missing or substituted')
     with patch.dict(os.environ, {'RP1_GPCLK_DEVELOPMENT_ROOT': str(root)}):
-        assert dev.transition_preflight('0.0.1', 'test-kernel', []) is None
+        assert dev.transition_preflight(VERSION, 'test-kernel', []) is None
         for version in ('0.99.0', '1.0.0', '1.0.1', '1.0.2', '9.9.9', 'unknown'):
-            rejected(lambda: dev.transition_preflight('0.0.1', 'test-kernel',
-                [f'rp1-gpclk-dkms/{version}, test-kernel, installed']), 'explicit maintainer')
-        rejected(lambda: dev.transition_preflight('0.0.1', 'test-kernel',
-            ['rp1-gpclk-dkms/0.0.1, another-kernel, installed']), 'another kernel')
+            rejected(lambda: dev.transition_preflight(VERSION, 'test-kernel',
+                [f'rp1-gpclk-dkms/{version}, test-kernel, installed']),
+                'orphan' if version != 'unknown' and dev.compare_versions(VERSION, version) > 0 else 'explicit maintainer')
+        rejected(lambda: dev.transition_preflight(VERSION, 'test-kernel',
+            [('rp1-gpclk-dkms/' + VERSION + ', another-kernel, installed')]), 'another kernel')
         old = root/'usr/src/rp1-gpclk-dkms-9.9.9'
         old.mkdir(parents=True)
-        rejected(lambda: dev.transition_preflight('0.0.1', 'test-kernel', []), 'stale predecessor')
+        rejected(lambda: dev.transition_preflight(VERSION, 'test-kernel', []), 'explicit maintainer')
         old.rmdir()
         for path in ('etc/rp1-gpclk-dkms/runtime-controller.json',
                      'var/lib/dpkg/info/rp1-gpclk-dkms.list',
@@ -56,34 +57,34 @@ with tempfile.TemporaryDirectory() as directory:
             file = root/path
             file.parent.mkdir(parents=True, exist_ok=True)
             file.write_text('foreign')
-            rejected(lambda: dev.transition_preflight('0.0.1', 'test-kernel', []), 'ownership')
+            rejected(lambda: dev.transition_preflight(VERSION, 'test-kernel', []), 'ownership')
             assert file.read_text() == 'foreign'
             file.unlink()
-        destination = root/'usr/src/rp1-gpclk-dkms-0.0.1'
+        destination = root/('usr/src/rp1-gpclk-dkms-' + VERSION + '')
         destination.mkdir()
-        rejected(lambda: dev.owned_source(destination, '0.0.1'), 'unreadable')
+        rejected(lambda: dev.owned_source(destination, VERSION), 'unreadable')
         (destination/'file').write_text('owned')
         manifest = dict(schema=dev.SCHEMA, classification='source-development', qualification=False,
-            moduleName=dev.CANONICAL_MODULE, dkmsName=dev.PACKAGE, renderedVersion='0.0.1',
+            moduleName=dev.CANONICAL_MODULE, dkmsName=dev.PACKAGE, renderedVersion=VERSION,
             renderedInventory=dev.inventory(destination, ['file']))
         manifest_path = destination/'DEVELOPMENT_MANIFEST.json'
         manifest_path.write_bytes(dev.canonical(manifest))
-        dev.owned_source(destination, '0.0.1')
+        dev.owned_source(destination, VERSION)
         (destination/'file').chmod(0o666)
-        rejected(lambda: dev.owned_source(destination, '0.0.1'), 'permissions')
+        rejected(lambda: dev.owned_source(destination, VERSION), 'permissions')
         (destination/'file').chmod(0o644)
         (destination/'file').write_text('changed')
-        rejected(lambda: dev.owned_source(destination, '0.0.1'), 'modified')
+        rejected(lambda: dev.owned_source(destination, VERSION), 'modified')
         (destination/'file').write_text('owned')
         (destination/'foreign').write_text('keep')
-        rejected(lambda: dev.owned_source(destination, '0.0.1'), 'foreign')
+        rejected(lambda: dev.owned_source(destination, VERSION), 'foreign')
         (destination/'foreign').unlink()
         (destination/'linked-directory').symlink_to(root, target_is_directory=True)
-        rejected(lambda: dev.owned_source(destination, '0.0.1'), 'symlink')
+        rejected(lambda: dev.owned_source(destination, VERSION), 'symlink')
         (destination/'linked-directory').unlink()
         record = root/'ROLLBACK.json'
         value = dict(schema=dev.ROLLBACK_SCHEMA, moduleName=dev.CANONICAL_MODULE,
-            kernel='test-kernel', version='0.0.1', workflowCreatedFiles=['/foreign'])
+            kernel='test-kernel', version=VERSION, workflowCreatedFiles=['/foreign'])
         record.write_bytes(dev.canonical(value))
         with patch.object(dev, 'require_root'), patch.object(dev, 'run') as run:
             rejected(lambda: dev.rollback(record), 'out-of-scope')
@@ -100,9 +101,9 @@ print('Development identity and transition boundaries: PASS')
 import sys
 sys.path.insert(0, str(ROOT/'scripts'))
 from build_runtime_binding import validate_module_version
-validate_module_version(b'\x7fELF\x00version=0.0.1\x00')
+validate_module_version(('\x7fELF\x00version=' + VERSION + '\x00').encode())
 for payload in (b'\x00version=1.0.1\x00', b'\x00version=9.9.9\x00', b'\x00version=0.1.0\x00', b'no version',
-                b'\x00version=0.0.1\x00\x00version=9.9.9\x00'):
+                ('\x00version=' + VERSION + '\x00\x00version=9.9.9\x00').encode()):
     try:
         validate_module_version(payload)
     except ValueError:
@@ -110,28 +111,7 @@ for payload in (b'\x00version=1.0.1\x00', b'\x00version=9.9.9\x00', b'\x00versio
     else:
         raise AssertionError('predecessor or ambiguous runtime module accepted')
 
-# Exercise maintainer-script dispatch without touching a package database.
-with tempfile.TemporaryDirectory() as directory:
-    path = Path(directory)/'dpkg'
-    path.write_text('''#!/usr/bin/env python3
-import sys
-assert sys.argv[1] == '--compare-versions' and sys.argv[3] in ('gt', 'lt') and sys.argv[4] == '0.0.1-1'
-def version(text):
-    return tuple(int(part) for part in text.replace('-', '.').split('.'))
-left, right = version(sys.argv[2]), version(sys.argv[4])
-raise SystemExit(0 if (left > right if sys.argv[3] == 'gt' else left < right) else 1)
-''')
-    path.chmod(0o755)
-    for args, expected in ((['install'], 0), (['upgrade', '0.0.0-1'], 1), (['upgrade', '0.99.0-1'], 1), (['upgrade', '0.9.0-1'], 1), (['upgrade', '1.0.0-1'], 1), (['upgrade', '1.0.1-1'], 1), (['upgrade', '1.0.2-1'], 1), (['upgrade', '0.0.1-1'], 0),
-                           (['upgrade', '9.9.9-1'], 1), (['install', '9.9.9-1'], 1)):
-        result = subprocess.run(['sh', str(ROOT/'debian/rp1-gpclk-dkms.preinst'), *args],
-            env={**os.environ, 'PATH': directory+os.pathsep+os.environ['PATH']},
-            capture_output=True, text=True)
-        assert result.returncode == expected, result.stderr
-        if expected:
-            assert 'downgrade' in result.stderr or 'direct upgrade refused' in result.stderr
-print('Runtime bundle and Debian downgrade guards: PASS')
-
+# Transition ordering is tested against native dpkg in check_versioning.py.
 import shutil
 from overlay_builder import build_dtbo
 spec = importlib.util.spec_from_file_location('current_route_manager', ROOT/'scripts/rp1-gpclk-route-manager.py')

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Reviewed, journaled runtime-profile filesystem deployment. Never loads modules."""
+import sys
+sys.dont_write_bytecode = True
 import argparse
 import base64
 import contextlib
@@ -11,6 +13,7 @@ from pathlib import Path
 import re
 import stat
 import tempfile
+from version_identity import DEBIAN
 import package_preflight
 import runtime_controller_admin as admin
 from runtime_binding import validate as validate_binding
@@ -142,8 +145,8 @@ class Files:
             return {}
         status = admin.run(('/usr/bin/dpkg-query', '-W', '-f=${Status}\n${Version}',
                             'rp1-gpclk-dkms'))
-        if status != 'install ok installed\n0.0.1-1':
-            raise ValueError('passive package baseline requires exact installed 0.0.1-1')
+        if status != 'install ok installed\n'+DEBIAN:
+            raise ValueError('passive package baseline requires the bound package identity')
         owned = package_preflight.payload_ownership(root, complete=True)
         names = ('usr/lib/systemd/system/rp1-gpclk-route-manager.socket',
                  'usr/lib/systemd/system/rp1-gpclk-route-manager@.service',

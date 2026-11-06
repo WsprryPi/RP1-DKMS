@@ -48,9 +48,9 @@ identity and no release metadata. The [candidate pipeline](../operations/release
 produces the unpublished package and release-shaped consumer metadata from a
 clean exact commit. Candidate preparation does not freeze or publish the provider.
 The package-transition tests use a normalized synthetic predecessor;
-the synthetic fixture tests legacy lifecycle effects only. No predecessor has
-a direct in-place upgrade path into this candidate. Owning removal precedes
-a clean installation; version ordering alone does not establish migration safety.
+the synthetic fixture tests legacy lifecycle effects only. Compatible passive
+packages support normal upgrades. Legacy or unknown lifecycle state requires
+owning removal before clean installation. See [versioning](versioning.md).
 
 ## Maintainer transition policy
 
@@ -65,29 +65,21 @@ a clean installation; version ordering alone does not establish migration safety
    The renderer derives the version from the canonical source header and changes
    only the DKMS placeholder and explicit development kernel filter.
    `development-install` needs no release package or tag.
-2. **Same-version replacement:** the source installer requires the complete
-   recorded inventory to match the existing development tree. Foreign files,
-   changed bytes, symlinks, package ownership, other kernel instances and stale
-   enrollment/manager/runtime state block replacement. It retains `prior-source`
-   and original installed/compressed module files in the new evidence directory,
-   with hashes and DKMS status in `ROLLBACK.json`, before removing the instance.
-3. **Package transitions:** same-version reinstall is supported only for exact
-   attributable inactive package state. The synthetic predecessor exercises legacy effects without original Git history. Direct upgrades
-   from it and in-place downgrades are refused. Use owning predecessor cleanup
-   and removal before successor installation. Exact rollback removes the
-   successor before reinstalling retained predecessor bytes; it does not restore
-   runtime or application state. An external read-only preflight precedes dpkg/APT
-   because Debian invokes the outgoing prerm first. See the current
-   [package transition procedure](../operations/package-lifecycle.md).
-4. **Source-development non-current installation:** no general compatibility,
-   adoption or automated migration is claimed. Installer transitions refuse non-current or foreign
-   DKMS, source, module, overlay, enrollment, manager, or runtime state. A
-   maintainer must separately inventory ownership, quiesce the application,
-   prove output/clock/DMA/GPIO cleanup, preserve a recovery point, and use the
-   owning workflow to remove only attributable state before a clean install.
-   The candidate-provider retirement of an exact prior-boot terminal activation
-   journal is one bounded WsprryPi-owned runtime migration, not a general
-   exception. There is no force flag or version-normalization bypass.
+2. **Same-version repeat or repair:** exact source and installed module hashes,
+   matching installation parameters, and an intact DKMS registration allow an
+   inactive repeat to retain its artifacts and original removal receipt. Changed source under the same version is a supported replacement; installed
+   edits require preservation and owning repair. Missing modules require
+   verified rebuilding. A mutation retains `prior-source` and original installed
+   artifacts in the external evidence directory before removing the instance.
+3. **Package transitions:** exact repeated installation is convergent. Compatible
+   passive packages upgrade through native dpkg/DKMS after an external incoming
+   preflight. Legacy-effects fixtures and foreign origins remain cleanup-first.
+   Explicit downgrade recovery removes the successor before reinstalling retained
+   predecessor bytes. See [versioning](versioning.md) and the
+   [package procedure](../operations/package-lifecycle.md).
+4. **Source-development upgrades:** an inactive exact owned source from this
+   repository may advance to a newer compatible version. Build profile must agree; exact new UAPI identity remains recorded. Same-version changed source can replace an owned build. Other kernels,
+   foreign origins, enrollment, and runtime state require owning cleanup first.
 
 No transition command grants host, system, GPIO, transmission, or RF authority.
 Actual-host installation, removal, and recovery require a reviewed host-specific

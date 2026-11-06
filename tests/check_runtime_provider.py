@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Hardware-free installer-facing readiness and ensure-contract tests."""
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import copy
 import ast
 import hashlib
@@ -103,9 +107,9 @@ class Host:
             ('deployment-pending.json', 'transaction.json', 'manager.json',
              'application.json', 'activation.json')}
         self._modules = {
-            'rp1_route_controller': {'status': 'loaded', 'version': '0.0.1',
+            'rp1_route_controller': {'status': 'loaded', 'version': VERSION,
                 'buildNoteSha256': self.value['controllerNoteSha256']},
-            'rp1_gpclk_dkms': {'status': 'loaded', 'version': '0.0.1',
+            'rp1_gpclk_dkms': {'status': 'loaded', 'version': VERSION,
                 'buildNoteSha256': self.value['consumerNoteSha256']}}
         self._modules['rp1_gpclk_dkms']['outputInhibited'] = False
         self._endpoints = {name: {'status': 'owned', 'open': False}
@@ -421,7 +425,7 @@ class Tests(unittest.TestCase):
                 **Host.services(host), 'wsprrypi.service': {
                     'load': 'loaded', 'active': 'inactive', 'enabled': 'enabled'}}),
             lambda host: host._modules.update(rp1_gpclk_dkms={
-                'status': 'loaded', 'version': '0.0.1',
+                'status': 'loaded', 'version': VERSION,
                 'buildNoteSha256': host.value['consumerNoteSha256']}),
             lambda host: host._endpoints['/dev/rp1-gpclk'].update(status='owned'),
             lambda host: setattr(host, 'activation_recovery_plan', lambda: {
@@ -792,7 +796,7 @@ class Tests(unittest.TestCase):
         import tempfile
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            payload = (b'\x7fELF\x02\x01\0version=0.0.1\0vermagic=' +
+            payload = (('\x7fELF\x02\x01\x00version=' + VERSION + '\x00vermagic=').encode() +
                        KERNEL.encode() + b' fixture')
             compressed = root/'rp1_gpclk_dkms.ko.xz'
             compressed.write_bytes(lzma.compress(payload))
@@ -836,9 +840,9 @@ class Tests(unittest.TestCase):
             controller_builder.generate(source/'build/runtime-controller')
             modules = root/'modules'; modules.mkdir()
             prefix = b'\x7fELF\x02\x01\0'
-            consumer = (prefix + b'version=0.0.1\0rp1_runtime_controller=1\0' +
+            consumer = (prefix + ('version=' + VERSION + '\x00rp1_runtime_controller=1\x00').encode() +
                 b'rp1_route_controller\0vermagic=' + KERNEL.encode() + b' ')
-            controller_data = prefix + b'version=0.0.1\0vermagic=' + KERNEL.encode() + b' '
+            controller_data = prefix + ('version=' + VERSION + '\x00vermagic=').encode() + KERNEL.encode() + b' '
             for route in ('gpio4', 'gpio20'):
                 controller_data += (source/'build/runtime-controller'/(route+'.dtbo')).read_bytes()
             (modules/'rp1_gpclk_dkms.ko').write_bytes(consumer)
@@ -851,7 +855,7 @@ class Tests(unittest.TestCase):
             bundle_builder.bundle(modules, second, companion, KERNEL)
             for destination, name in INVENTORY.items():
                 self.assertEqual(value['files'][destination], hashlib.sha256((source/name).read_bytes()).hexdigest())
-            (modules/'rp1_route_controller.ko').write_bytes(prefix+b'version=0.0.1\0vermagic='+KERNEL.encode()+b' ')
+            (modules/'rp1_route_controller.ko').write_bytes(prefix+('version=' + VERSION + '\x00vermagic=').encode()+KERNEL.encode()+b' ')
             with self.assertRaisesRegex(ValueError, 'embedded overlay'):
                 bundle_builder.bundle(modules, root/'failed', companion, KERNEL)
             self.assertFalse((root/'failed').exists())

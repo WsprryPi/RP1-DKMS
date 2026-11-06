@@ -5,6 +5,14 @@ set -- "${1:-}" "${2:-}"
 
 if [ "$1" = configure ]; then
     python3 -I /usr/libexec/rp1-gpclk-dkms/package_preflight.py configure
+    current='@DEBIAN_VERSION@'
+    if [ "$2" = "$current" ] && python3 -I /usr/libexec/rp1-gpclk-dkms/package_preflight.py installed; then
+        python3 -I /usr/libexec/rp1-gpclk-dkms/package_indices.py
+        if ! getent group rp1-gpclk-route >/dev/null; then
+            addgroup --system rp1-gpclk-route
+        fi
+        exit 0
+    fi
 fi
 # Build every eligible installed kernel, rather than current/newest only.
 export autoinstall_all_kernels=yes

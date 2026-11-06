@@ -22,12 +22,17 @@ _state = subprocess.run([*_git_args, 'status', '--porcelain=v1',
 if _state.stdout:
     raise SystemExit('dirty or untracked source rejected')
 # Reject hidden modified helpers before importing them and ignore all checkout caches.
-for _name in ('release_contract.py', 'release_manifest.py'):
+for _name in ('release_contract.py', 'release_manifest.py', 'version_identity.py', 'package_stage.py'):
     _path = _root/'scripts'/_name
     _blob = subprocess.run([*_git_args, 'show', 'HEAD:scripts/'+_name],
                            capture_output=True, check=True, env=_git_env).stdout
     if _path.is_symlink() or _path.read_bytes() != _blob:
         raise SystemExit('release helper differs from clean commit')
+_header = _root/'include/rp1_gpclk/version.h'
+_blob = subprocess.run([*_git_args, 'show', 'HEAD:include/rp1_gpclk/version.h'],
+                       capture_output=True, check=True, env=_git_env).stdout
+if _header.is_symlink() or _header.read_bytes() != _blob:
+    raise SystemExit('canonical version header differs from clean commit')
 _cache = tempfile.TemporaryDirectory(prefix='rp1-isolated-python-', dir='/tmp')
 sys.pycache_prefix = _cache.name
 sys.path.insert(0, str(_root/'scripts'))
@@ -42,6 +47,8 @@ def build_once(files, commit, tree, timestamp, output, release=False):
     with tempfile.TemporaryDirectory(prefix='rp1-candidate-render-', dir='/tmp') as temporary:
         source = Path(temporary)/'source'
         write_source(files, source)
+        from version_identity import prepare_debian
+        prepare_debian(source)
         command(['dpkg-buildpackage', '--no-sign', '-b'], cwd=source,
                 env=build_environment(timestamp))
         packages = sorted(Path(temporary).glob('*.deb'))

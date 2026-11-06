@@ -3,6 +3,10 @@
 """Deterministic offline checks for the signing contract."""
 
 from __future__ import annotations
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 
 import importlib.util
 import json
@@ -30,7 +34,7 @@ assert policy["rotationOrder"].index("rebuild-sign-verify-retained-kernels") < p
 
 fingerprint = "11:22:33:44"
 base = {
-    "targetKernel": "6.18.1+rpt", "moduleVersion": "0.0.1",
+    "targetKernel": "6.18.1+rpt", "moduleVersion": VERSION,
     "vermagicKernel": "6.18.1+rpt", "moduleSha256": "a" * 64,
     "enforcement": "enforced", "signatureStatus": "valid", "signer": "Local DKMS",
     "signatureKeyId": "1234", "signatureAlgorithm": "PKCS#7",

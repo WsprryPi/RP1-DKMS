@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Offline release normal, malformed, substitution and reproducibility coverage."""
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import copy
 import gzip
 import hashlib
@@ -219,26 +223,25 @@ class FormatTests(unittest.TestCase):
         files = {p.relative_to(ROOT).as_posix(): (0o644, p.read_bytes())
                  for p in ROOT.rglob('*') if p.is_file() and '.git' not in p.parts
                  and p.suffix in ('.py', '.h', '.c', '.dts', '.json')}
-        for name in ('debian/rules', 'debian/changelog', 'dkms.conf'):
-            files[name] = (0o644, (ROOT/name).read_bytes())
+        files = {p.relative_to(ROOT).as_posix(): (0o644, p.read_bytes()) for p in ROOT.rglob('*')
+                 if p.is_file() and '.git' not in p.parts and '__pycache__' not in p.parts}
         validate_source(files)
-        for name, original, substitution in (
-            ('include/rp1_gpclk/version.h', b'0.0.1', b'0.0.0'),
-            ('include/rp1_gpclk/version.h', b'0.0.1', b'0.99.0'),
-            ('include/rp1_gpclk/version.h', b'0.0.1', b'0.9.0'),
-            ('include/rp1_gpclk/version.h', b'0.0.1', b'1.0.0'),
-            ('include/rp1_gpclk/version.h', b'0.0.1', b'1.0.1'),
-            ('include/rp1_gpclk/version.h', b'0.0.1', b'1.0.2'),
-            ('include/rp1_gpclk/compatibility.h', b'v0.0.1-rp1-gpio4', b'v1.1.2-rp1-gpio4'),
-            ('scripts/runtime_binding.py', b'0.0.1', b'1.1.1'),
-            ('release/wsprrypi-consumer-contract.json', b'rp1-gpclk-dkms_0.0.1-1_all.deb', b'rp1-gpclk-dkms_1.0.0-1_all.deb'),
+        for name, needle, replacement in (
+            ('debian/rules', b'python3 scripts/version_identity.py version', b'false'),
+            ('debian/changelog', b'@DEBIAN_VERSION@', b'wrong'),
+            ('dkms.conf', b'#MODULE_VERSION#', b'wrong'),
+            ('include/rp1_gpclk/version.h', VERSION.encode(), b'invalid'),
+            ('include/rp1_gpclk/compatibility.h', b'RP1_GPCLK_COMPATIBILITY_VERSION RP1_GPCLK_MODULE_VERSION', b'broken'),
+            ('scripts/runtime_binding.py', b'from version_identity import VERSION as PRODUCT_VERSION, COMPATIBILITY', b'broken'),
             ('include/uapi/linux/rp1_gpclk.h', b'#define', b'#define @VERSION@'),
-            ('overlays/rp1-gpclk-gpio4.dts', b'"gpio4"', b'"gpio20"')):
+        ):
             changed = dict(files)
             mode, data = changed[name]
-            changed[name] = mode, data.replace(original, substitution)
-            with self.subTest(name=name), self.assertRaises(ValueError):
+            self.assertIn(needle, data)
+            changed[name] = mode, data.replace(needle, replacement)
+            with self.assertRaises(ValueError):
                 validate_source(changed)
+
 
 
 @unittest.skipUnless(sys.platform == 'linux', 'full Debian release tests require Linux; CI runs them')
@@ -273,10 +276,10 @@ class LinuxTests(unittest.TestCase):
     def test_independent_replay_and_consumer_shape(self):
         self.assertEqual(self.validator(self.candidate, self.commit)['status'], 'PASS')
         manifest = c.read_json((self.candidate/c.MANIFEST).read_bytes())
-        contract = json.loads((self.source/'release/wsprrypi-consumer-contract.json').read_text())
+        contract = expand(json.loads((self.source/'release/wsprrypi-consumer-contract.json').read_text()))
         self.assertEqual(set(manifest), set(contract['manifestKeys']))
         self.assertEqual(manifest['releaseChannel'], contract['stableChannel'])
-        self.assertEqual(manifest['releaseTag'], 'v0.0.1')
+        self.assertEqual(manifest['releaseTag'], ('v' + VERSION + ''))
         self.assertFalse(c.read_json((self.candidate/c.METADATA).read_bytes())['published'])
         self.assertEqual({p.name for p in self.candidate.iterdir()}, c.ASSETS)
         self.assertEqual(c.git(self.source, 'status', '--porcelain=v1'), b'')
@@ -383,7 +386,7 @@ class LinuxTests(unittest.TestCase):
         files = c.source_files(self.source, self.commit)
         tree = c.git(self.source, 'rev-parse', self.commit+'^{tree}').decode().strip()
         timestamp = c.epoch(self.source, self.commit)
-        prefix = 'usr/src/rp1-gpclk-dkms-0.0.1/'
+        prefix = ('usr/src/rp1-gpclk-dkms-' + VERSION + '/')
         for case in ('control-version', 'dkms-controller', 'uapi', 'overlay', 'omission', 'unexpected'):
             with self.subTest(case=case), tempfile.TemporaryDirectory(dir=self.base) as temporary:
                 root = Path(temporary)
@@ -393,7 +396,7 @@ class LinuxTests(unittest.TestCase):
                 c.command(['dpkg-deb', '--raw-extract', str(candidate/c.DEB), str(unpack)])
                 if case == 'control-version':
                     path = unpack/'DEBIAN/control'
-                    path.write_text(path.read_text().replace('Version: 0.0.1-1', 'Version: 0.9.0-1'))
+                    path.write_text(path.read_text().replace(('Version: ' + DEBIAN + ''), 'Version: 0.9.0-1'))
                 elif case == 'dkms-controller':
                     path = unpack/prefix/'dkms.conf'
                     path.write_text(path.read_text().replace('BUILT_MODULE_NAME[1]="rp1_route_controller"',
@@ -434,7 +437,7 @@ class LinuxTests(unittest.TestCase):
             lambda v: v.update(sourceCommit='0'*40),
             lambda v: v.update(productVersion='0.9.0'),
             lambda v: v.update(releaseChannel='development'),
-            lambda v: v.update(releaseTag='v0.0.1-rc.1'),
+            lambda v: v.update(releaseTag=('v' + VERSION + '-rc.1')),
             lambda v: v['package'].update(filename='rp1-gpclk-dkms_0.9.0-1_all.deb'),
             lambda v: v['package'].update(sha256='0'*64),
             lambda v: v['uapi'].update(sha256='0'*64),

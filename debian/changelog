@@ -1,4 +1,4 @@
-rp1-gpclk-dkms (0.0.1-1) UNRELEASED; urgency=medium
+rp1-gpclk-dkms (@DEBIAN_VERSION@) UNRELEASED; urgency=medium
 
   * Maintain RP1-DKMS development source, route-neutral packaging, and
     independently versioned runtime interfaces.

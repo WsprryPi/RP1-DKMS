@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Read-only package guard. Unknown administration/signing state blocks DKMS."""
+import sys
+sys.dont_write_bytecode = True
 from pathlib import Path
 import hashlib
 import json
@@ -12,7 +14,94 @@ import sys
 OWNER_UID = 0  # Internal fixture seam; never an environment or CLI override.
 KERNEL = re.compile(r'[0-9]+\.[0-9]+\.[0-9]+\+rpt-rpi-(?:2712|v8)')
 PACKAGE = 'rp1-gpclk-dkms'
-VERSION = '0.0.1'
+# Isolated installed entrypoints explicitly import their own packaged helper.
+if '__file__' in globals():
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+from version_identity import (VERSION, DEBIAN, REPOSITORY, LIFECYCLE, parse,
+                              transition, from_header)
+INCOMING = None
+RECEIPT = 'usr/libexec/rp1-gpclk-dkms/package-identity.json'
+
+
+def installed_version(root, owned=None):
+    if owned is None:
+        listing = root/'var/lib/dpkg/info'/ (PACKAGE+'.list')
+        names = regular(listing).decode().splitlines() if present(listing) else []
+        owned = {root/n.lstrip('/') for n in names}
+    versions = {p.name.removeprefix(PACKAGE+'-') for p in owned
+                if p.parent == root/'usr/src' and p.name.startswith(PACKAGE+'-')}
+    if len(versions) > 1:
+        raise ValueError('ambiguous package source identity')
+    version = next(iter(versions), VERSION)
+    parse(version)
+    return version
+
+
+def package_transition(root, owned):
+    """Authenticate passive outgoing package and exact incoming payload identity.
+
+    Unknown legacy templates have no receipt, so they remain cleanup-first.
+    Native outgoing scripts run only after this independent incoming preflight.
+    """
+    if INCOMING is None:
+        return
+    path = root/RECEIPT
+    version = installed_version(root, owned)
+    if not present(path):
+        if owned:
+            raise ValueError('installed package lacks passive lifecycle identity; owning removal required')
+        return 'install'
+    if path not in owned:
+        raise ValueError('foreign package identity receipt')
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('duplicate package identity field')
+            result[key] = value
+        return result
+    old = json.loads(regular(path), object_pairs_hook=unique)
+    fields = {'repository', 'lifecycle', 'productVersion', 'debianVersion', 'payload', 'uapi', 'scripts'}
+    if (not isinstance(old, dict) or set(old) != fields or
+            old['repository'] != REPOSITORY or old['lifecycle'] != LIFECYCLE or
+            old['productVersion'] != version):
+        raise ValueError('incompatible package origin or lifecycle; owning migration required')
+    if not isinstance(old['scripts'], dict) or set(old['scripts']) != {'preinst', 'postinst', 'prerm'}:
+        raise ValueError('missing outgoing maintainer script identity')
+    for name, expected in old['scripts'].items():
+        control = root/'var/lib/dpkg/info'/(PACKAGE+'.'+name)
+        data = regular(control)
+        if name == 'preinst':
+            data, count = re.subn(rb"(?ms)^python3 -I - unpack <<'RP1_INCOMING_PREFLIGHT'\n.*?^RP1_INCOMING_PREFLIGHT\n",
+                                  b'# RP1_INCOMING_PREFLIGHT\n', data)
+            if count != 1:
+                raise ValueError('outgoing preinst identity framing differs')
+        if hashlib.sha256(data).hexdigest() != expected:
+            raise ValueError('outgoing maintainer script was modified')
+    kind = transition(version, old['debianVersion'])
+    if kind == 'same' and old != INCOMING:
+        kind = 'replace'
+    source = root/'usr/src'/(PACKAGE+'-'+version)/'include/rp1_gpclk/version.h'
+    if source not in owned or (present(source) and from_header(regular(source).decode()) != (version, old['debianVersion'])) or (kind == 'upgrade' and not present(source)):
+        raise ValueError('outgoing package header and receipt disagree')
+    payload = old['payload']
+    if not isinstance(payload, dict) or not payload:
+        raise ValueError('missing outgoing payload identity')
+    for name, digest in payload.items():
+        if (not isinstance(name, str) or name.startswith('/') or '..' in Path(name).parts or
+                not isinstance(digest, str) or not re.fullmatch('[0-9a-f]{64}', digest)):
+            raise ValueError('unsafe outgoing payload identity')
+        member = root/name
+        if member not in owned:
+            raise ValueError('outgoing receipt has no package ownership')
+        if not present(member):
+            if kind in ('same', 'replace'):
+                continue
+            raise ValueError('incomplete outgoing package; exact repair required before upgrade')
+        if hashlib.sha256(regular(member)).hexdigest() != digest:
+            raise ValueError('outgoing payload differs from identity receipt')
+    return kind
+
 
 
 def present(path):
@@ -54,7 +143,7 @@ def payload_ownership(root, complete=False):
                 raise ValueError('missing package payload requires reinstall: '+str(path))
             continue
         if path in hashes:
-            expected_mode = (0o755 if path.name == 'rp1-gpclk-route-manager' or
+            expected_mode = (0o644 if path.name in ('version.h', 'package-identity.json') else 0o755 if path.name == 'rp1-gpclk-route-manager' or
                              path.is_relative_to(root/'usr/libexec/rp1-gpclk-dkms') else 0o644)
             if stat.S_IMODE(path.stat().st_mode) != expected_mode:
                 raise ValueError('modified package mode preserved: '+str(path))
@@ -63,8 +152,9 @@ def payload_ownership(root, complete=False):
         elif path.is_symlink() or not path.is_dir():
             raise ValueError('unattributable package member: '+str(path))
     # These are private package directories, unlike shared /usr and /usr/lib.
-    for name in ('usr/src/'+PACKAGE+'-'+VERSION, 'usr/libexec/'+PACKAGE,
-                 'usr/lib/'+PACKAGE+'/overlays', 'usr/share/'+PACKAGE+'/'+VERSION,
+    version = installed_version(root, owned)
+    for name in ('usr/src/'+PACKAGE+'-'+version, 'usr/libexec/'+PACKAGE,
+                 'usr/lib/'+PACKAGE+'/overlays', 'usr/share/'+PACKAGE+'/'+version,
                  'usr/share/doc/'+PACKAGE):
         path = root/name
         if present(path) and path not in owned:
@@ -90,7 +180,8 @@ def payload_ownership(root, complete=False):
 
 
 def registration_ownership(root, owned):
-    source = root/'usr/src'/ (PACKAGE+'-'+VERSION)
+    current = installed_version(root, owned)
+    source = root/'usr/src'/ (PACKAGE+'-'+current)
     for path in (root/'usr/src').glob(PACKAGE+'-*'):
         if path != source or path not in owned or present(path/'DEVELOPMENT_MANIFEST.json'):
             raise ValueError('foreign or development source requires owning removal: '+str(path))
@@ -103,7 +194,7 @@ def registration_ownership(root, owned):
         info = directory.stat()
         if info.st_uid != OWNER_UID or not stat.S_ISDIR(info.st_mode) or info.st_mode & 0o022:
             raise ValueError('unsafe DKMS namespace preserved')
-    version = base/VERSION
+    version = base/current
     link = version/'source'
     if any(base.iterdir()) and (source not in owned or version.is_symlink() or
             not link.is_symlink() or link.lstat().st_uid != OWNER_UID or link.resolve() != source.resolve()):
@@ -112,11 +203,11 @@ def registration_ownership(root, owned):
         if path.name.startswith('kernel-') and path.is_symlink():
             import os
             parts = Path(os.readlink(path)).parts
-            if (path.lstat().st_uid == OWNER_UID and len(parts) == 3 and parts[0] == VERSION and KERNEL.fullmatch(parts[1]) and
+            if (path.lstat().st_uid == OWNER_UID and len(parts) == 3 and parts[0] == current and KERNEL.fullmatch(parts[1]) and
                     parts[2] == 'aarch64' and path.name == 'kernel-'+parts[1]+'-'+parts[2]):
                 continue
             raise ValueError('foreign DKMS kernel link preserved')
-        if path.name != VERSION or path.is_symlink() or not path.is_dir():
+        if path.name != current or path.is_symlink() or not path.is_dir():
             raise ValueError('foreign DKMS version preserved: '+str(path))
         link = path/'source'
         if source not in owned or not link.is_symlink() or link.resolve() != source.resolve():
@@ -245,7 +336,7 @@ def framework(root):
     return values
 
 
-def module_elf(path, version='0.0.1'):
+def module_elf(path, version=VERSION):
     import bz2
     import gzip
     import io
@@ -285,6 +376,7 @@ def module_elf(path, version='0.0.1'):
 
 
 def module_ownership(root):
+    version = installed_version(root)
     base = root/'var/lib/dkms/rp1-gpclk-dkms'
     if (base/'original_module').exists():
         raise ValueError('DKMS predecessor backup requires owning recovery')
@@ -300,12 +392,12 @@ def module_ownership(root):
             if identity in seen:
                 raise ValueError('duplicate compressed provider module preserved')
             seen.add(identity)
-            source = base/'0.0.1/source'
+            source = base/version/'source'
             if (not source.is_symlink() or source.resolve() !=
-                    (root/'usr/src/rp1-gpclk-dkms-0.0.1').resolve()):
+                    (root/'usr/src'/(PACKAGE+'-'+version)).resolve()):
                 raise ValueError('provider module has no current DKMS source ownership')
-            cached = list((base/'0.0.1'/parts[0]).glob('*/module/'+name+'.ko*'))
-            if len(cached) != 1 or cached[0].is_symlink() or module_elf(path) != module_elf(cached[0]):
+            cached = list((base/version/parts[0]).glob('*/module/'+name+'.ko*'))
+            if len(cached) != 1 or cached[0].is_symlink() or module_elf(path, version) != module_elf(cached[0], version):
                 raise ValueError('foreign or modified provider module preserved')
 
 
@@ -351,6 +443,7 @@ def check(root=Path('/'), operation='configure'):
         raise ValueError('unknown package operation')
     owned = payload_ownership(root, complete=operation == 'configure')
     registration_ownership(root, owned)
+    mode = package_transition(root, owned) if operation == 'unpack' else None
     for name in ('rp1_gpclk_dkms', 'rp1_route_controller'):
         if (root/'sys/module'/name).exists():
             raise ValueError('loaded provider blocks package mutation')
@@ -429,15 +522,79 @@ def check(root=Path('/'), operation='configure'):
             if stat.S_IMODE(certificate.stat().st_mode) & ~0o644:
                 raise ValueError('unsafe public certificate mode')
 
+    return mode
+
+
+def incoming_package(path):
+    """Read bounded package data without extracting files or executing its code."""
+    import subprocess
+    import tarfile
+    import tempfile
+    import time
+    data = regular(path)
+    with tempfile.TemporaryFile() as source, tempfile.TemporaryFile() as stream:
+        source.write(data); source.seek(0)
+        process = subprocess.Popen(['dpkg-deb', '--fsys-tarfile', '-'], stdin=source,
+                                   stdout=stream, stderr=subprocess.DEVNULL)
+        try:
+            deadline = time.monotonic()+30
+            while process.poll() is None:
+                if time.monotonic() >= deadline or stream.seek(0, 2) > 128*1024*1024:
+                    raise ValueError('incoming package inspection exceeded time/size bound')
+                time.sleep(0.02)
+            if process.returncode or stream.seek(0, 2) > 128*1024*1024:
+                raise ValueError('cannot inspect bounded incoming package')
+        finally:
+            if process.poll() is None:
+                process.kill()
+            process.wait(timeout=10)
+        stream.seek(0)
+        try:
+            with tarfile.open(fileobj=stream, mode='r:') as archive:
+                matches = []
+                for count, member in enumerate(archive, 1):
+                    if count > 20000:
+                        raise ValueError('incoming package member count exceeds bound')
+                    if member.name.removeprefix('./') == RECEIPT:
+                        matches.append(member)
+                if len(matches) != 1 or not matches[0].isfile() or matches[0].size > 4*1024*1024:
+                    raise ValueError('missing, duplicate or unsafe incoming package identity')
+                value = json.loads(archive.extractfile(matches[0]).read())
+        except tarfile.TarError as error:
+            raise ValueError('invalid incoming package archive') from error
+    if not isinstance(value, dict):
+        raise ValueError('invalid incoming identity object')
+    if (value.get('repository') != REPOSITORY or value.get('lifecycle') != LIFECYCLE or
+            (value.get('productVersion'), value.get('debianVersion')) != (VERSION, DEBIAN)):
+        raise ValueError('candidate package differs from reviewed preflight source')
+    return value
+
 
 if __name__ == '__main__':
     try:
-        if sys.argv[1:] not in (['configure'], ['remove'], ['unpack']):
-            raise ValueError('expected configure, unpack or remove')
-        check(operation=sys.argv[1])
+        import argparse
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument('operation', choices=('configure', 'remove', 'unpack', 'installed'))
+        parser.add_argument('--package', type=Path)
+        args = parser.parse_args()
+        if args.operation == 'unpack' and INCOMING is None:
+            if args.package is None:
+                raise ValueError('unpack preflight requires --package VERIFIED_CANDIDATE.deb')
+            INCOMING = incoming_package(args.package)
+        elif args.package is not None:
+            raise ValueError('--package applies only to external unpack preflight')
+        mode = check(operation='configure' if args.operation == 'installed' else args.operation)
+        if args.operation == 'installed':
+            for kernel in (Path('/lib/modules')).glob('*'):
+                if not KERNEL.fullmatch(kernel.name):
+                    continue
+                for name in ('rp1_gpclk_dkms', 'rp1_route_controller'):
+                    if len(list((kernel/'updates/dkms').glob(name+'.ko*'))) != 1:
+                        raise ValueError('module missing; native DKMS repair required')
         print(json.dumps({'contract': 'rp1-gpclk-package-preflight-v1',
-                          'operation': sys.argv[1], 'status': 'permitted',
-                          'routeSelected': False, 'executionAuthorized': False}))
+                          'operation': args.operation, 'status': 'permitted',
+                          'routeSelected': False, 'executionAuthorized': False,
+                          **({'transition': mode} if mode else {})}))
     except (OSError, ValueError, EOFError) as error:
         print(json.dumps({'contract': 'rp1-gpclk-package-preflight-v1',
                           'operation': sys.argv[1] if len(sys.argv) > 1 else None,

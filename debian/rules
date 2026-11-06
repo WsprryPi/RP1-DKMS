@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 PACKAGE := rp1-gpclk-dkms
-MODULE_VERSION := 0.0.1
+MODULE_VERSION := $(shell python3 scripts/version_identity.py version)
 SOURCE_DEST := debian/$(PACKAGE)/usr/src/$(PACKAGE)-$(MODULE_VERSION)
 
 %:
@@ -39,3 +39,8 @@ override_dh_auto_clean:
 
 override_dh_builddeb:
 	dh_builddeb -- -Zgzip -z9 --threads-max=1
+
+# Identity data is read by standalone helpers, never executed.
+override_dh_fixperms:
+	dh_fixperms
+	chmod 0644 debian/$(PACKAGE)/usr/libexec/$(PACKAGE)/version.h debian/$(PACKAGE)/usr/libexec/$(PACKAGE)/package-identity.json

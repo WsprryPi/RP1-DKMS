@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Verify passive package payload and fail-before-DKMS administration guards."""
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 from pathlib import Path
 import os
 import hashlib
@@ -18,11 +22,11 @@ ROOT = Path(__file__).resolve().parents[1]
 class Tests(unittest.TestCase):
     def test_package_build_and_module_closure(self):
         sources = stage.payload_sources()
-        self.assertIn('usr/src/rp1-gpclk-dkms-0.0.1/controller/main.c', sources)
+        self.assertIn(('usr/src/rp1-gpclk-dkms-' + VERSION + '/controller/main.c'), sources)
         for name in ('rp1_gpclk.h', 'rp1_route_admin.h'):
-            self.assertIn('usr/src/rp1-gpclk-dkms-0.0.1/include/uapi/linux/'+name, sources)
+            self.assertIn(('usr/src/rp1-gpclk-dkms-' + VERSION + '/include/uapi/linux/')+name, sources)
         rendered = stage.render_dkms((ROOT/'dkms.conf').read_text())
-        for value in ('PACKAGE_VERSION="0.0.1"', 'RP1_RUNTIME_CONTROLLER=1',
+        for value in (('PACKAGE_VERSION="' + VERSION + '"'), 'RP1_RUNTIME_CONTROLLER=1',
                       'BUILT_MODULE_NAME[1]="rp1_route_controller"'):
             self.assertIn(value, rendered)
         self.assertNotIn('#MODULE_VERSION#', rendered)
@@ -88,15 +92,15 @@ class Tests(unittest.TestCase):
             configuration = root/'lib/modules'/kernel/'build/.config'
             configuration.parent.mkdir()
             configuration.write_text('# unsigned header fixture\n')
-            elf = b'\x7fELF\x02\x01\x00version=0.0.1\x00fixture'
+            elf = ('\x7fELF\x02\x01\x00version=' + VERSION + '\x00fixture').encode("latin1")
             module.write_bytes(lzma.compress(elf))
             with self.assertRaises(ValueError):
                 guard.check(root)
-            base = root/'var/lib/dkms/rp1-gpclk-dkms/0.0.1'
+            base = root/('var/lib/dkms/rp1-gpclk-dkms/' + VERSION + '')
             cache = base/kernel/'aarch64/module/rp1_gpclk_dkms.ko'
             cache.parent.mkdir(parents=True)
             cache.write_bytes(elf)
-            source = root/'usr/src/rp1-gpclk-dkms-0.0.1'
+            source = root/('usr/src/rp1-gpclk-dkms-' + VERSION + '')
             source.mkdir(parents=True)
             config = source/'dkms.conf'
             config.write_bytes(b'fixture package-owned configuration')

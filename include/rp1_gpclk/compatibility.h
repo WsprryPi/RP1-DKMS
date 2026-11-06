@@ -3,13 +3,14 @@
 #define RP1_GPCLK_COMPATIBILITY_H
 
 #include <linux/types.h>
+#include "rp1_gpclk/version.h"
 
 #define RP1_GPCLK_COMPATIBILITY_ARCH "aarch64"
-#define RP1_GPCLK_COMPATIBILITY_VERSION "0.0.1"
+#define RP1_GPCLK_COMPATIBILITY_VERSION RP1_GPCLK_MODULE_VERSION
 #define RP1_GPCLK_GPIO4_COMPATIBILITY_ID \
-	"v0.0.1-rp1-gpio4"
+	"v" RP1_GPCLK_MODULE_VERSION "-rp1-gpio4"
 #define RP1_GPCLK_GPIO20_COMPATIBILITY_ID \
-	"v0.0.1-rp1-gpio20"
+	"v" RP1_GPCLK_MODULE_VERSION "-rp1-gpio20"
 
 bool rp1_gpclk_compatibility_allowed(__u32 route,
 				     const char *architecture,

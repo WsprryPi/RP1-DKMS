@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Offline attribution and status regressions; no device, process or network use."""
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import copy
 import hashlib
 import importlib.util
@@ -93,9 +97,9 @@ class Tests(unittest.TestCase):
         value = fixture()
         observed = report(value)
         binding = observed['identities']['installedBinding']['value']
-        binding['productVersion'] = '0.0.1'
+        binding['productVersion'] = VERSION
         binding['compatibilityIdentities'] = {
-            route: 'v0.0.1-rp1-' + route for route in ('gpio4', 'gpio20')}
+            route: ('v' + VERSION + '-rp1-') + route for route in ('gpio4', 'gpio20')}
         # Even identical source/UAPI observations cannot transfer versioned evidence.
         result = self.interpret(value, observed, 'gpio4')
         self.assertEqual(result['status'], 'unattributed')

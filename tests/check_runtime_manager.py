@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Hardware-free protocol/admin and durable deployment failure tests."""
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import copy
 import json
 from pathlib import Path
@@ -413,7 +417,7 @@ class Tests(unittest.TestCase):
             (database/'rp1-gpclk-dkms.md5sums').write_text(''.join(
                 hashlib.md5(name.encode(), usedforsecurity=False).hexdigest()+'  '+name+'\n' for name in names))
             files = deploy.Files()
-            with patch.object(admin, 'run', return_value='install ok installed\n0.0.1-1'), \
+            with patch.object(admin, 'run', return_value=('install ok installed\n' + DEBIAN + '')), \
                  patch.object(admin, 'safe_directory'), patch.object(admin, 'read_regular', side_effect=lambda p, limit: Path(p).read_bytes()), \
                  patch.object(deploy.package_preflight, 'OWNER_UID', os.geteuid()):
                 baseline = files.packaged_baseline(root)

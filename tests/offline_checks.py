@@ -7,6 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECKS = (
+    'check_versioning.py',
     'check_development_workflow.py',
     'check_development_identity.py',
     'check_spdx.py',

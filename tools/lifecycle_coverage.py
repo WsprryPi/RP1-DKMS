@@ -2,6 +2,9 @@
 """Attribute matrix obligations to completed stages and independent state rules."""
 import json
 from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, expand
 from lifecycle_results import require, SCENARIOS
 
 # Multiple obligations may share a transition; this does not count as independent
@@ -13,7 +16,7 @@ ROWS = '''
 4 clean-cycle repeat-install
 5 clean-cycle missing-module-reinstall
 6 clean-cycle reinstall-after-removal
-7 foreign-state foreign-dkms-0.0.1
+7 foreign-state foreign-dkms-@PRODUCT_VERSION@
 8 foreign-state foreign-dkms-9.9.9
 9 foreign-state refuse-DEVELOPMENT_MANIFEST
 10 foreign-state refuse-rp1-gpclk-dkms-installation
@@ -77,13 +80,16 @@ ROWS = '''
 68 packaged-runtime-baseline preserve-passive-baseline
 69 packaged-runtime-baseline refuse-changed-passive-baseline refuse-foreign-passive-baseline
 '''
+ROWS = expand(ROWS)
 RULES = {row[0]: (row[1], row[2:]) for row in (line.split() for line in ROWS.splitlines() if line)}
 MATRIX = Path(__file__).resolve().parents[1]/'release/package-lifecycle-matrix-v1.json'
+def fixture_identity():
+    return json.loads((MATRIX.parent/'lifecycle-predecessor-v1.json').read_text())
 KERNELS = ('6.18.50+rpt-rpi-2712', '6.18.50+rpt-rpi-v8')
 
 
 def catalog():
-    matrix = json.loads(MATRIX.read_text())
+    matrix = expand(json.loads(MATRIX.read_text()))
     cases = {case['id']: case for case in matrix['cases']}
     require(len([line for line in ROWS.splitlines() if line]) == len(RULES), 'duplicate coverage rule')
     require(cases and len(cases) == len(matrix['cases']) == len(RULES)
@@ -95,6 +101,7 @@ def catalog():
 
 
 def state_is(name, before, after):
+    FIXTURE = fixture_identity()
     modules, dkms = after.get('modules'), after.get('dkms')
     require(isinstance(modules, list) and isinstance(dkms, str), 'incomplete state observation')
     status = after.get('packageManager')
@@ -107,24 +114,24 @@ def state_is(name, before, after):
         return not modules and not dkms and after.get('sourceTrees') == []
     if name in ('installed', 'one-kernel', 'legacy'):
         count = 4 if name == 'installed' else 2
-        version = '0.0.0' if name == 'legacy' else '0.0.1'
-        return (status == 'ii  '+version+'-1' and len(modules) == count
+        version = FIXTURE['version'] if name == 'legacy' else f'{VERSION}'
+        return (status == 'ii  '+(FIXTURE['debianVersion'] if name == 'legacy' else DEBIAN) and len(modules) == count
                 and all(m.get('version') == version for m in modules)
                 and dkms.count(': installed') == count//(1 if name == 'legacy' else 2))
     expected = {
-        'dependency-unconfigured': ('iU  0.0.1-1', 0),
+        'dependency-unconfigured': (f'iU  {DEBIAN}', 0),
         'unpack-aborted': ('in', 0),
-        'partial': ('iF  0.0.1-1', 0),
-        'failed-add': ('iF  0.0.1-1', 0),
-        'failed-build': ('iF  0.0.1-1', 0),
-        'failed-install': ('iF  0.0.1-1', 0),
-        'failed-index': ('iF  0.0.1-1', 4),
-        'failed-inventory': ('iF  0.0.1-1', 4),
-        'failed-remove': ('ri  0.0.1-1', 4),
-        'failed-purge': ('pi  0.0.1-1', 4),
-        'failed-remove-index': ('ri  0.0.1-1', 0),
-        'legacy-partial': ('iF  0.0.0-1', 0),
-        'legacy-remove-failed': ('pi  0.0.0-1', 2),
+        'partial': (f'iF  {DEBIAN}', 0),
+        'failed-add': (f'iF  {DEBIAN}', 0),
+        'failed-build': (f'iF  {DEBIAN}', 0),
+        'failed-install': (f'iF  {DEBIAN}', 0),
+        'failed-index': (f'iF  {DEBIAN}', 4),
+        'failed-inventory': (f'iF  {DEBIAN}', 4),
+        'failed-remove': (f'ri  {DEBIAN}', 4),
+        'failed-purge': (f'pi  {DEBIAN}', 4),
+        'failed-remove-index': (f'ri  {DEBIAN}', 0),
+        'legacy-partial': ('iF  '+FIXTURE['debianVersion'], 0),
+        'legacy-remove-failed': ('pi  '+FIXTURE['debianVersion'], 2),
     }
     require(name in expected, 'unsupported matrix state oracle: '+name)
     return (status, len(modules)) == expected[name]
@@ -160,7 +167,7 @@ def starting_context(case_id, step):
 def command_is(case_id, step):
     number = int(case_id)
     if number in (17, 19):
-        prefix = ['python3', '/source/scripts/package_preflight.py', 'unpack'] if number == 17 else ['sh', '/tmp/old-control/preinst', 'upgrade', '0.0.1-1']
+        prefix = ['python3', '/source/scripts/package_preflight.py', 'unpack'] if number == 17 else ['sh', '/tmp/old-control/preinst', 'upgrade', f'{DEBIAN}']
     elif number in (68, 69):
         prefix = ['in-process', 'runtime_deployment.Files.prune_removed_directories']
     elif number == 3:

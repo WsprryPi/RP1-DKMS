@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Explicit runtime profile on the existing privileged route-manager socket."""
+import sys
+sys.dont_write_bytecode = True
 import json
 import re
 import sys

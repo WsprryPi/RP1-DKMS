@@ -321,11 +321,12 @@ does not create runtime state.
 
 The [package transition contract](../operations/package-lifecycle.md) requires
 read-only preflight before the package manager, exact inactive ownership, complete
-payload identity and native DKMS/cache agreement. Same-version replacement
-rebuilds every eligible installed kernel. The maintained synthetic predecessor has a legacy boot/systemd lifecycle.
-Direct upgrade/downgrade is refused. Owning predecessor removal
-precedes clean successor installation; rollback removes the successor before exact
-retained predecessor reinstall. No package transition restores runtime sessions,
+payload identity and native DKMS/cache agreement. Exact package repeats converge
+without forced module removal. Compatible passive packages support upgrades;
+legacy-effects fixtures and unknown lifecycle state require owning removal first.
+Downgrade recovery removes the successor before exact retained predecessor
+reinstall. [Version identity](versioning.md) defines source-derived identities,
+SemVer precedence, Debian ordering, payload conflicts, and upgrade eligibility. No package transition restores runtime sessions,
 application state or qualification. Native kernel hooks remain distribution-owned;
 external orchestration must retain the documented preflight and state audits.
 

@@ -32,6 +32,20 @@ Foreign or modified files and mixed ownership are preserved through refusal.
 Direct package upgrade/downgrade is not a rollback procedure. Development-to-release migration and incompatible transitions require owning cleanup,
 verified absence, then installation of the selected exact software.
 
+## Standalone package updates
+
+For an independently administered inactive package, an exact repeat verifies the
+installed files and retains intact modules. Installing a deliberately changed
+build under the same version retires the previous modules and rebuilds them.
+A newer compatible package can upgrade
+through Debian and DKMS. Before invoking the package manager, run the incoming
+reviewed source's read-only preflight with the verified candidate package. Keep the
+previous package for recovery, and check that obsolete source, DKMS, schema, and
+module artifacts are gone after the update. Changed files, unknown ownership,
+incompatible lifecycle state, or an active runtime require owning recovery first.
+Follow the [standalone package procedure](https://github.com/WsprryPi/RP1-DKMS/blob/devel/engineering/operations/package-lifecycle.md)
+for commands, removal, and explicit downgrade recovery.
+
 ## After a kernel update
 
 DKMS builds against eligible installed header trees. A module built for the

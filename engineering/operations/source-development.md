@@ -117,8 +117,10 @@ tree for [build-only evidence](../testing.md#representative-kernel-builds).
 A same-name, same-version
 development instance is replaced only after complete source-ownership validation.
 The evidence directory retains its source and installed module bytes for recovery.
-Non-current versions, foreign/package ownership, and active enrollment or manager
-state require the [explicit removal boundary](../contracts/development-identity.md).
+Newer compatible versions may replace exact inactive source from this repository.
+Changed source under the same version can replace the prior build. Downgrades, foreign/package ownership,
+and active enrollment or manager state require the
+[explicit removal boundary](../contracts/development-identity.md).
 A rendered development tree deliberately replaces the production DKMS kernel
 name filter with `.*`. The requested kernel only needs a usable header tree;
 DKMS/compiler errors are returned directly. The release/package source retains

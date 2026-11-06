@@ -22,16 +22,22 @@ _state = subprocess.run([*_git_args, 'status', '--porcelain=v1',
 if _state.stdout:
     raise SystemExit('dirty or untracked validator source rejected')
 # Reject hidden modified helpers before importing them and ignore all checkout caches.
-for _name in ('release_contract.py', 'release_manifest.py'):
+for _name in ('release_contract.py', 'release_manifest.py', 'version_identity.py', 'package_stage.py'):
     _path = _root/'scripts'/_name
     _blob = subprocess.run([*_git_args, 'show', 'HEAD:scripts/'+_name],
                            capture_output=True, check=True, env=_git_env).stdout
     if _path.is_symlink() or _path.read_bytes() != _blob:
         raise SystemExit('release helper differs from clean commit')
+_header = _root/'include/rp1_gpclk/version.h'
+_blob = subprocess.run([*_git_args, 'show', 'HEAD:include/rp1_gpclk/version.h'],
+                       capture_output=True, check=True, env=_git_env).stdout
+if _header.is_symlink() or _header.read_bytes() != _blob:
+    raise SystemExit('canonical version header differs from clean commit')
 _cache = tempfile.TemporaryDirectory(prefix='rp1-isolated-python-', dir='/tmp')
 sys.pycache_prefix = _cache.name
 sys.path.insert(0, str(_root/'scripts'))
 import jsonschema
+from version_identity import expand
 from release_contract import (ASSETS, BEHAVIOR, COMPATIBILITY, DEB, DEBIAN, MANIFEST,
     METADATA, MODULES, PACKAGE, RESULT, SOURCE, VERSION, build_environment, canonical,
     checksum_bytes, command, epoch, git, inventory, package_members, read_json,
@@ -59,7 +65,7 @@ def _validate_snapshot(candidate, commit, release=False):
     import re
     require(re.findall(br'^#define RP1_GPCLK_MODULE_VERSION "([^"]+)"$',
         files['include/rp1_gpclk/version.h'][1], re.M) == [VERSION.encode()], 'source module version mismatch')
-    require(b'#define RP1_GPCLK_COMPATIBILITY_VERSION "0.0.1"' in files['include/rp1_gpclk/compatibility.h'][1],
+    require(b'#define RP1_GPCLK_COMPATIBILITY_VERSION RP1_GPCLK_MODULE_VERSION' in files['include/rp1_gpclk/compatibility.h'][1],
             'source compatibility version mismatch')
     require(read_json(files['uapi-identity.json'][1])['sha256'] ==
             sha(files['include/uapi/linux/rp1_gpclk.h'][1]), 'source UAPI identity mismatch')
@@ -70,9 +76,13 @@ def _validate_snapshot(candidate, commit, release=False):
     require(source == source_archive(files, timestamp), 'source archive/commit/tree or deterministic metadata mismatch')
     tar_members(source, timestamp)
     manifest = read_json((candidate/MANIFEST).read_bytes())
-    schema = read_json(files['schema/rp1-gpclk-dkms-installation-manifest-v1.schema.json'][1])
+    schema = expand(read_json(files['schema/rp1-gpclk-dkms-installation-manifest-v1.schema.json'][1]))
     jsonschema.Draft202012Validator(schema).validate(manifest)
     require(manifest['sourceCommit'] == commit, 'manifest commit mismatch')
+    require(manifest['productVersion'] == VERSION and manifest['debianVersion'] == DEBIAN and
+            manifest['releaseTag'] == 'v'+VERSION and manifest['package']['filename'] == DEB and
+            manifest['uapi']['path'] == f'usr/src/{PACKAGE}-{VERSION}/include/uapi/linux/rp1_gpclk.h',
+            'manifest identities differ from canonical source')
     require(manifest['installationBehavior'] == BEHAVIOR, 'non-passive installation contract')
     members, controls = package_members(candidate/DEB)
     inv, control_inv = inventory(members), inventory(controls)
@@ -89,8 +99,10 @@ def _validate_snapshot(candidate, commit, release=False):
     for name in ('preinst', 'postinst', 'prerm'):
         payload = control_map[name]['bytes']
         if name == 'preinst':
+            from package_stage import incoming_guard
+            receipt = read_json(member_map['usr/libexec/rp1-gpclk-dkms/package-identity.json']['bytes'])
             embedded = (b"python3 -I - unpack <<'RP1_INCOMING_PREFLIGHT'\n"+
-                        files['scripts/package_preflight.py'][1]+b'RP1_INCOMING_PREFLIGHT\n')
+                        incoming_guard(ROOT, receipt).encode()+b'RP1_INCOMING_PREFLIGHT\n')
             require(payload.count(embedded) == 1, 'incoming read-only guard differs from source')
             payload = payload.replace(embedded, b'')
         for word in (b'modprobe', b'insmod', b'rmmod', b'dtoverlay', b'systemctl',
@@ -111,7 +123,7 @@ def _validate_snapshot(candidate, commit, release=False):
                 'UAPI digest mismatch')
     require(manifest['uapi']['sha256'] == member_map[manifest['uapi']['path']]['sha256'], 'manifest UAPI mismatch')
     dkms = member_map[prefix+'dkms.conf']['bytes'].decode()
-    for token in ('PACKAGE_VERSION="0.0.1"', 'BUILT_MODULE_NAME[0]="rp1_gpclk_dkms"',
+    for token in (f'PACKAGE_VERSION="{VERSION}"', 'BUILT_MODULE_NAME[0]="rp1_gpclk_dkms"',
                   'BUILT_MODULE_NAME[1]="rp1_route_controller"', 'RP1_RUNTIME_CONTROLLER=1'):
         require(token in dkms, 'DKMS/module/controller identity mismatch')
     require('#MODULE_VERSION#' not in dkms, 'unresolved DKMS placeholder')
@@ -169,7 +181,7 @@ def _validate_snapshot(candidate, commit, release=False):
         'trustEnrollment': 'separate-administrator-operation'}, 'unsupported signing claim')
     require(metadata['qualification'] == {k: False for k in ('hardware', 'rf', 'product', 'wsprrypiAcceptance', 'lifecycle')},
             'false qualification claim')
-    require(metadata['consumerContract'] == read_json(files['release/wsprrypi-consumer-contract.json'][1]),
+    require(metadata['consumerContract'] == expand(read_json(files['release/wsprrypi-consumer-contract.json'][1])),
             'consumer contract mismatch')
     require(set(manifest) == set(metadata['consumerContract']['manifestKeys']), 'consumer manifest key mismatch')
     require(metadata['build'] == {'sourceDateEpoch': timestamp, 'locale': 'C', 'timezone': 'UTC', 'umask': '0022',
@@ -196,6 +208,8 @@ def _validate_snapshot(candidate, commit, release=False):
     with tempfile.TemporaryDirectory(prefix='rp1-independent-verify-', dir='/tmp') as temporary:
         source_dir = Path(temporary)/'reconstructed'
         write_source(files, source_dir)
+        from version_identity import prepare_debian
+        prepare_debian(source_dir)
         command(['dpkg-buildpackage', '--no-sign', '-b'], cwd=source_dir, env=build_environment(timestamp))
         packages = list(Path(temporary).glob('*.deb'))
         require([p.name for p in packages] == [DEB] and packages[0].read_bytes() == (candidate/DEB).read_bytes(),

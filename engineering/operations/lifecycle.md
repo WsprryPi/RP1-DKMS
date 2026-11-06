@@ -70,8 +70,9 @@ investigated.
 
 Retain exact predecessor packages and recovery inputs until the replacement has
 passed its separately scoped checks. The [package transition procedure](package-lifecycle.md)
-requires owning removal before any non-current version is replaced by the selected current source
-and before exact remove/reinstall rollback. Direct upgrade/downgrade is refused.
+supports compatible passive package upgrades after incoming preflight. Legacy or
+unknown lifecycle state requires owning removal first. Explicit downgrade recovery
+uses exact remove/reinstall. See [versioning](../contracts/versioning.md).
 Version ordering alone does not establish compatibility.
 
 On failure, remove only state attributable to the failed replacement. Do not

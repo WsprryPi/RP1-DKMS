@@ -21,9 +21,8 @@ if not header_match or not dkms_match:
     raise SystemExit("module or DKMS version is missing")
 dkms_version = dkms_match.group(1)
 if dkms_version == "#MODULE_VERSION#":
-    rules_match = re.search(r"^MODULE_VERSION := (\S+)$", debian_rules, re.MULTILINE)
-    if not rules_match or rules_match.group(1) != header_match.group(1):
-        raise SystemExit("module and Debian DKMS versions differ")
+    if 'MODULE_VERSION := $(shell python3 scripts/version_identity.py version)' not in debian_rules:
+        raise SystemExit("module and Debian DKMS identity derivation differ")
     if "dh_dkms -V $(MODULE_VERSION)" not in debian_rules:
         raise SystemExit("Debian DKMS template substitution is missing")
 elif header_match.group(1) != dkms_version:

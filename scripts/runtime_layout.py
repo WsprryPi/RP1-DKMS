@@ -6,7 +6,8 @@ INVENTORY = {LIB+name: 'scripts/'+name for name in (
     'runtime_controller_admin.py', 'runtime_manager.py', 'runtime_route_client.py',
     'runtime_layout.py', 'runtime_deployment.py', 'runtime_output.py',
     'runtime_application.py', 'runtime_activation.py', 'runtime_provider.py',
-    'runtime_binding.py')}
+    'runtime_binding.py', 'version_identity.py')}
+INVENTORY[LIB+'version.h'] = 'include/rp1_gpclk/version.h'
 INVENTORY[LIB+'package_preflight.py'] = 'scripts/package_preflight.py'
 INVENTORY['/usr/lib/systemd/system/rp1-gpclk-route-manager.socket'] = 'systemd/rp1-gpclk-route-manager.socket'
 INVENTORY['/usr/lib/systemd/system/rp1-gpclk-route-manager@.service'] = 'systemd/rp1-gpclk-route-manager@.service'

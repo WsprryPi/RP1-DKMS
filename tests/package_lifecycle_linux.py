@@ -35,15 +35,15 @@ from release_contract import inventory, package_members
 import jsonschema
 
 PACKAGE = 'rp1-gpclk-dkms'
-VERSION = '0.0.1'
+from version_identity import VERSION, DEBIAN, DEB as PACKAGE_FILE, expand
 NAMES = ('rp1_gpclk_dkms', 'rp1_route_controller')
 OUT = Path('/results')
-DEB = Path('/candidate/rp1-gpclk-dkms_0.0.1-1_all.deb')
+DEB = Path(f'/candidate/rp1-gpclk-dkms_{DEBIAN}_all.deb')
 OLD = Path('/predecessor/rp1-gpclk-dkms_0.0.0-1_all.deb')
 KERNELS = ('6.18.50+rpt-rpi-2712', '6.18.50+rpt-rpi-v8')
 STEPS = []
 FOREIGN_MODULES = {}
-MATRIX = json.loads(Path('/source/release/package-lifecycle-matrix-v1.json').read_text())
+MATRIX = expand(json.loads(Path('/source/release/package-lifecycle-matrix-v1.json').read_text()))
 
 
 def require(condition, message):
@@ -149,7 +149,7 @@ def neutral():
 
 
 def installed(state):
-    require(state['packageManager'] == 'ii  0.0.1-1', 'package is not configured')
+    require(state['packageManager'] == f'ii  {DEBIAN}', 'package is not configured')
     require(len(state['modules']) == 2*len(KERNELS), 'module/kernel set differs')
     require(state['dkms'].count(': installed') == len(KERNELS), 'DKMS kernel set differs')
     for module in state['modules']:
@@ -179,7 +179,7 @@ def replace_command(name, program):
     shutil.copyfile(path.resolve(), backup)
     backup.chmod(0o755)
     path.unlink()
-    path.write_text(program.replace('@REAL@', str(backup)))
+    path.write_text(expand(program).replace('@REAL@', str(backup)))
     path.chmod(0o755)
 
 
@@ -323,7 +323,7 @@ def dependency_recovery():
 def missing_payload():
     installed(run('initial-install', ['dpkg', '-i', DEB]))
     for name in ('/usr/libexec/rp1-gpclk-dkms/package_preflight.py',
-                 '/usr/src/rp1-gpclk-dkms-0.0.1/dkms.conf'):
+                 f'/usr/src/rp1-gpclk-dkms-{VERSION}/dkms.conf'):
         Path(name).unlink()
         installed(run('repair-missing-'+Path(name).name, ['dpkg', '-i', DEB]))
     absent(run('purge', ['dpkg', '--purge', PACKAGE]))
@@ -331,6 +331,9 @@ def missing_payload():
 
 def package_lock():
     installed(run('initial-install', ['dpkg', '-i', DEB]))
+    # An intact repeat is now a no-op. A missing module requires native repair,
+    # giving the first request a real build boundary while it holds dpkg's lock.
+    Path('/lib/modules', KERNELS[0], 'updates/dkms/rp1_gpclk_dkms.ko').unlink()
     hold = Path('/tmp/lifecycle-hold')
     hold.touch()
     try:
@@ -369,7 +372,7 @@ if [ -f /tmp/python-boundary-fault ]; then
         exit 64 ;;
     'inventory:-I /usr/libexec/rp1-gpclk-dkms/package_indices.py')
         rm /tmp/python-boundary-fault
-        printf '%s' 'injected inventory fault' > /var/lib/dkms/rp1-gpclk-dkms/0.0.1/foreign-inventory-fault ;;
+        printf '%s' 'injected inventory fault' > /var/lib/dkms/rp1-gpclk-dkms/@PRODUCT_VERSION@/foreign-inventory-fault ;;
     esac
 fi
 exec @REAL@ "$@"
@@ -407,7 +410,7 @@ def fault(stage):
     else:
         run('unpack', ['dpkg', '--unpack', DEB])
     injected = 'depmod' if stage == 'remove-depmod' else ('remove' if stage == 'purge' else stage)
-    Path('/tmp/lifecycle-fault').write_text(injected)
+    Path('/tmp/lifecycle-fault').write_text(expand(injected))
     command = (['dpkg', '--purge' if stage == 'purge' else '--remove', PACKAGE]
                if removing else ['dpkg', '--configure', PACKAGE])
     run('injected-'+stage, command, 1)
@@ -466,7 +469,7 @@ def foreign_state():
     for name in ('var/lib/wsprrypi/rp1-gpclk-dkms-installation.json',
                  'etc/rp1-gpclk-dkms/runtime-controller.json',
                  'var/lib/rp1-gpclk-dkms/route-transactions/foreign.json',
-                 'usr/src/rp1-gpclk-dkms-0.0.1/DEVELOPMENT_MANIFEST.json'):
+                 f'usr/src/rp1-gpclk-dkms-{VERSION}/DEVELOPMENT_MANIFEST.json'):
         path = Path('/')/name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(b'foreign ownership evidence')
@@ -480,7 +483,7 @@ def foreign_state():
             except OSError:
                 break
             parent = parent.parent
-    for version in ('0.0.1', '9.9.9'):
+    for version in (f'{VERSION}', '9.9.9'):
         path = Path('/var/lib/dkms', PACKAGE, version)
         path.mkdir(parents=True)
         run('foreign-dkms-'+version, ['dpkg', '-i', DEB], 1)
@@ -505,7 +508,7 @@ def foreign_state():
         run('refuse-foreign-cache-reinstall', ['dpkg', '-i', DEB], 1)
         require(foreign.read_bytes() == b'foreign cache evidence', 'foreign cache file deleted')
         foreign.unlink()  # Retire only the injected test object.
-    path = Path('/usr/src/rp1-gpclk-dkms-0.0.1/Kbuild')
+    path = Path(f'/usr/src/rp1-gpclk-dkms-{VERSION}/Kbuild')
     saved = path.read_bytes()
     path.write_bytes(saved+b'\n# administrator change\n')
     run('refuse-drifted-removal', ['dpkg', '--remove', PACKAGE], 1)
@@ -540,7 +543,7 @@ def unpack_recovery():
 
 def header_profiles():
     run('extract-build-inputs', ['dpkg-deb', '-x', DEB, '/tmp/profile-payload'])
-    source = Path('/tmp/profile-payload/usr/src/rp1-gpclk-dkms-0.0.1')
+    source = Path(f'/tmp/profile-payload/usr/src/rp1-gpclk-dkms-{VERSION}')
     builds = []
     for kernel in KERNELS:
         for profile in (0, 1):
@@ -682,7 +685,7 @@ def predecessor():
     require(Path('/boot/firmware/overlays/rp1-gpclk-gpio4.dtbo').exists(), 'legacy fixture overlay effect missing')
     legacy.unlink()
     before = snapshot()
-    run('refuse-direct-upgrade-before-dpkg', ['python3', '/source/scripts/package_preflight.py', 'unpack'], 1)
+    run('refuse-direct-upgrade-before-dpkg', ['python3', '/source/scripts/package_preflight.py', 'unpack', '--package', str(DEB)], 1)
     require(snapshot() == before, 'refused upgrade changed predecessor')
     # Actual old/new package transitions follow the approved owning removal
     # recipe. The predecessor is a synthetic effects fixture, not historical software.
@@ -699,7 +702,7 @@ def predecessor():
     # The retained predecessor refuses in-place downgrade; call its exact
     # preinst before dpkg could invoke the installed candidate's prerm.
     require(raw(['dpkg-deb', '-e', str(OLD), '/tmp/old-control']).returncode == 0, 'old control extraction failed')
-    run('refuse-direct-downgrade-before-dpkg', ['sh', '/tmp/old-control/preinst', 'upgrade', '0.0.1-1'], 1)
+    run('refuse-direct-downgrade-before-dpkg', ['sh', '/tmp/old-control/preinst', 'upgrade', f'{DEBIAN}'], 1)
     absent(run('rollback-remove-successor', ['dpkg', '--purge', PACKAGE]))
     legacy.touch()
     state = run('rollback-install-retained-predecessor', ['dpkg', '-i', OLD])

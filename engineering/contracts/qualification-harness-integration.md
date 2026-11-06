@@ -60,7 +60,7 @@ explicit blocker rather than a fabricated value.
 - exactly one enabled `rp1-gpclk-dkms-gpio4` or
   `rp1-gpclk-dkms-gpio20` endpoint, with the matching `wsprrypi,route`
   property;
-- exact `v0.0.1-rp1-gpio4` or `v0.0.1-rp1-gpio20` compatibility ID and
+- exact source-derived GPIO4 or GPIO20 compatibility ID and
   structural compatibility state, separately from external qualification; and
 - management profile and its contract/schema identity; transaction ID, status,
   boot IDs, configuration hashes, attribution and reconciliation result; and

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Hardware-free checks for the passive source-development route-manager lifecycle."""
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import importlib.util, json, os, pathlib, shutil, subprocess, tempfile
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
@@ -37,7 +41,7 @@ case "$1:${2:-}" in
  *) echo "unexpected systemctl: $*" >&2; exit 2;;
 esac
 ''')
-    manifest=base/"module-manifest.json"; manifest.write_text(json.dumps({"schema":DEV.MANIFEST_SCHEMA,"classification":"source-development","qualification":False,"sourceState":"clean","sourceCommit":"7"*40,"targetKernel":"fixture-kernel","route":"gpio4","renderedVersion":"0.0.1","uapiIdentity":{"sha256":"4af14cdf60471ac4b318b10d7d70824a63c74029c2934e86bbdcd1b7f06cf633"}}))
+    manifest=base/"module-manifest.json"; manifest.write_text(json.dumps({"schema":DEV.MANIFEST_SCHEMA,"classification":"source-development","qualification":False,"sourceState":"clean","sourceCommit":"7"*40,"targetKernel":"fixture-kernel","route":"gpio4","renderedVersion":VERSION,"uapiIdentity":{"sha256":"4af14cdf60471ac4b318b10d7d70824a63c74029c2934e86bbdcd1b7f06cf633"}}))
     old=dict(os.environ); os.environ.update({"RP1_GPCLK_DEVELOPMENT_ROOT":str(fake),"RP1_GPCLK_DEVELOPMENT_TEST_ROOT":"1","RP1_GPCLK_TOOL_SYSTEMCTL":str(tools/"systemctl"),"RP1_TEST_SYSTEMD_STATE":str(state)})
     try:
         args=type("Args",(),{"source":source,"module_manifest":manifest,"route":"gpio4","kernel":"fixture-kernel"})()

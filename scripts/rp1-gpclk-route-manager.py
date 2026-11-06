@@ -2,12 +2,17 @@
 # SPDX-License-Identifier: MIT
 """Stable, fail-closed RP1 GPCLK boot-route manager for applications."""
 from __future__ import annotations
+import sys
+sys.dont_write_bytecode = True
 import hashlib, json, os, re, stat, subprocess, sys, tempfile, uuid
 from pathlib import Path, PurePosixPath
 from typing import Callable
 
 CONTRACT="rp1-gpclk-route-manager"; PACKAGE="rp1-gpclk-dkms"
-VERSION="0.0.1"; DEBIAN_VERSION="0.0.1-1"; MODULE="rp1_gpclk_dkms"
+sys.path.insert(0, str(Path(__file__).resolve().parent) if (Path(__file__).resolve().parent/"version_identity.py").is_file()
+                else "/usr/libexec/rp1-gpclk-dkms")
+from version_identity import VERSION, DEBIAN as DEBIAN_VERSION
+MODULE="rp1_gpclk_dkms"
 CONFIG="/boot/firmware/config.txt"; BOOT_ID="/proc/sys/kernel/random/boot_id"
 JOURNAL_DIR="/var/lib/rp1-gpclk-dkms/route-transactions"
 UAPI=f"/usr/src/{PACKAGE}-{VERSION}/include/uapi/linux/rp1_gpclk.h"

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 """Offline ownership/fault regressions; these are not dpkg lifecycle evidence."""
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import gzip
 import hashlib
 import lzma
@@ -34,7 +38,7 @@ def put(root, name, data=b'fixture'):
 
 
 def owned_source(root):
-    source = root/'usr/src/rp1-gpclk-dkms-0.0.1'
+    source = root/('usr/src/rp1-gpclk-dkms-' + VERSION + '')
     path = put(root, str(source.relative_to(root))+'/dkms.conf')
     database = root/'var/lib/dpkg/info'
     database.mkdir(parents=True, exist_ok=True)
@@ -62,7 +66,7 @@ class Tests(unittest.TestCase):
     def test_foreign_unbuilt_registration_and_different_version(self):
         root = self.root
         base = root/'var/lib/dkms/rp1-gpclk-dkms'
-        for version in ('0.0.1', '0.9.0', '9.9.9'):
+        for version in (VERSION, '0.9.0', '9.9.9'):
             path = base/version
             path.mkdir(parents=True)
             for operation in ('unpack', 'configure', 'remove'):
@@ -77,11 +81,11 @@ class Tests(unittest.TestCase):
         base = root/'var/lib/dkms/rp1-gpclk-dkms'
         base.mkdir(parents=True)
         metadata = base/'kernel-6.18.50+rpt-rpi-2712-aarch64'
-        metadata.symlink_to('0.0.1/6.18.50+rpt-rpi-2712/aarch64')
+        metadata.symlink_to(('' + VERSION + '/6.18.50+rpt-rpi-2712/aarch64'))
         with self.assertRaisesRegex(ValueError, 'orphan'):
             guard.check(root, 'remove')
         metadata.unlink()
-        version = base/'0.0.1'
+        version = base/VERSION
         version.mkdir()
         (version/'source').symlink_to(source)
         foreign = put(root, str(version.relative_to(root))+'/foreign.txt', b'preserve')
@@ -162,14 +166,14 @@ class Tests(unittest.TestCase):
     def test_compressed_signed_identity_and_duplicate_refusal(self):
         root = self.root
         source = owned_source(root)
-        base = root/'var/lib/dkms/rp1-gpclk-dkms/0.0.1'
+        base = root/('var/lib/dkms/rp1-gpclk-dkms/' + VERSION + '')
         base.mkdir(parents=True)
         (base/'source').symlink_to(source)
         kernel = '6.18.50+rpt-rpi-2712'
-        (base.parent/('kernel-'+kernel+'-aarch64')).symlink_to('0.0.1/'+kernel+'/aarch64')
+        (base.parent/('kernel-'+kernel+'-aarch64')).symlink_to(('' + VERSION + '/')+kernel+'/aarch64')
         put(root, 'lib/modules/'+kernel+'/build/.config', b'# unsigned header fixture\n')
         # Compact bytes test identity mechanics, not ELF/signature validity.
-        elf = b'\x7fELF\x02\x01\0version=0.0.1\0signed-fixture-trailer'
+        elf = ('\x7fELF\x02\x01\x00version=' + VERSION + '\x00signed-fixture-trailer').encode()
         cache = put(root, str(base.relative_to(root))+'/'+kernel+'/aarch64/module/rp1_gpclk_dkms.ko', elf)
         stem = 'lib/modules/'+kernel+'/updates/dkms/rp1_gpclk_dkms.ko'
         for suffix, encode in (('', lambda x:x), ('.gz', gzip.compress), ('.xz', lzma.compress)):
@@ -193,9 +197,14 @@ class Tests(unittest.TestCase):
         control.mkdir(parents=True)
         path = control/'preinst'
         path.write_bytes((ROOT/'debian/rp1-gpclk-dkms.preinst').read_bytes())
+        for name in ('postinst', 'prerm'):
+            (control/name).write_bytes((ROOT/('debian/rp1-gpclk-dkms.'+name)).read_bytes())
+        receipt_path = destination/guard.RECEIPT
+        receipt_path.parent.mkdir(parents=True)
+        receipt_path.write_text('{}')
         stage.preinst(destination)
         text = path.read_text()
-        self.assertIn((ROOT/'scripts/package_preflight.py').read_text(), text)
+        self.assertIn(stage.incoming_guard(ROOT, json.loads(receipt_path.read_text())), text)
         self.assertLess(text.index("python3 -I - unpack"), text.index('#DEBHELPER#'))
         for name in ('postinst', 'prerm'):
             self.assertIn('python3 -I /usr/libexec/rp1-gpclk-dkms/package_preflight.py',
@@ -272,8 +281,9 @@ class Tests(unittest.TestCase):
         import subprocess
         directory = self.root/'installed-helpers'
         directory.mkdir()
-        for name in ('package_indices.py', 'package_preflight.py', 'package_signatures.py'):
+        for name in ('package_indices.py', 'package_preflight.py', 'package_signatures.py', 'version_identity.py'):
             shutil.copyfile(ROOT/'scripts'/name, directory/name)
+        shutil.copyfile(ROOT/'include/rp1_gpclk/version.h', directory/'version.h')
         subprocess.run([sys.executable, '-I', '-c',
                         'import runpy,sys; runpy.run_path(sys.argv[1])',
                         str(directory/'package_indices.py')], check=True)
@@ -325,7 +335,7 @@ class Tests(unittest.TestCase):
         self.assertIn('apt-get install -y --no-install-recommends ./*.deb', recipe)
 
     def test_lifecycle_matrix_resolves_complete_expected_states(self):
-        matrix = json.loads((ROOT/'release/package-lifecycle-matrix-v1.json').read_text())
+        matrix = expand(json.loads((ROOT/'release/package-lifecycle-matrix-v1.json').read_text()))
         fields = {'packageManager', 'dkms', 'modulesByKernel', 'sourceTree', 'overlays',
                   'routeRuntime', 'services', 'bootConfiguration', 'ownershipRecords',
                   'rollbackAvailability', 'operatorAction', 'machineResult', 'executionAuthorization'}
@@ -579,6 +589,8 @@ class ImportTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as name:
             root = Path(name).resolve();tools = root/'tools'
             shutil.copytree(ROOT/'tools', tools, ignore=shutil.ignore_patterns('__pycache__'))
+            shutil.copytree(ROOT/'scripts', root/'scripts', ignore=shutil.ignore_patterns('__pycache__'))
+            shutil.copytree(ROOT/'include', root/'include')
             poison = root/'poison.py';poison.write_text("raise RuntimeError('POISONED HELPER CACHE')\n")
             cache = Path(importlib.util.cache_from_source(str(tools/'lifecycle_results.py')))
             cache.parent.mkdir(parents=True)
@@ -630,19 +642,17 @@ class MetadataTests(unittest.TestCase):
 
     def test_independent_native_record_and_refusals(self):
         from types import SimpleNamespace
-        record = ('filename: /fixture.ko\0version=0.0.1\0vermagic=kernel SMP\0'
-                  'alias=first\0alias=second\0depends=controller\0'
-                  'signature: AA:BB:\n CC:DD\0')
+        record = (('filename: /fixture.ko\x00version=' + VERSION + '\x00vermagic=kernel SMP\x00alias=first\x00alias=second\x00depends=controller\x00signature: AA:BB:\n CC:DD\x00'))
         def parse(text=record, code=0):
             return module_metadata.metadata(SimpleNamespace(returncode=code, stdout=text))
         value = parse()
-        self.assertEqual(value, {'version': '0.0.1', 'vermagic': 'kernel SMP', 'aliases': 'first\nsecond',
+        self.assertEqual(value, {'version': VERSION, 'vermagic': 'kernel SMP', 'aliases': 'first\nsecond',
             'depends': 'controller', 'signer': '', 'signatureKey': '', 'signatureAlgorithm': '',
             'signatureHash': '', 'controllerInterlock': ''})
         signed = record+'signer: Test signer\0sig_key: AB:CD\0sig_id: PKCS#7\0sig_hashalgo: sha256\0'
         self.assertEqual(parse(signed)['signer'], 'Test signer')
         for text, code in ((record, 1), (record[:-1], 0), ('bad\0', 0),
-                (record.replace('version=0.0.1\0',''), 0),
+                (record.replace(('version=' + VERSION + '\x00'),''), 0),
                 (record+'version=9.9.9\0', 0), (record+'depends=other\0', 0),
                 (record+'signer=bad\nvalue\0', 0), (record+'x='+'x'*65536+'\0', 0)):
             with self.subTest(code=code, text=text[:60]), self.assertRaises(ValueError): parse(text, code)
@@ -653,8 +663,8 @@ class CoverageTests(unittest.TestCase):
         import copy
         absent = {'packageManager': '', 'modules': [], 'dkms': '', 'sourceTrees': [],
                   'bootSha256': 'a'*64, 'endpointsAbsent': True, 'modulesUnloaded': True}
-        installed = dict(absent, packageManager='ii  0.0.1-1',
-                         modules=[{'version': '0.0.1'}]*4, dkms='x: installed\ny: installed', sourceTrees=['source'])
+        installed = dict(absent, packageManager=('ii  ' + DEBIAN + ''),
+                         modules=[{'version': VERSION}]*4, dkms='x: installed\ny: installed', sourceTrees=['source'])
         steps = [
             {'stage': 'interrupted-preinstall', 'command': ['dpkg', '-i', 'candidate'],
              'exitStatus': 1, 'before': absent, 'after': absent},

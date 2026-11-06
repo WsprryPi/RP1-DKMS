@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: MIT
 """Install and authenticate a passive exact-source route manager without replacing package files."""
 from __future__ import annotations
+import sys
+sys.dont_write_bytecode = True
 import argparse, hashlib, json, os, pathlib, re, shutil, socket, stat, subprocess, sys, time
 
 SCHEMA="rp1-gpclk-route-manager-source-development-v1"
@@ -12,7 +14,7 @@ DROPIN="/etc/systemd/system/rp1-gpclk-route-manager@.service.d/90-source-develop
 UNIT="rp1-gpclk-route-manager@source-development-status.service"
 RECORD="/var/lib/rp1-gpclk-dkms/development/route-manager.json"
 PACKAGE_PATHS=("/usr/sbin/rp1-gpclk-route-manager","/usr/libexec/rp1-gpclk-dkms/rp1-gpclk-route-manager","/usr/lib/systemd/system/rp1-gpclk-route-manager@.service")
-COMPAT={"gpio4":"v0.0.1-rp1-gpio4","gpio20":"v0.0.1-rp1-gpio20"}
+from version_identity import VERSION, COMPATIBILITY as COMPAT
 
 class Failure(RuntimeError): pass
 def root(path:str)->pathlib.Path:
@@ -60,7 +62,7 @@ def manifest(path:pathlib.Path,route:str,kernel:str)->dict:
     value=load(path)
     if (value.get("schema")!=MANIFEST_SCHEMA or value.get("classification")!="source-development" or value.get("qualification") is not False or
             value.get("sourceState")!="clean" or value.get("targetKernel")!=kernel or value.get("route")!=route or
-            value.get("renderedVersion")!="0.0.1" or not re.fullmatch(r"[0-9a-f]{40}",str(value.get("sourceCommit","")))): raise Failure("development manifest identity differs")
+            value.get("renderedVersion")!=VERSION or not re.fullmatch(r"[0-9a-f]{40}",str(value.get("sourceCommit","")))): raise Failure("development manifest identity differs")
     return value
 def package_inventory()->list[dict]:
     result=[]
@@ -71,12 +73,12 @@ def package_inventory()->list[dict]:
     return result
 def paths(commit:str)->dict[str,pathlib.Path]:
     directory=root(f"{BASE}/{commit}")
-    return {"directory":directory,"executable":directory/"rp1-gpclk-route-manager","manifest":directory/"DEVELOPMENT_MANIFEST.json","binding":directory/"binding.json","adoption":directory/"current-boot-ownership.json","dropin":root(DROPIN),"record":root(RECORD)}
+    return {"directory":directory,"identityHelper":directory/"version_identity.py","identityHeader":directory/"version.h","executable":directory/"rp1-gpclk-route-manager","manifest":directory/"DEVELOPMENT_MANIFEST.json","binding":directory/"binding.json","adoption":directory/"current-boot-ownership.json","dropin":root(DROPIN),"record":root(RECORD)}
 def archive_rolled_back_record(record_path:pathlib.Path)->dict|None:
     if not record_path.exists(): return None
     if record_path.is_symlink() or not record_path.is_file(): raise Failure("existing source-development record is unsafe")
     record=load(record_path); commit=record.get("sourceCommit",""); target=paths(commit)
-    allowed={str(target[key]) for key in ("executable","manifest","binding","adoption","dropin")}
+    allowed={str(target[key]) for key in ("executable","manifest","binding","adoption","dropin","identityHelper","identityHeader")}
     if (record.get("schema")!=SCHEMA or record.get("classification")!="Experimental/source-development" or
             record.get("qualification") is not False or record.get("status")!="rolled-back" or
             not re.fullmatch(r"[0-9a-f]{40}",commit) or set(record.get("createdFiles",[]))!=allowed):
@@ -108,13 +110,17 @@ def install(args:argparse.Namespace)->dict:
     predecessor=archive_rolled_back_record(target["record"])
     if target["directory"].exists() or target["dropin"].exists(): raise Failure("source-development route-manager state already exists")
     package_before=package_inventory(); previous={"unit":UNIT,"fragment":systemctl("show","-p","FragmentPath","--value",UNIT),"dropins":systemctl("show","-p","DropInPaths","--value",UNIT),"execStart":systemctl("show","-p","ExecStart","--value",UNIT)}
-    record={"schema":SCHEMA,"classification":"Experimental/source-development","qualification":False,"status":"prepared","sourceCommit":commit,"moduleSourceCommit":source["sourceCommit"],"moduleManifest":str(args.module_manifest),"moduleManifestSha256":digest(args.module_manifest),"kernel":args.kernel,"route":args.route,"compatibilityId":COMPAT[args.route],"packageFilesBefore":package_before,"previousUnitResolution":previous,"createdFiles":[str(target[key]) for key in ("executable","manifest","binding","adoption","dropin")],"installedAtUnix":int(time.time()),"predecessorRollbackRecord":predecessor}
+    record={"schema":SCHEMA,"classification":"Experimental/source-development","qualification":False,"status":"prepared","sourceCommit":commit,"moduleSourceCommit":source["sourceCommit"],"moduleManifest":str(args.module_manifest),"moduleManifestSha256":digest(args.module_manifest),"kernel":args.kernel,"route":args.route,"compatibilityId":COMPAT[args.route],"packageFilesBefore":package_before,"previousUnitResolution":previous,"createdFiles":[str(target[key]) for key in ("executable","manifest","binding","adoption","dropin","identityHelper","identityHeader")],"installedAtUnix":int(time.time()),"predecessorRollbackRecord":predecessor}
     atomic(target["record"],canonical(record),0o600)
     try:
         target["directory"].mkdir(parents=True,mode=0o755)
+        for key, origin in (("identityHelper",args.source/"scripts/version_identity.py"),
+                            ("identityHeader",args.source/"include/rp1_gpclk/version.h")):
+            shutil.copyfile(origin,target[key]); target[key].chmod(0o644)
+        record["identityFiles"]={str(target[key]):digest(target[key]) for key in ("identityHelper","identityHeader")}
         shutil.copyfile(executable,target["executable"]); target["executable"].chmod(0o755)
         shutil.copyfile(args.module_manifest,target["manifest"]); target["manifest"].chmod(0o644)
-        binding={"schema":SCHEMA,"classification":"Experimental/source-development","qualification":False,"sourceCommit":commit,"moduleSourceCommit":source["sourceCommit"],"sourceManifest":str(target["manifest"]),"sourceManifestSha256":digest(target["manifest"]),"executable":str(target["executable"]),"executableSha256":digest(target["executable"]),"adoptionRecord":str(target["adoption"]),"module":"rp1_gpclk_dkms","moduleVersion":"0.0.1","uapiSha256":source["uapiIdentity"]["sha256"],"kernel":args.kernel,"route":args.route,"compatibilityId":COMPAT[args.route]}
+        binding={"schema":SCHEMA,"classification":"Experimental/source-development","qualification":False,"sourceCommit":commit,"moduleSourceCommit":source["sourceCommit"],"sourceManifest":str(target["manifest"]),"sourceManifestSha256":digest(target["manifest"]),"executable":str(target["executable"]),"executableSha256":digest(target["executable"]),"adoptionRecord":str(target["adoption"]),"module":"rp1_gpclk_dkms","moduleVersion":VERSION,"uapiSha256":source["uapiIdentity"]["sha256"],"kernel":args.kernel,"route":args.route,"compatibilityId":COMPAT[args.route]}
         atomic(target["binding"],canonical(binding),0o644)
         dropin=("# SPDX-License-Identifier: MIT\n[Service]\nExecStart=\n"+f"ExecStart={target['executable']}\n"+f"Environment=RP1_GPCLK_SOURCE_DEVELOPMENT_BINDING={target['binding']}\n").encode()
         atomic(target["dropin"],dropin,0o644); systemctl("daemon-reload"); systemctl("restart","rp1-gpclk-route-manager.socket")
@@ -127,6 +133,10 @@ def install(args:argparse.Namespace)->dict:
 def status(args:argparse.Namespace)->dict:
     record=load(args.record); commit=record.get("sourceCommit",""); target=paths(commit)
     if record.get("schema")!=SCHEMA or record.get("classification")!="Experimental/source-development" or record.get("qualification") is not False or record.get("status")!="installed": raise Failure("source-development record is incomplete")
+    for key in ("identityHelper","identityHeader"):
+        path=target[key]
+        if path.is_symlink() or not path.is_file() or record.get("identityFiles",{}).get(str(path))!=digest(path):
+            raise Failure("source-development identity helper changed")
     safety=observations(); binding=load(target["binding"])
     if binding!=record.get("binding") or digest(target["executable"])!=binding.get("executableSha256") or digest(target["manifest"])!=binding.get("sourceManifestSha256") or digest(target["dropin"])!=record.get("dropinSha256"): raise Failure("active source-development artifact identity differs")
     package_after=package_inventory()
@@ -181,9 +191,9 @@ def rollback(args:argparse.Namespace)->dict:
     require_root(); record=load(args.record); commit=record.get("sourceCommit",""); target=paths(commit)
     if record.get("schema")!=SCHEMA or not re.fullmatch(r"[0-9a-f]{40}",commit): raise Failure("rollback record is invalid")
     observations()
-    allowed={str(target[key]) for key in ("executable","manifest","binding","adoption","dropin")}
+    allowed={str(target[key]) for key in ("executable","manifest","binding","adoption","dropin","identityHelper","identityHeader")}
     if set(record.get("createdFiles",[]))!=allowed: raise Failure("rollback record created-file set is incomplete")
-    for key in ("dropin","adoption","binding","manifest","executable"):
+    for key in ("dropin","adoption","binding","manifest","executable","identityHelper","identityHeader"):
         path=target[key]
         if path.exists():
             if path.is_symlink() or not path.is_file(): raise Failure(f"rollback refuses altered path: {path}")

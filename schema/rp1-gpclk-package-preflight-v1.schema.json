@@ -35,6 +35,14 @@
     "error": {
       "type": "string",
       "maxLength": 4096
+    },
+    "transition": {
+      "enum": [
+        "install",
+        "same",
+        "replace",
+        "upgrade"
+      ]
     }
   },
   "allOf": [

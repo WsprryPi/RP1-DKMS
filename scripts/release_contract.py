@@ -16,8 +16,7 @@ import time
 import subprocess
 import tarfile
 
-VERSION = '0.0.1'
-DEBIAN = VERSION+'-1'
+from version_identity import VERSION, DEBIAN
 PACKAGE = 'rp1-gpclk-dkms'
 SOURCE = f'{PACKAGE}-{VERSION}.tar.gz'
 DEB = f'{PACKAGE}_{DEBIAN}_all.deb'

@@ -33,10 +33,14 @@
       "const": "WsprryPi/RP1-DKMS"
     },
     "productVersion": {
-      "const": "0.0.1"
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$",
+      "maxLength": 48
     },
     "debianVersion": {
-      "const": "0.0.1-1"
+      "type": "string",
+      "pattern": "^[0-9][0-9A-Za-z.+~\\-]*-[1-9][0-9]*$",
+      "maxLength": 128
     },
     "dkmsModule": {
       "const": "rp1-gpclk-dkms"
@@ -51,7 +55,9 @@
       "const": "release"
     },
     "releaseTag": {
-      "const": "v0.0.1"
+      "type": "string",
+      "pattern": "^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$",
+      "maxLength": 49
     },
     "sourceCommit": {
       "type": "string",
@@ -70,7 +76,9 @@
       ],
       "properties": {
         "path": {
-          "const": "usr/src/rp1-gpclk-dkms-0.0.1/include/uapi/linux/rp1_gpclk.h"
+          "type": "string",
+          "pattern": "^usr/src/rp1-gpclk-dkms-[0-9A-Za-z.+\\-]+/include/uapi/linux/rp1_gpclk\\.h$",
+          "maxLength": 256
         },
         "sha256": {
           "type": "string",
@@ -91,7 +99,9 @@
           "const": "rp1-gpclk-dkms"
         },
         "filename": {
-          "const": "rp1-gpclk-dkms_0.0.1-1_all.deb"
+          "type": "string",
+          "pattern": "^rp1-gpclk-dkms_[0-9][0-9A-Za-z.+~\\-]*_all\\.deb$",
+          "maxLength": 256
         },
         "sha256": {
           "type": "string",

@@ -19,10 +19,10 @@
       "executionAuthorization": false
     },
     "installed": {
-      "packageManager": "ii  0.0.1-1",
-      "dkms": "one 0.0.1 registration; installed for every eligible header tree",
+      "packageManager": "ii  @DEBIAN_VERSION@",
+      "dkms": "one @PRODUCT_VERSION@ registration; installed for every eligible header tree",
       "modulesByKernel": "one consumer and one controller per eligible kernel; exact compressed/ELF identities",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "GPIO4/GPIO20 files inactive under /usr/lib; foreign overlays preserved",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -34,10 +34,10 @@
       "executionAuthorization": false
     },
     "partial": {
-      "packageManager": "iF  0.0.1-1",
+      "packageManager": "iF  @DEBIAN_VERSION@",
       "dkms": "attributable completed prefix of add/build/install; no foreign registration removed",
       "modulesByKernel": "bounded completed native prefix; inspect exact per-kernel inventory before retry",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -79,10 +79,10 @@
       "executionAuthorization": false
     },
     "one-kernel": {
-      "packageManager": "ii  0.0.1-1",
+      "packageManager": "ii  @DEBIAN_VERSION@",
       "dkms": "one registration; retained kernel installed, removed kernel absent",
       "modulesByKernel": "consumer/controller retained only for named installed kernel",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive /usr/lib files",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -124,10 +124,10 @@
       "executionAuthorization": false
     },
     "dependency-unconfigured": {
-      "packageManager": "iU  0.0.1-1",
+      "packageManager": "iU  @DEBIAN_VERSION@",
       "dkms": "absent",
       "modulesByKernel": "absent",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -139,10 +139,10 @@
       "executionAuthorization": false
     },
     "failed-add": {
-      "packageManager": "iF  0.0.1-1",
+      "packageManager": "iF  @DEBIAN_VERSION@",
       "dkms": "absent",
       "modulesByKernel": "absent",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -154,10 +154,10 @@
       "executionAuthorization": false
     },
     "failed-build": {
-      "packageManager": "iF  0.0.1-1",
-      "dkms": "one 0.0.1 registration: added",
+      "packageManager": "iF  @DEBIAN_VERSION@",
+      "dkms": "one @PRODUCT_VERSION@ registration: added",
       "modulesByKernel": "absent",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -169,10 +169,10 @@
       "executionAuthorization": false
     },
     "failed-install": {
-      "packageManager": "iF  0.0.1-1",
-      "dkms": "one 0.0.1 registration: first kernel built",
+      "packageManager": "iF  @DEBIAN_VERSION@",
+      "dkms": "one @PRODUCT_VERSION@ registration: first kernel built",
       "modulesByKernel": "absent",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -184,10 +184,10 @@
       "executionAuthorization": false
     },
     "failed-index": {
-      "packageManager": "iF  0.0.1-1",
+      "packageManager": "iF  @DEBIAN_VERSION@",
       "dkms": "both representative kernels installed",
       "modulesByKernel": "both modules per representative kernel; indices not accepted",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -199,10 +199,10 @@
       "executionAuthorization": false
     },
     "failed-remove": {
-      "packageManager": "ri  0.0.1-1",
+      "packageManager": "ri  @DEBIAN_VERSION@",
       "dkms": "both representative kernels installed",
       "modulesByKernel": "both modules per representative kernel",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -214,10 +214,10 @@
       "executionAuthorization": false
     },
     "failed-purge": {
-      "packageManager": "pi  0.0.1-1",
+      "packageManager": "pi  @DEBIAN_VERSION@",
       "dkms": "both representative kernels installed",
       "modulesByKernel": "both modules per representative kernel",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -229,10 +229,10 @@
       "executionAuthorization": false
     },
     "failed-remove-index": {
-      "packageManager": "ri  0.0.1-1",
+      "packageManager": "ri  @DEBIAN_VERSION@",
       "dkms": "absent",
       "modulesByKernel": "absent",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -304,10 +304,10 @@
       "executionAuthorization": false
     },
     "failed-inventory": {
-      "packageManager": "iF  0.0.1-1",
+      "packageManager": "iF  @DEBIAN_VERSION@",
       "dkms": "both representative kernels installed",
       "modulesByKernel": "both modules per representative kernel; indices not accepted",
-      "sourceTree": "exact package-owned 0.0.1 closure",
+      "sourceTree": "exact package-owned @PRODUCT_VERSION@ closure",
       "overlays": "inactive package data",
       "routeRuntime": "absent",
       "services": "unchanged; no lifecycle calls",
@@ -336,7 +336,7 @@
     },
     {
       "id": "2",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "repeat-install",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -350,7 +350,7 @@
     },
     {
       "id": "3",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "same-version-apt-reinstall",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -364,8 +364,8 @@
     },
     {
       "id": "4",
-      "startingState": "exact-inactive-0.0.1",
-      "operation": "same-version-dkms-replacement",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
+      "operation": "same-version-identity-verification",
       "disposition": "permitted",
       "exitStatus": 0,
       "expectedState": "installed",
@@ -378,7 +378,7 @@
     },
     {
       "id": "5",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "reinstall-missing-module",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -392,7 +392,7 @@
     },
     {
       "id": "6",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "reinstall-after-removal",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -574,7 +574,7 @@
     },
     {
       "id": "19",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "direct-downgrade",
       "disposition": "refused",
       "exitStatus": 1,
@@ -658,7 +658,7 @@
     },
     {
       "id": "25",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "remove",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -672,7 +672,7 @@
     },
     {
       "id": "26",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "purge",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -686,7 +686,7 @@
     },
     {
       "id": "27",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "nonrunning-kernel-install",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -700,7 +700,7 @@
     },
     {
       "id": "28",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "add-kernel",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -714,7 +714,7 @@
     },
     {
       "id": "29",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "dkms-autoinstall",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -728,7 +728,7 @@
     },
     {
       "id": "30",
-      "startingState": "exact-inactive-0.0.1",
+      "startingState": "exact-inactive-@PRODUCT_VERSION@",
       "operation": "exact-dkms-noop",
       "disposition": "permitted",
       "exitStatus": 0,
@@ -1134,7 +1134,7 @@
     },
     {
       "id": "59",
-      "startingState": "same-version-replacement-holds-dpkg-lock",
+      "startingState": "same-version-repair-holds-dpkg-lock",
       "operation": "concurrent-same-version-request",
       "disposition": "refused",
       "exitStatus": 2,

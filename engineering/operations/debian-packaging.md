@@ -5,7 +5,9 @@
 The canonical package is `rp1-gpclk-dkms`; its generated filename is recorded in the candidate manifest. Use the
 [complete candidate procedure](release-candidate.md) to build and independently
 validate its exact source, package, inventory, checksums and provenance.
-`dpkg-buildpackage --no-sign -b` builds only a local package, without candidate
+For a direct build, render the changelog in a disposable copy with
+`python3 scripts/version_identity.py prepare-debian` before running
+`dpkg-buildpackage --no-sign -b`. This builds only a local package, without candidate
 identity or publication status.
 
 ## Package contents
@@ -85,8 +87,10 @@ the exact retained predecessor. Never submit an old archive over an installed
 successor. Debian runs an outgoing prerm before an incoming preinst, so the
 read-only transition preflight must precede dpkg/APT.
 
-Repeated installation and same-version reinstall rebuild the attributable named
-DKMS instance across all eligible installed kernels. Incoming preinst embeds the
+Exact repeated installation retains the attributable installed modules; missing
+data is repaired through native DKMS convergence. Compatible package upgrades
+replace the outgoing instance across all eligible installed kernels. Product and
+Debian ordering are defined by the [version contract](../contracts/versioning.md). Incoming preinst embeds the
 exact new read-only guard. Complete dpkg data hashes, modes, private directories,
 DKMS source/kernel links and installed/cache ELF identities must agree. Present
 modified or foreign objects are preserved through refusal; missing data may be

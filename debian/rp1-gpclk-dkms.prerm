@@ -2,6 +2,15 @@
 # SPDX-License-Identifier: MIT
 set -eu
 
+# An exact repeated package installation is convergent, not a forced teardown.
+if [ "${1:-}" = upgrade ]; then
+    current='@DEBIAN_VERSION@'
+    if [ "${2:-}" = "$current" ]; then
+        # No outgoing mutation: incoming preinst validates before unpack.
+        exit 0
+    fi
+fi
+
 # Runtime recovery, module unloading and route removal precede package removal.
 case "${1:-}" in
 remove|upgrade|deconfigure)

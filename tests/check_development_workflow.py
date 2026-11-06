@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: MIT
 """Hardware-free source-development workflow contract tests."""
 
+import sys as _identity_sys
+from pathlib import Path as _IdentityPath
+_identity_sys.path.insert(0, str(_IdentityPath(__file__).resolve().parents[1]/'scripts'))
+from version_identity import VERSION, DEBIAN, COMPATIBILITY, expand
 import bz2, gzip, importlib.util, json, lzma, os, pathlib, platform, re, shutil, subprocess, tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -37,12 +41,12 @@ def test_render() -> None:
                    for reference in schema_references)
         assert manifest["classification"] == "source-development" and manifest["qualification"] is False
         assert manifest["moduleName"] == "rp1_gpclk_dkms"
-        assert manifest["versionIdentity"]["moduleVersion"] == "0.0.1"
+        assert manifest["versionIdentity"]["moduleVersion"] == VERSION
         assert manifest["versionIdentity"]["path"] == "include/rp1_gpclk/version.h"
         assert manifest["versionIdentity"]["sha256"] == DEV.sha256(output / "include/rp1_gpclk/version.h")
         assert [item["operation"] for item in manifest["transformations"]] == ["replace-module-version-placeholder","relax-development-kernel-name-filter"]
         assert manifest["changedFiles"] == ["dkms.conf"]
-        assert 'PACKAGE_VERSION="0.0.1"' in (output / "dkms.conf").read_text()
+        assert ('PACKAGE_VERSION="' + VERSION + '"') in (output / "dkms.conf").read_text()
         assert 'BUILD_EXCLUSIVE_KERNEL=".*"' in (output / "dkms.conf").read_text()
         assert 'PACKAGE_VERSION="#MODULE_VERSION#"' not in (output / "dkms.conf").read_text()
         assert not (source / "DEVELOPMENT_MANIFEST.json").exists()
@@ -98,7 +102,7 @@ def test_false_qualification_and_cli() -> None:
     assert '"releaseQualified": False' in source and '"classification": "Experimental"' in source
     preflight = command(str(ROOT / "scripts/development-preflight"), "--source", str(ROOT))
     identity = json.loads(preflight.stdout)
-    assert identity["moduleVersion"] == "0.0.1"
+    assert identity["moduleVersion"] == VERSION
     assert identity["versionSource"] == "include/rp1_gpclk/version.h"
     assert identity["versionSourceSha256"] == DEV.sha256(ROOT / identity["versionSource"])
     for script in ("development-preflight", "development-install", "development-enroll", "development-module",
@@ -117,24 +121,10 @@ def test_controlled_lifecycle() -> None:
     with tempfile.TemporaryDirectory() as temporary:
         base=pathlib.Path(temporary); source=fixture_repo(base); fake_root=base/"root"; tools=base/"tools"; tools.mkdir()
         kernel=platform.release(); (fake_root/f"lib/modules/{kernel}/build").mkdir(parents=True)
-        executable(tools/"dkms", '''
-case "$1" in
- install) mkdir -p "$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$7/updates/dkms"; printf '\\177ELFfake-development-module' >"$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$7/updates/dkms/rp1_gpclk_dkms.ko" ;;
- remove) rm -f "$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$RP1_TEST_KERNEL/updates/dkms/rp1_gpclk_dkms.ko" ;;
- status) [ -d "$RP1_GPCLK_DEVELOPMENT_ROOT/usr/src/rp1-gpclk-dkms-0.0.1" ] || exit 0; printf 'rp1-gpclk-dkms/0.0.1, %s, installed\\n' "$RP1_TEST_KERNEL" ;;
-esac
-''')
-        executable(tools/"modinfo", '''
-field=$2
-case "$field" in name) echo rp1_gpclk_dkms;; version) echo 0.0.1;; vermagic) echo "$RP1_TEST_KERNEL SMP mod_unload aarch64";; signer|sig_key|sig_hashalgo) :;; esac
-''')
+        executable(tools/"dkms", ('\ncase "$1" in\n install) mkdir -p "$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$7/updates/dkms"; printf \'\\177ELFfake-development-module\' >"$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$7/updates/dkms/rp1_gpclk_dkms.ko" ;;\n remove) rm -f "$RP1_GPCLK_DEVELOPMENT_ROOT/lib/modules/$RP1_TEST_KERNEL/updates/dkms/rp1_gpclk_dkms.ko" ;;\n status) [ -d "$RP1_GPCLK_DEVELOPMENT_ROOT/usr/src/rp1-gpclk-dkms-' + VERSION + '" ] || exit 0; printf \'rp1-gpclk-dkms/' + VERSION + ', %s, installed\\n\' "$RP1_TEST_KERNEL" ;;\nesac\n'))
+        executable(tools/"modinfo", ('\nfield=$2\ncase "$field" in name) echo rp1_gpclk_dkms;; version) echo ' + VERSION + ';; vermagic) echo "$RP1_TEST_KERNEL SMP mod_unload aarch64";; signer|sig_key|sig_hashalgo) :;; esac\n'))
         executable(tools/"depmod", ":\n")
-        executable(tools/"modprobe", '''
-if [ "${1:-}" = -r ]; then rm -rf "$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms"; exit 0; fi
-mkdir -p "$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/parameters"
-echo 0.0.1 >"$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/version"
-case "$2" in output_inhibit=1) echo Y;; *) echo N;; esac >"$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/parameters/output_inhibit"
-''')
+        executable(tools/"modprobe", ('\nif [ "${1:-}" = -r ]; then rm -rf "$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms"; exit 0; fi\nmkdir -p "$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/parameters"\necho ' + VERSION + ' >"$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/version"\ncase "$2" in output_inhibit=1) echo Y;; *) echo N;; esac >"$RP1_GPCLK_DEVELOPMENT_ROOT/sys/module/rp1_gpclk_dkms/parameters/output_inhibit"\n'))
         environment={**os.environ,"RP1_GPCLK_DEVELOPMENT_ROOT":str(fake_root),"RP1_GPCLK_DEVELOPMENT_TEST_ROOT":"1","RP1_TEST_KERNEL":kernel,
             "RP1_GPCLK_TOOL_DKMS":str(tools/"dkms"),"RP1_GPCLK_TOOL_MODINFO":str(tools/"modinfo"),
             "RP1_GPCLK_TOOL_DEPMOD":str(tools/"depmod"),"RP1_GPCLK_TOOL_MODPROBE":str(tools/"modprobe")}
@@ -217,6 +207,13 @@ case "$2" in output_inhibit=1) echo Y;; *) echo N;; esac >"$RP1_GPCLK_DEVELOPMEN
         assert json.loads((neutral_evidence/"RESULT.json").read_text())["state"] == "development-installed"
         assert not (fake_root/"sys/module/rp1_gpclk_dkms").exists()
 
+        repeat = neutral("neutral-repeat")
+        assert repeat.returncode == 0, repeat.stderr
+        repeated = json.loads(repeat.stdout)
+        assert repeated["unchanged"] is True
+        assert repeated["rollback"] == str(neutral_evidence/"ROLLBACK.json")
+        assert not (base/"neutral-repeat/dkms-build.log").exists()
+
         evidence=base/"evidence"
         result=command(str(source/"scripts/development-install"),"--source",str(source),"--kernel",kernel,"--route","gpio4","--output-inhibit","1","--load","--evidence-directory",str(evidence),cwd=source,env=environment)
         assert result.returncode==0,result.stderr
@@ -240,14 +237,14 @@ case "$2" in output_inhibit=1) echo Y;; *) echo N;; esac >"$RP1_GPCLK_DEVELOPMEN
         enrolled=command(str(source/"scripts/development-enroll"),"--manifest",str(manifest),"--route","gpio4","--kernel",kernel,env=environment)
         assert enrolled.returncode==0,enrolled.stderr
         enrollment=json.loads(enrolled.stdout)
-        assert enrollment["record"]["moduleVersion"]=="0.0.1" and enrollment["record"]["qualification"] is False
+        assert enrollment["record"]["moduleVersion"]==VERSION and enrollment["record"]["qualification"] is False
         removed=command(str(source/"scripts/development-enroll"),"--remove","--manifest",str(manifest),"--route","gpio4","--kernel",kernel,env=environment)
         assert removed.returncode==0,removed.stderr
         unloaded=command(str(source/"scripts/development-module"),"unload","--manifest",str(manifest),env=environment)
         assert unloaded.returncode==0,unloaded.stderr
         rolled=command(str(source/"scripts/development-rollback"),"--record",str(replacement/"ROLLBACK.json"),env=environment)
         assert rolled.returncode==0,rolled.stderr
-        assert not (fake_root/f"usr/src/rp1-gpclk-dkms-0.0.1").exists()
+        assert not (fake_root/f"usr/src/rp1-gpclk-dkms-{VERSION}").exists()
 
 
 def main() -> None:

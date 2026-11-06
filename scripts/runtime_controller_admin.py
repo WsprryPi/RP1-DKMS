@@ -5,6 +5,8 @@
 CLI paths and subprocesses are fixed. An installed root-owned exact-artifact
 binding is mandatory. This is cooperative service inhibition, not root isolation.
 """
+import sys
+sys.dont_write_bytecode = True
 import fcntl
 import hashlib
 import json
