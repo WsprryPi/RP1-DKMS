@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import fcntl
+import errno
 import shutil
 import ast
 import base64
@@ -57,6 +58,8 @@ MODULE_NAME = "rp1_gpclk_dkms"
 CONTROLLER_MODULE_NAME = "rp1_route_controller"
 RECORD_SCHEMA = "rp1-gpclk-dkms-provider-installation-v1"
 STATE_SCHEMA = "rp1-gpclk-dkms-provider-plan-v1"
+DIRECTORY_SCOPE = {'/etc/rp1-gpclk-dkms','/etc/systemd/system/rp1-gpclk-route-manager@.service.d'}
+ACTIVE_CREATED_DIRECTORIES = []
 ACTIVE_CLIENT = "standalone"
 RUNTIME_READINESS_CONTRACT = "rp1-gpclk-runtime-readiness-v1"
 RUNTIME_BINDING_CONTRACT = "rp1-gpclk-runtime-binding-v1"
@@ -1014,6 +1017,12 @@ def load_ownership_record(path: pathlib.Path, *, repository: str | None = None) 
         if "client" in value:
             require(isinstance(value["client"],str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,127}",value["client"]), "invalid provider client identity")
             required.add("client")
+        if 'createdDirectories' in value:
+            directories=value['createdDirectories']
+            require(isinstance(directories,list) and all(isinstance(p,str) for p in directories)
+                    and len(directories)==len(set(directories)) and set(directories)<=DIRECTORY_SCOPE,
+                    'provider directory ownership is out of scope')
+            required.add('createdDirectories')
         require_exact_keys(value, required, "installation ownership record")
         require(value["repository"] == authority, "installation ownership repository differs")
         require(value["owner"] == "RP1-DKMS", "installation ownership owner differs")
@@ -1023,7 +1032,7 @@ def load_ownership_record(path: pathlib.Path, *, repository: str | None = None) 
             require(isinstance(value["tag"], str) and isinstance(value["sourceCommit"], str), "release ownership identity fields are invalid")
             require(isinstance(value["manifest"], dict) and isinstance(value["moduleArtifacts"], list), "release ownership evidence fields are invalid")
         else:
-            string_fields = required - common - {"runtime"}
+            string_fields = required - common - {"runtime", "createdDirectories"}
             require(all(isinstance(value[field], str) for field in string_fields), "development ownership evidence fields are invalid")
         if "runtime" in value:
             validate_runtime_ownership(value["runtime"], value)
@@ -1230,6 +1239,8 @@ def prepare(args: argparse.Namespace, runner: Runner) -> dict[str, Any]:
         previous, _, reason = load_ownership_record(args.record)
         require(previous is not None or not args.record.exists(), reason or "unproven installed provider")
         require(previous is None or previous.get("client")==ACTIVE_CLIENT, "provider belongs to another or unproven client")
+        plan['createdDirectories']=sorted(set(previous.get('createdDirectories',[]) if previous else []) |
+            {name for name in DIRECTORY_SCOPE if not pathlib.Path(name).exists() and not pathlib.Path(name).is_symlink()})
         plan["client"] = ACTIVE_CLIENT
         plan["transition"] = classify_transition(previous, plan["resolved"])
         plan["recordSha256"] = record_digest(args.record)
@@ -1494,7 +1505,7 @@ def apply_release(state_dir: pathlib.Path, resolved: Mapping[str, Any], record: 
         artifacts = module_artifacts(root)
         validate_recorded_module_artifacts(artifacts)
         atomic_json_new(record, {
-            "schema": RECORD_SCHEMA, "repository": REPOSITORY, "owner": "RP1-DKMS", "client": ACTIVE_CLIENT,
+            "schema": RECORD_SCHEMA, "repository": REPOSITORY, "owner": "RP1-DKMS", "client": ACTIVE_CLIENT, "createdDirectories": ACTIVE_CREATED_DIRECTORIES,
             "channel": "release", "installationMethod": "debian-package",
             "tag": resolved["tag"], "sourceCommit": resolved["commit"],
             "manifest": manifest, "moduleArtifacts": artifacts,
@@ -1945,7 +1956,7 @@ def apply_development(resolved: Mapping[str, Any], record: pathlib.Path, runner:
     require(existing_inventory(pathlib.Path("/"), runner).get("controllerCandidates", []) == [str(controller_path)],
             "upstream runtime controller installation is not unique")
     atomic_json_new(record, {
-        "schema": RECORD_SCHEMA, "repository": REPOSITORY, "owner": "RP1-DKMS", "client": ACTIVE_CLIENT,
+        "schema": RECORD_SCHEMA, "repository": REPOSITORY, "owner": "RP1-DKMS", "client": ACTIVE_CLIENT, "createdDirectories": ACTIVE_CREATED_DIRECTORIES,
         "channel": "development", "installationMethod": "upstream-development-rollback",
         "sourceCommit": resolved["commit"], "productVersion": resolved["version"],
         "sourceTree": resolved["sourceTree"], "uapiSha256": resolved["uapiSha256"],
@@ -2142,6 +2153,20 @@ def verify_provider_absent(root: pathlib.Path, runner: Runner) -> None:
     )
 
 
+def retire_created_directories(record, root):
+    for name in sorted(record.get('createdDirectories',[]),key=len,reverse=True):
+        require(name in DIRECTORY_SCOPE,'provider directory scope differs')
+        path=root_path(root,name)
+        if not path.exists() and not path.is_symlink():continue
+        require(path.absolute()==path.resolve(strict=True) and path.is_dir(), 'provider directory substituted')
+        info=path.stat()
+        require(info.st_uid==os.geteuid() and not info.st_mode&0o022,'provider directory ownership changed')
+        try:path.rmdir()
+        except OSError as error:
+            if error.errno!=errno.ENOTEMPTY:raise
+            print('Retained nonempty provider directory: '+name)
+
+
 def remove_owned_provider(args: argparse.Namespace, runner: Runner) -> None:
     if args.remove == "false":
         print("RP1-DKMS preserved: explicit operator opt-out.")
@@ -2167,6 +2192,7 @@ def remove_owned_provider(args: argparse.Namespace, runner: Runner) -> None:
         except ContractError:
             pass
         else:
+            retire_created_directories(record,root)
             remove_ownership_record(args.record, identity)
             print("Interrupted owned-package removal completed; absence verified.")
             return
@@ -2224,10 +2250,12 @@ def remove_owned_provider(args: argparse.Namespace, runner: Runner) -> None:
         except BaseException:
             recover_pending_removal(args.record)
             raise
+        retire_created_directories(record,root)
         remove_ownership_record(pending, pending_identity)
     else:
         runner.run(command, cwd=working_directory, passthrough=True)
         verify_provider_absent(root, runner)
+        retire_created_directories(record,root)
         remove_ownership_record(args.record, identity)
     print("provider-owned RP1-DKMS provider removed and absence verified.")
 
@@ -2768,6 +2796,9 @@ def activate_runtime(args: argparse.Namespace, runner: Runner) -> None:
             "pending owned-provider removal blocks runtime deployment")
     state_dir = secure_state_dir(args.state_dir)
     plan = load_plan(state_dir)
+    global ACTIVE_CREATED_DIRECTORIES
+    ACTIVE_CREATED_DIRECTORIES = plan.get("createdDirectories",[])
+    require(set(ACTIVE_CREATED_DIRECTORIES)<=DIRECTORY_SCOPE,"provider directory plan is out of scope")
     require(not plan.get("dryRun"), "dry-run plan cannot activate runtime administration")
     if not plan["decision"]["install"]:
         print("RP1-DKMS runtime administration skipped by resolved plan.")
@@ -2838,6 +2869,9 @@ def activate_runtime(args: argparse.Namespace, runner: Runner) -> None:
 def apply(args: argparse.Namespace, runner: Runner) -> None:
     state_dir = secure_state_dir(args.state_dir)
     plan = load_plan(state_dir)
+    global ACTIVE_CREATED_DIRECTORIES
+    ACTIVE_CREATED_DIRECTORIES = plan.get("createdDirectories",[])
+    require(set(ACTIVE_CREATED_DIRECTORIES)<=DIRECTORY_SCOPE,"provider directory plan is out of scope")
     require(not plan.get("dryRun"), "dry-run plan cannot be applied")
     if not plan["decision"]["install"]:
         print("RP1-DKMS installation skipped by resolved plan.")

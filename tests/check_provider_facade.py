@@ -64,6 +64,19 @@ class Tests(unittest.TestCase):
             with self.assertRaisesRegex(api.ContractError,'plan digest changed'):api.dispatch(args)
             apply.assert_not_called()
 
+    def test_only_created_empty_provider_directories_are_retired(self):
+        with tempfile.TemporaryDirectory() as raw:
+            root=Path(raw).resolve()
+            names=sorted(api.DIRECTORY_SCOPE)
+            paths=[root/name.lstrip('/') for name in names]
+            for path in paths:path.mkdir(parents=True)
+            api.retire_created_directories({'createdDirectories':[names[0]]},root)
+            self.assertFalse(paths[0].exists());self.assertTrue(paths[1].exists())
+            (paths[1]/'operator').write_text('preserve')
+            api.retire_created_directories({'createdDirectories':[names[1]]},root)
+            self.assertEqual((paths[1]/'operator').read_text(),'preserve')
+            with self.assertRaises(api.ContractError):api.retire_created_directories({'createdDirectories':['/etc/foreign']},root)
+
     def test_legacy_adoption_refuses_nonobject_before_receipt_creation(self):
         from argparse import Namespace
         with tempfile.TemporaryDirectory() as raw:

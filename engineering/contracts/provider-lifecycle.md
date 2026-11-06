@@ -91,7 +91,10 @@ The provider retains a content-addressed complete facade closure under
 `/var/lib/rp1-gpclk-dkms/facade`, independent of runtime inverse deployment.
 `active.json` identifies its exact entry point and file hashes. Clients verify
 the root-owned, non-writable, no-symlink closure before execution. Owning removal
-retires only verified facade copies after native absence is established.
+retires only verified facade copies after native absence is established. The
+receipt also records dedicated configuration/drop-in directories absent before
+installation; removal retires those only when still owned and empty. Existing
+or nonempty directories are preserved.
 Completed development evidence and immutable predecessor recovery inputs remain
 attributable recovery material rather than installed provider payload. They may
 be retired separately only after terminal rollback and absence of live references.
