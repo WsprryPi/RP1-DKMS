@@ -551,7 +551,7 @@
       "disposition": "permitted",
       "exitStatus": 0,
       "expectedState": "installed",
-      "evidenceClass": "read-only-preflight-before-dpkg",
+      "evidenceClass": "real-dpkg-dkms",
       "checks": [
         "tests/check_package_lifecycle.py",
         "tests/check_debian_packaging.py",
