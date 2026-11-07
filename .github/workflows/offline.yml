@@ -63,6 +63,17 @@ jobs:
         if: always()
         timeout-minutes: 1
         run: python3 tools/summarize-lifecycle.py /tmp/rp1-lifecycle-results/result.json
+      - name: Public provider removal with real package preflight
+        timeout-minutes: 10
+        run: |
+          mkdir -m 0777 /tmp/rp1-public-removal-results
+          docker run --rm --network none --cap-drop ALL \
+            --cap-add CHOWN --cap-add FOWNER --cap-add SETUID --cap-add SETGID \
+            --security-opt no-new-privileges -e PYTHONDONTWRITEBYTECODE=1 \
+            -v "$PWD:/source:ro" -v /tmp/rp1-lifecycle-inputs/candidate:/candidate:ro \
+            -v /tmp/rp1-lifecycle-inputs/predecessor:/predecessor:ro \
+            -v /tmp/rp1-public-removal-results:/results \
+            -w /source rp1-lifecycle python3 tests/provider_package_removal_linux.py
       - name: Native version upgrade and clean uninstall
         timeout-minutes: 20
         run: |

@@ -2249,6 +2249,7 @@ def remove_owned_provider(args: argparse.Namespace, runner: Runner) -> None:
         require_unchanged_ownership(args.record, record, identity, "package ownership retirement")
         remove_ownership_record(args.record, identity)
         try:
+            retire_created_directories(record, root)
             package_removal_preflight(record, root, runner)
             runner.run(command, cwd=working_directory, passthrough=True)
             verify_provider_absent(root, runner)
