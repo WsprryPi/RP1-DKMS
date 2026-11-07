@@ -37,6 +37,11 @@ def main():
     with tempfile.TemporaryDirectory(prefix='rp1-real-removal-') as temporary:
         state = Path(temporary)
         source = state/'source'
+        # The read-only Actions checkout belongs to the runner UID, while
+        # this package-test container runs as root. Trust only this input Git
+        # directory; the cloned checkout must still match the candidate commit.
+        subprocess.run(['git', 'config', '--global', '--add', 'safe.directory',
+                        '/source/.git'], check=True)
         subprocess.run(['git', 'clone', '--no-local', '/source', str(source)], check=True)
         subprocess.run(['git', '-C', str(source), 'remote', 'set-url', 'origin',
                         provider.REPOSITORY_URL], check=True)
